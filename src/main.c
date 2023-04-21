@@ -39,10 +39,44 @@ void test_hash_reduction()
   printf("Reduce is : %d\n", point);
 }
 
+void test_initialize()
+{
+  int size = 6;
+  Points table[size];
+  initialize(table, 1, size);
+  generate(table, 1, size);
+  printf("Table :");
+  for (int i = 0; i < size; i++)
+    printf("\n%u\t:\t%u", table[i].start, table[i].end);
+  printf("\n");
+}
+
+void test_generate()
+{
+  int size = 1 << 5;
+  Points *table;
+  if((table = (Points *) calloc(size, sizeof(Points))) == NULL){
+    printf("Memory allocation problem");
+    exit(ERROR_ALLOC);
+  }
+  time_t s = time(NULL);
+  initialize(table, 0, size);
+  time_t i = time(NULL);
+  printf("Time to init %d : %lds\n", size, i - s);
+  generate(table, 0, size);
+  time_t g = time(NULL);
+  printf("Time to gen %d : %lds\n", size, g - i);
+  for(Points *current = table, *last = table+20; current < last; current++)
+    printf("\n%u\t:\t%u", current->start, current->end);
+  printf("\n");
+}
+
 int main(void)
 {
   // hash_n(1 << 24);
   // test_reduction();
   // test_hash_reduction();
+  // test_initialize();
+  test_generate();
   return 0;
 }

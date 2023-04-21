@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define ERROR_ALLOC 43567
+
 #define SPACE_SIZE (1 << 24)
 #define N 1000000
 #define R 20.0
@@ -19,5 +21,12 @@
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);
 void hash_reduction(uint32_t *, unsigned char *, int, int);
+
+typedef struct
+{
+    uint32_t start;
+    uint32_t end;
+} Points;
+
 
 #endif
