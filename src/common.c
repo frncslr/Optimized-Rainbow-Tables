@@ -1,17 +1,17 @@
 #include "../include/common.h"
 
-unsigned char *hash(uint32_t plain, unsigned char *cipher)
+void hash(uint32_t *point, unsigned char *hashed)
 {
-    return SHA256((const unsigned char *)&plain, sizeof(uint32_t), cipher);
+    SHA256((const unsigned char *)point, sizeof(uint32_t), hashed);
 }
 
-uint32_t reduction(unsigned char *cipher, int id, int col)
+void reduction(uint32_t *point, unsigned char *hashed, int table_id, int col_id)
 {
-    return (*(uint32_t *) cipher + id + col * T) % SPACE_SIZE;
+    *point = (*(uint32_t *)hashed + table_id + col_id * T) % SPACE_SIZE;
 }
 
-uint32_t hash_reduction(uint32_t plain, int id, int col)
+void hash_reduction(uint32_t *point, unsigned char *hashed, int table_id, int col_id)
 {
-    unsigned char cipher[SHA256_DIGEST_LENGTH];
-    return reduction(hash(plain, cipher), id, col);
+    hash(point, hashed);
+    reduction(point, hashed, table_id, col_id);
 }

@@ -16,8 +16,8 @@
 #include <math.h>
 #include <openssl/sha.h>
 
-unsigned char *hash(uint32_t, unsigned char *);
-uint32_t reduction(unsigned char *, int, int);
-uint32_t hash_reduction(uint32_t, int, int);
+void hash(uint32_t *, unsigned char *);
+void reduction(uint32_t *, unsigned char *, int, int);
+void hash_reduction(uint32_t *, unsigned char *, int, int);
 
 #endif
