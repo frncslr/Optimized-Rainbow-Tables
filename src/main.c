@@ -53,9 +53,10 @@ void test_initialize()
 
 void test_generate()
 {
-  int size = 1 << 5;
+  int size = 1 << 13;
   Points *table;
-  if((table = (Points *) calloc(size, sizeof(Points))) == NULL){
+  if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+  {
     printf("Memory allocation problem");
     exit(ERROR_ALLOC);
   }
@@ -66,7 +67,37 @@ void test_generate()
   generate(table, 0, size);
   time_t g = time(NULL);
   printf("Time to gen %d : %lds\n", size, g - i);
-  for(Points *current = table, *last = table+20; current < last; current++)
+  for (Points *current = table, *last = table + 20; current < last; current++)
+    printf("\n%u\t:\t%u", current->start, current->end);
+  printf("\n");
+  free((void *)table);
+}
+
+void test_swap()
+{
+  Points a, b;
+  a.start = 1;
+  a.end = 1;
+  b.start = 2;
+  b.end = 2;
+  printf("Before\t: a = {%d : %d} & b = {%d : %d}\n", a.start, a.end, b.start, b.end);
+  swap(&a, &b);
+  printf("After\t: a = {%d : %d} & b = {%d : %d}\n", a.start, a.end, b.start, b.end);
+}
+
+void test_quicksort()
+{
+  int size = 1 << 3;
+  Points table[size];
+  initialize(table, 0, size);
+  generate(table, 0, size);
+  printf("Before :");
+  for (Points *current = table, *last = table + size; current < last; current++)
+    printf("\n%u\t:\t%u", current->start, current->end);
+  printf("\n");
+  quickSort(table, 0, size - 1);
+  printf("After :");
+  for (Points *current = table, *last = table + size; current < last; current++)
     printf("\n%u\t:\t%u", current->start, current->end);
   printf("\n");
 }
@@ -77,6 +108,8 @@ int main(void)
   // test_reduction();
   // test_hash_reduction();
   // test_initialize();
-  test_generate();
+  // test_generate();
+  // test_swap();
+  // test_quicksort();
   return 0;
 }

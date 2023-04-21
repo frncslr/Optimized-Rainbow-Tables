@@ -5,10 +5,9 @@
 
 void initialize(Points *, int, int);
 void generate(Points *, int, int);
-void cleanSort(Points *, int, Points *);
-
 void swap(Points *, Points *);
-int partition(Points *, Points *, Points *);
-void quickSort(Points *, Points *, Points *);
+int partition(Points *, int, int);
+void quickSort(Points *, int, int);
+void clean(Points *, int, Points *);
 
 #endif
