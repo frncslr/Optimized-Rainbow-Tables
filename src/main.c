@@ -85,7 +85,7 @@ void test_swap()
   printf("After\t: a = {%d : %d} & b = {%d : %d}\n", a.start, a.end, b.start, b.end);
 }
 
-void test_quicksort()
+void test_sort()
 {
   int size = 1 << 3;
   Points table[size];
@@ -95,11 +95,71 @@ void test_quicksort()
   for (Points *current = table, *last = table + size; current < last; current++)
     printf("\n%u\t:\t%u", current->start, current->end);
   printf("\n");
-  quickSort(table, 0, size - 1);
+  sort(table, 0, size - 1);
   printf("After :");
   for (Points *current = table, *last = table + size; current < last; current++)
     printf("\n%u\t:\t%u", current->start, current->end);
   printf("\n");
+}
+
+void test_gen_sort()
+{
+  int size = 1 << 15;
+  Points *table;
+  if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+  {
+    printf("Memory allocation problem");
+    exit(ERROR_ALLOC);
+  }
+  time_t s = time(NULL);
+  initialize(table, 0, size);
+  time_t i = time(NULL);
+  printf("Time to init %d : %lds\n", size, i - s);
+  generate(table, 0, size);
+  time_t g = time(NULL);
+  printf("Time to gen %d : %lds\n", size, g - i);
+  sort(table, 0, size - 1);
+  time_t q = time(NULL);
+  printf("Time to sort %d : %lds\n", size, q - g);
+  for (Points *current = table, *last = table + 20; current < last; current++)
+    printf("\n%u\t:\t%u", current->start, current->end);
+  printf("\n");
+  free((void *)table);
+}
+
+void test_clean()
+{
+  int size = 1 << 20;
+  Points *table, *perfect;
+  if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+  {
+    printf("Memory allocation problem");
+    exit(ERROR_ALLOC);
+  }
+  if ((perfect = (Points *)calloc(size, sizeof(Points))) == NULL)
+  {
+    printf("Memory allocation problem");
+    exit(ERROR_ALLOC);
+  }
+  time_t s = time(NULL);
+  initialize(table, 0, size);
+  time_t i = time(NULL);
+  printf("Time to init %d : %lds\n", size, i - s);
+  generate(table, 0, size);
+  time_t g = time(NULL);
+  printf("Time to gen %d : %lds\n", size, g - i);
+  sort(table, 0, size - 1);
+  time_t q = time(NULL);
+  printf("Time to sort %d : %lds\n", size, q - g);
+  clean(table, size, perfect);
+  time_t c = time(NULL);
+  printf("Time to clean %d : %lds\n", size, c - q);
+  printf("Table cleaned :");
+  for (Points *current = perfect, *last = perfect + 20; current < last; current++)
+    printf("\n%u\t:\t%u", current->start, current->end);
+  printf("\n");
+  free((void *)table);
+  free((void *)perfect);
 }
 
 int main(void)
@@ -110,6 +170,8 @@ int main(void)
   // test_initialize();
   // test_generate();
   // test_swap();
-  // test_quicksort();
+  // test_sort();
+  // test_gen_sort();
+  test_clean();
   return 0;
 }

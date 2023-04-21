@@ -59,7 +59,7 @@ int partition(Points *array, int low, int high)
     return (i + 1);
 }
 
-void quickSort(Points *array, int low, int high)
+void sort(Points *array, int low, int high)
 {
     if (low < high)
     {
@@ -70,9 +70,20 @@ void quickSort(Points *array, int low, int high)
         int pi = partition(array, low, high);
 
         // recursive call on the left of pivot
-        quickSort(array, low, pi - 1);
+        sort(array, low, pi - 1);
 
         // recursive call on the right of pivot
-        quickSort(array, pi + 1, high);
+        sort(array, pi + 1, high);
     }
+}
+
+void clean(Points *table, int table_size, Points *perfect)
+{
+    uint32_t previous = table->end - 1;
+    for (Points *current = table, *last = table + table_size, *new = perfect; current < last; current++)
+        if (current->end > previous)
+        {
+            *new = *current;
+            previous = (new ++)->end;
+        }
 }
