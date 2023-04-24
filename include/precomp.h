@@ -9,6 +9,7 @@ void swap(Points *, Points *);
 int partition(Points *, int, int);
 void sort(Points *, int, int);
 void clean(Points *, int, Points *);
-void cde(uint32_t *, uint32_t *, char);
+void rice(uint32_t *, uint32_t, char);
+void ceri(uint32_t *, uint32_t, char, int);
 
 #endif

@@ -6,7 +6,7 @@
 #define SPACE_SIZE (1 << 24)
 #define N 1000000
 #define R 20.0
-#define T 500
+#define T 1000
 #define ALPHA (R / (R + 1))
 #define M0 (2 * R * N / (T + 2))
 #define Mt (2 * ALPHA * N / (T + 2))

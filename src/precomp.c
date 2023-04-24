@@ -88,12 +88,11 @@ void clean(Points *table, int table_size, Points *perfect)
         }
 }
 
-void cde(uint32_t *end, uint32_t *previous, char k)
+void rice(uint32_t *end, uint32_t value, char k)
 {
-    uint32_t diff = *end - *previous - 1;
-    // uint32_t rice = 0;
-    // for (uint32_t ones = diff >> k; ones--; rice <<= 1)
-    //     rice |= 1;
-    // *end = (rice << k) | (diff << (32 - k)) >> (32 - k);
-    *end = ((1 << (diff >> k)) - 1) << (k + 1) | (diff & ((1 << k) - 1));
+    *end = ((1 << (value >> k)) - 1) << (k + 1) | (value & ((1 << k) - 1));
+}
+
+void ceri(uint32_t *end, uint32_t value, char k, int t){
+    *end = ((t-k-1) << k) | (value & ((1 << k) - 1));
 }
