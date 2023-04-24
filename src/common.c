@@ -7,7 +7,7 @@ void hash(uint32_t *point, unsigned char *hashed)
 
 void reduction(uint32_t *point, unsigned char *hashed, int table_id, int col_id)
 {
-    *point = (*(uint32_t *)hashed + table_id + col_id * T) % SPACE_SIZE;
+    *point = (*(uint32_t *)hashed + table_id + col_id * t) % N;
 }
 
 void hash_reduction(uint32_t *point, unsigned char *hashed, int table_id, int col_id)

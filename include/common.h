@@ -7,13 +7,13 @@
 #define ERROR_FWRITE 1103
 #define ERROR_FREAD 1049
 
-#define SPACE_SIZE (1 << 24)
-#define N 1000000
-#define R 20.0
-#define T 1000
-#define ALPHA (R / (R + 1))
-#define M0 (2 * R * N / (T + 2))
-#define Mt (2 * ALPHA * N / (T + 2))
+#define N (1 << 15)
+#define r 20.0
+#define t 1000
+#define l 1
+#define alpha (r / (r + 1))
+#define m0 (2 * r * N / (t + 2))
+#define mt (2 * alpha * N / (t + 2))
 
 #include <stdio.h>
 #include <string.h>

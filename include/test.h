@@ -17,5 +17,6 @@ void test_rice();
 void test_ceri();
 void test_export();
 void test_import();
+void test_precomp();
 
 #endif

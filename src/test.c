@@ -44,7 +44,6 @@ void test_initialize()
     int size = 6;
     Points table[size];
     initialize(table, 1, size);
-    generate(table, 1, size);
     printf("Table :");
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
@@ -64,7 +63,8 @@ void test_generate()
     initialize(table, 0, size);
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", size, i - s);
-    generate(table, 0, size);
+    int nb_hash = 0;
+    generate(table, 0, size, t, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", size, g - i);
     for (Points *current = table, *last = table + 20; current < last; current++)
@@ -90,7 +90,8 @@ void test_sort()
     int size = 1 << 3;
     Points table[size];
     initialize(table, 0, size);
-    generate(table, 0, size);
+    int nb_hash = 0;
+    generate(table, 0, size, t, &nb_hash);
     printf("Before :");
     for (Points *current = table, *last = table + size; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -115,7 +116,8 @@ void test_gen_sort()
     initialize(table, 0, size);
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", size, i - s);
-    generate(table, 0, size);
+    int nb_hash = 0;
+    generate(table, 0, size, t, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", size, g - i);
     sort(table, 0, size - 1);
@@ -145,7 +147,8 @@ void test_clean()
     initialize(table, 0, size);
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", size, i - s);
-    generate(table, 0, size);
+    int nb_hash = 0;
+    generate(table, 0, size, t, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", size, g - i);
     sort(table, 0, size - 1);
@@ -198,7 +201,8 @@ void test_export(){
     int size = 6;
     Points table[size];
     initialize(table, 1, size);
-    generate(table, 1, size);
+    int nb_hash = 0;
+    generate(table, 1, size, t, &nb_hash);
     sort(table, 0, size-1);
     printf("Table (exported):");
     for (int i = 0; i < size; i++)
@@ -215,4 +219,8 @@ void test_import(){
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
     printf("\n");
+}
+
+void test_precomp(){
+    precomp();
 }

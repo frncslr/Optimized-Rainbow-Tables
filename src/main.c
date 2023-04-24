@@ -14,7 +14,8 @@ int main(void)
   // test_clean();
   // test_rice();
   // test_ceri();
-  test_export();
-  test_import();
+  // test_export();
+  // test_import();
+  test_precomp();
   return 0;
 }

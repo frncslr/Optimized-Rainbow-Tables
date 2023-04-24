@@ -12,11 +12,11 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size)
+void generate(Points *table, int table_id, int table_size, int ti, int *nb_hash)
 {
     unsigned char hashed[SHA256_DIGEST_LENGTH];
     for (Points *current = table, *last = table + table_size; current < last; current++)
-        for (uint32_t col_id = 0; col_id < T; col_id++)
+        for (int col_id = 0; col_id < ti; col_id++, (*nb_hash)++)
             hash_reduction(&(current->end), hashed, table_id, col_id);
 }
 
@@ -97,9 +97,9 @@ void rice(uint32_t *end, uint32_t value, char k)
     *end = ((1 << (value >> k)) - 1) << (k + 1) | (value & ((1 << k) - 1));
 }
 
-void ceri(uint32_t *end, uint32_t value, char k, int t)
+void ceri(uint32_t *end, uint32_t value, char k, int nb_bits)
 {
-    *end = ((t - k - 1) << k) | (value & ((1 << k) - 1));
+    *end = ((nb_bits - k - 1) << k) | (value & ((1 << k) - 1));
 }
 
 void export(Points *table, int table_size, const char *file_name)
@@ -144,4 +144,49 @@ void import(Points *table, int table_size, const char *file_name)
         fprintf(stderr, "Closing file problem : %s", file_name);
         exit(ERROR_FCLOSE);
     }
+}
+
+void precomp(){
+    int size = (int) ceil(m0);
+    Points *table, *perfect;
+    if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    if ((perfect = (Points *)calloc(size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    time_t s = time(NULL);
+    initialize(table, 0, size);
+    time_t i = time(NULL);
+    printf("Time to init %d\t: %lds\n", size, i - s);
+    int nb_hash = 0;
+    generate(table, 0, size, t, &nb_hash);
+    time_t g = time(NULL);
+    printf("Time to gen %d\t: %lds\n", size, g - i);
+    sort(table, 0, size - 1);
+    time_t q = time(NULL);
+    printf("Time to sort %d\t: %lds\n", size, q - g);
+    clean(table, &size, perfect);
+    time_t c = time(NULL);
+    printf("Time to clean %d\t: %lds\n", size, c - q);
+    if ((perfect = (Points *)realloc((void *)perfect, size * sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    export(table, size, "./table2.dat");
+    time_t e = time(NULL);
+    printf("Time to export %d\t: %lds\n", size, e - c);
+    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int) ceil(m0) * t, nb_hash);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int) ceil(mt), size);
+    printf("Table :");
+    for (Points *current = perfect, *last = perfect + 20; current < last; current++)
+        printf("\n%u\t:\t%u", current->start, current->end);
+    printf("\n");
+    free((void *)table);
+    free((void *)perfect);
 }
