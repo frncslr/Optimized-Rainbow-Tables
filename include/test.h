@@ -15,5 +15,7 @@ void test_gen_sort();
 void test_clean();
 void test_rice();
 void test_ceri();
+void test_export();
+void test_import();
 
 #endif

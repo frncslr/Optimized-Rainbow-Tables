@@ -11,5 +11,7 @@ void sort(Points *, int, int);
 void clean(Points *, int *, Points *);
 void rice(uint32_t *, uint32_t, char);
 void ceri(uint32_t *, uint32_t, char, int);
+void export(Points *, int, const char *);
+void import(Points *, int, const char *);
 
 #endif

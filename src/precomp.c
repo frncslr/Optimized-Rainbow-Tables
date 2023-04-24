@@ -101,3 +101,47 @@ void ceri(uint32_t *end, uint32_t value, char k, int t)
 {
     *end = ((t - k - 1) << k) | (value & ((1 << k) - 1));
 }
+
+void export(Points *table, int table_size, const char *file_name)
+{
+    FILE *file;
+    if ((file = fopen(file_name, "wb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", file_name);
+        exit(ERROR_FOPEN);
+    }
+
+    if ((fwrite(table, sizeof(Points), table_size, file)) != (size_t) table_size)
+    {
+        fprintf(stderr, "Writing file problem : %s\n", file_name);
+        exit(ERROR_FWRITE);
+    }
+
+    if (fclose(file))
+    {
+        fprintf(stderr, "Closing file problem : %s", file_name);
+        exit(ERROR_FCLOSE);
+    }
+}
+
+void import(Points *table, int table_size, const char *file_name)
+{
+    FILE *file;
+    if ((file = fopen(file_name, "rb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", file_name);
+        exit(ERROR_FOPEN);
+    }
+
+    if ((fread(table, sizeof(Points), table_size, file)) != (size_t) table_size)
+    {
+        fprintf(stderr, "Reading file problem : %s\n", file_name);
+        exit(ERROR_FWRITE);
+    }
+
+    if (fclose(file))
+    {
+        fprintf(stderr, "Closing file problem : %s", file_name);
+        exit(ERROR_FCLOSE);
+    }
+}

@@ -1,7 +1,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define ERROR_ALLOC 43567
+#define ERROR_ALLOC 1289
+#define ERROR_FOPEN 1229
+#define ERROR_FCLOSE 1223
+#define ERROR_FWRITE 1103
+#define ERROR_FREAD 1049
 
 #define SPACE_SIZE (1 << 24)
 #define N 1000000

@@ -193,3 +193,26 @@ void test_ceri()
     ceri(&end, end, k, size);
     printf("Decompressed difference\t: %u\n", end);
 }
+
+void test_export(){
+    int size = 6;
+    Points table[size];
+    initialize(table, 1, size);
+    generate(table, 1, size);
+    sort(table, 0, size-1);
+    printf("Table (exported):");
+    for (int i = 0; i < size; i++)
+        printf("\n%u\t:\t%u", table[i].start, table[i].end);
+    printf("\n");
+    export(table, size, "./table.dat");
+}
+
+void test_import(){
+    int size = 6;
+    Points table[size];
+    import(table, size, "./table.dat");
+    printf("Table (imported):");
+    for (int i = 0; i < size; i++)
+        printf("\n%u\t:\t%u", table[i].start, table[i].end);
+    printf("\n");
+}

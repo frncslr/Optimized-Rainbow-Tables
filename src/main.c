@@ -11,8 +11,10 @@ int main(void)
   // test_swap();
   // test_sort();
   // test_gen_sort();
-  test_clean();
+  // test_clean();
   // test_rice();
   // test_ceri();
+  test_export();
+  test_import();
   return 0;
 }
