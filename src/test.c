@@ -129,16 +129,16 @@ void test_gen_sort()
 
 void test_clean()
 {
-    int size = 1 << 20;
+    int size = 1 << 12;
     Points *table, *perfect;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
     {
-        printf("Memory allocation problem");
+        printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
     if ((perfect = (Points *)calloc(size, sizeof(Points))) == NULL)
     {
-        printf("Memory allocation problem");
+        printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
     time_t s = time(NULL);
@@ -151,10 +151,15 @@ void test_clean()
     sort(table, 0, size - 1);
     time_t q = time(NULL);
     printf("Time to sort %d : %lds\n", size, q - g);
-    clean(table, size, perfect);
+    clean(table, &size, perfect);
     time_t c = time(NULL);
     printf("Time to clean %d : %lds\n", size, c - q);
-    printf("Table cleaned :");
+    if ((perfect = (Points *)realloc((void *)perfect, size * sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    printf("Table cleaned : (%u Points)", size);
     for (Points *current = perfect, *last = perfect + 20; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n");
@@ -182,7 +187,8 @@ void test_ceri()
     rice(&end, (end - previous - 1), k);
     printf("Compressed difference\t: %u\n", end);
     char size = 0;
-    for (uint32_t bits = end; bits; bits >>= 1, size++);
+    for (uint32_t bits = end; bits; bits >>= 1, size++)
+        ;
     printf("Compressed diff size\t: %d bits\n", size);
     ceri(&end, end, k, size);
     printf("Decompressed difference\t: %u\n", end);

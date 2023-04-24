@@ -77,15 +77,19 @@ void sort(Points *array, int low, int high)
     }
 }
 
-void clean(Points *table, int table_size, Points *perfect)
+void clean(Points *table, int *table_size, Points *perfect)
 {
     uint32_t previous = table->end - 1;
-    for (Points *current = table, *last = table + table_size, *new = perfect; current < last; current++)
+    Points *new = perfect;
+    uint32_t perfect_size = 0;
+    for (Points *current = table, *last = table + *table_size; current < last; current++)
         if (current->end > previous)
         {
             *new = *current;
             previous = (new ++)->end;
+            perfect_size++;
         }
+    *table_size = new - perfect;
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
@@ -93,6 +97,7 @@ void rice(uint32_t *end, uint32_t value, char k)
     *end = ((1 << (value >> k)) - 1) << (k + 1) | (value & ((1 << k) - 1));
 }
 
-void ceri(uint32_t *end, uint32_t value, char k, int t){
-    *end = ((t-k-1) << k) | (value & ((1 << k) - 1));
+void ceri(uint32_t *end, uint32_t value, char k, int t)
+{
+    *end = ((t - k - 1) << k) | (value & ((1 << k) - 1));
 }
