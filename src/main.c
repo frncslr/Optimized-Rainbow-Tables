@@ -10,14 +10,14 @@ void print_hash(unsigned char *hashed_value)
 
 void hash_n(uint32_t n)
 {
-  printf("Time to hash %d : ", n);
-  fflush(stdout);
+  // printf("Time to hash %d : ", n);
+  // fflush(stdout);
   unsigned char c[SHA256_DIGEST_LENGTH];
-  time_t s = time(NULL);
+  // time_t s = time(NULL);
   for (uint32_t i = 0; i < n; i++)
     hash(&i, c);
-  time_t e = time(NULL);
-  printf("%lds\n", e - s);
+  // time_t e = time(NULL);
+  // printf("%lds\n", e - s);
 }
 
 void test_reduction()
@@ -162,6 +162,36 @@ void test_clean()
   free((void *)perfect);
 }
 
+void test_delta()
+{
+  uint32_t a = 9;
+  int k = 3;
+  uint32_t nb1 = a >> k;
+  printf("nb de 1 : %d\n", nb1);
+  uint32_t rice = 0;
+  for (uint32_t ones = a >> k; ones--; rice <<= 1)
+    rice |= 1;
+  printf("q = %d\n", rice);
+  uint32_t r = (a << (32 - k)) >> (32 - k);
+  printf("r = %d\n", r);
+  rice = rice << k | r;
+  printf("rice = %d\n", rice);
+  printf("size : %ld bytes \n", sizeof(rice));
+  char nbBits = 0;
+  for (; rice; rice >>= 1, nbBits++)
+    ;
+  printf("nb bits : %d\n", nbBits);
+}
+
+void test_cde()
+{
+  uint32_t end = 4115;
+  printf("before : %u\n", end);
+  uint32_t previous = 4099;
+  cde(&end, &previous, 3);
+  printf("after : %u\n", end);
+}
+
 int main(void)
 {
   // hash_n(1 << 24);
@@ -172,6 +202,8 @@ int main(void)
   // test_swap();
   // test_sort();
   // test_gen_sort();
-  test_clean();
+  // test_clean();
+  // test_delta();
+  test_cde();
   return 0;
 }
