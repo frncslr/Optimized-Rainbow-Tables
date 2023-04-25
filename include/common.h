@@ -7,7 +7,7 @@
 #define ERROR_FWRITE 1103
 #define ERROR_FREAD 1049
 
-#define N (1 << 15)
+#define N (1 << 24)
 #define r 20.0
 #define t 1000
 #define l 1
@@ -21,6 +21,7 @@
 #include <time.h>
 #include <math.h>
 #include <openssl/sha.h>
+#include "../include/dict.h"
 
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);

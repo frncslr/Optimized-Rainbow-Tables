@@ -197,13 +197,14 @@ void test_ceri()
     printf("Decompressed difference\t: %u\n", end);
 }
 
-void test_export(){
+void test_export()
+{
     int size = 6;
     Points table[size];
     initialize(table, 1, size);
     int nb_hash = 0;
     generate(table, 1, size, t, &nb_hash);
-    sort(table, 0, size-1);
+    sort(table, 0, size - 1);
     printf("Table (exported):");
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
@@ -211,7 +212,8 @@ void test_export(){
     export(table, size, "./table.dat");
 }
 
-void test_import(){
+void test_import()
+{
     int size = 6;
     Points table[size];
     import(table, size, "./table.dat");
@@ -221,6 +223,61 @@ void test_import(){
     printf("\n");
 }
 
-void test_precomp(){
+void test_precomp()
+{
     precomp();
+}
+
+void test_dict()
+{
+    static Pair *dict[DICTSIZE];
+    Pair *pair31 = get(31, dict);
+    if (pair31 == NULL)
+    {
+        printf("31 not found in dict\n");
+    }
+    else
+    {
+        printf("31 found in dict : %u\n", pair31->start);
+    }
+    put(31, 32, dict);
+    pair31 = get(31, dict);
+    if (pair31 == NULL)
+    {
+        printf("31 not found in dict\n");
+    }
+    else
+    {
+        printf("31 found in dict : %u\n", pair31->start);
+    }
+    put(31, 33, dict);
+    pair31 = get(31, dict);
+    if (pair31 == NULL)
+    {
+        printf("31 not found in dict\n");
+    }
+    else
+    {
+        printf("31 found in dict : %u\n", pair31->start);
+    }
+
+    Pair *pair1031 = get(1031, dict);
+    if (pair1031 == NULL)
+    {
+        printf("1031 not found in dict\n");
+    }
+    else
+    {
+        printf("1031 found in dict : %u\n", pair1031->start);
+    }
+    put(1031, 1032, dict);
+    pair1031 = get(1031, dict);
+    if (pair1031 == NULL)
+    {
+        printf("1031 not found in dict\n");
+    }
+    else
+    {
+        printf("1031 found in dict : %u\n", pair1031->start);
+    }
 }

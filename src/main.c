@@ -16,6 +16,7 @@ int main(void)
   // test_ceri();
   // test_export();
   // test_import();
-  test_precomp();
+  // test_precomp();
+  test_dict();
   return 0;
 }
