@@ -1,43 +1,4 @@
-#include "../include/test.h"
-
-void print_hash(unsigned char *hashed_value)
-{
-    printf("Digest is : ");
-    for (unsigned int i = 0; i < 32; i++)
-        printf("%02x", hashed_value[i]);
-    printf("\n");
-}
-
-void hash_n(uint32_t n)
-{
-    // printf("Time to hash %d : ", n);
-    // fflush(stdout);
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    // time_t s = time(NULL);
-    for (uint32_t i = 0; i < n; i++)
-        hash(&i, c);
-    // time_t e = time(NULL);
-    // printf("%lds\n", e - s);
-}
-
-void test_reduction()
-{
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    uint32_t point = 123456;
-    hash(&point, c);
-    reduction(&point, c, 1, 0);
-    print_hash(c);
-    printf("Reduce is : %d\n", point);
-}
-
-void test_hash_reduction()
-{
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    uint32_t point = 123456;
-    hash_reduction(&point, c, 1, 0);
-    print_hash(c);
-    printf("Reduce is : %d\n", point);
-}
+#include "../include/test_precomp.h"
 
 void test_initialize()
 {
@@ -179,24 +140,6 @@ void test_rice()
     printf("after : %u\n", end);
 }
 
-void test_ceri()
-{
-    int k = 3;
-    uint32_t end = 4115;
-    uint32_t previous = 4099;
-    printf("Current endpoint\t: %u\n", end);
-    printf("Previous endpoint\t: %u\n", previous);
-    printf("Uncompressed difference\t: %u\n", (end - previous - 1));
-    rice(&end, (end - previous - 1), k);
-    printf("Compressed difference\t: %u\n", end);
-    char size = 0;
-    for (uint32_t bits = end; bits; bits >>= 1, size++)
-        ;
-    printf("Compressed diff size\t: %d bits\n", size);
-    ceri(&end, end, k, size);
-    printf("Decompressed difference\t: %u\n", end);
-}
-
 void test_export()
 {
     int size = 6;
@@ -212,72 +155,7 @@ void test_export()
     export(table, size, "./table.dat");
 }
 
-void test_import()
-{
-    int size = 6;
-    Points table[size];
-    import(table, size, "./table.dat");
-    printf("Table (imported):");
-    for (int i = 0; i < size; i++)
-        printf("\n%u\t:\t%u", table[i].start, table[i].end);
-    printf("\n");
-}
-
 void test_precomp()
 {
     precomp();
-}
-
-void test_dict()
-{
-    static Pair *dict[DICTSIZE];
-    Pair *pair31 = get(31, dict);
-    if (pair31 == NULL)
-    {
-        printf("31 not found in dict\n");
-    }
-    else
-    {
-        printf("31 found in dict : %u\n", pair31->start);
-    }
-    put(31, 32, dict);
-    pair31 = get(31, dict);
-    if (pair31 == NULL)
-    {
-        printf("31 not found in dict\n");
-    }
-    else
-    {
-        printf("31 found in dict : %u\n", pair31->start);
-    }
-    put(31, 33, dict);
-    pair31 = get(31, dict);
-    if (pair31 == NULL)
-    {
-        printf("31 not found in dict\n");
-    }
-    else
-    {
-        printf("31 found in dict : %u\n", pair31->start);
-    }
-
-    Pair *pair1031 = get(1031, dict);
-    if (pair1031 == NULL)
-    {
-        printf("1031 not found in dict\n");
-    }
-    else
-    {
-        printf("1031 found in dict : %u\n", pair1031->start);
-    }
-    put(1031, 1032, dict);
-    pair1031 = get(1031, dict);
-    if (pair1031 == NULL)
-    {
-        printf("1031 not found in dict\n");
-    }
-    else
-    {
-        printf("1031 found in dict : %u\n", pair1031->start);
-    }
 }

@@ -21,7 +21,7 @@
 #include <time.h>
 #include <math.h>
 #include <openssl/sha.h>
-#include "../include/dict.h"
+#include "dict.h"
 
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);

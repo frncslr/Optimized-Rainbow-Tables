@@ -1,11 +1,16 @@
 #include "../include/precomp.h"
-#include "../include/test.h"
+#include "../include/test_common.h"
+#include "../include/test_precomp.h"
+#include "../include/test_attack.h"
 
 int main(void)
 {
-  // hash_n(1 << 24);
+  // test_hash();
+  // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
+  // test_dict();
+
   // test_initialize();
   // test_generate();
   // test_swap();
@@ -13,10 +18,10 @@ int main(void)
   // test_gen_sort();
   // test_clean();
   // test_rice();
-  // test_ceri();
   // test_export();
-  // test_import();
   // test_precomp();
-  test_dict();
+  
+  // test_ceri();
+  // test_import();
   return 0;
 }
