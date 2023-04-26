@@ -20,7 +20,10 @@ int main(void)
   // test_export();
   // test_precomp();
   
-  test_ceri();
-  test_import();
+  // test_ceri();
+  // test_import();
+  // test_chain();
+  // test_rebuild();
+  test_attack();
   return 0;
 }

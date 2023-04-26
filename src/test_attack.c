@@ -1,5 +1,4 @@
 #include "../include/test_attack.h"
-#include "../include/precomp.h"
 
 void test_ceri()
 {
@@ -35,7 +34,7 @@ void test_import()
     static Pair *dict[DICTSIZE];
     printf("Importing table in dictionnary\n");
     import(dict, size, "tableTestImport.dat");
-    for (int key = 0; key < size+2; key++)
+    for (int key = 0; key < size + 2; key++)
     {
         printf("Fetching key %d in dictionary\n", key);
         Pair *pair = get(key, dict);
@@ -48,5 +47,70 @@ void test_import()
             printf("Pair {%u : %u} found in dictionary\n", pair->end, pair->start);
         }
     }
+    printf("\n");
+}
+
+void test_chain()
+{
+    printf("# Test chain :\n");
+    int size = 1;
+    Points table[size];
+    int table_id = 0;
+    printf("Initializing and generating a table of %d elements\n", size);
+    initialize(table, table_id, size);
+    int nb_hash = 0;
+    generate(table, table_id, size, t, &nb_hash);
+    printf("Table :");
+    for (int i = 0; i < size; i++)
+        printf("\n%u\t:\t%u", table[i].start, table[i].end);
+    printf("\n");
+    Points point = {0, 0};
+    printf("Point initialized : {%u : %u}\n", point.start, point.end);
+    unsigned char hashed[SHA256_DIGEST_LENGTH];
+    hash_reduction(&(point.end), hashed, table_id, 0);
+    hash_reduction(&(point.end), hashed, table_id, 1);
+    printf("Point hash reduced twice : {%u : %u}\n", point.start, point.end);
+    hash(&(point.end), hashed);
+    chain(&(point.end), hashed, 2, table_id);
+    printf("Point chained : {%u : %u}\n\n", point.start, point.end);
+}
+
+void test_rebuild(){
+    printf("# Test rebuild :\n");
+    int table_id = 0;
+    Points point = {0, 0};
+    printf("Point initialized : {%u : %u}\n", point.start, point.end);
+    unsigned char hashed[SHA256_DIGEST_LENGTH];
+    hash_reduction(&(point.end), hashed, table_id, 0);
+    hash_reduction(&(point.end), hashed, table_id, 1);
+    printf("Point hash reduced twice : {%u : %u}\n", point.start, point.end);
+    rebuild(&(point.start), hashed, table_id, 2);
+    printf("Point rebuild : {%u : %u}\n\n", point.start, point.end);
+}
+
+void test_attack(){
+    printf("# Test attack :\n");
+    int table_size = 6;
+    int table_id = 0;
+    Points table[table_size];
+    printf("Initializing and exporting a table of %d elements\n", table_size);
+    initialize(table, table_id, table_size);
+    int nb_hash = 0;
+    generate(table, table_id, table_size, t, &nb_hash);
+    sort(table, 0, table_size -1);
+    int perfect_size = table_size;
+    Points perfect[perfect_size];
+    clean(table, &perfect_size, perfect);
+    export(perfect, perfect_size, "./tableTestAttack1.dat");
+    printf("Table (exported):");
+    for (int i = 0; i < perfect_size; i++)
+        printf("\n%u\t:\t%u", perfect[i].start, perfect[i].end);
+    printf("\n");
+    unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain = 0;
+    hash(&plain, cipher);
+    print_hash(cipher);
+    char file_name[21] = "tableTestAttack";
+    attack(cipher, file_name, perfect_size);
     printf("\n");
 }

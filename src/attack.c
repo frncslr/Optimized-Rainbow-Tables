@@ -40,3 +40,44 @@ void import(Pair **dict, int dict_size, const char *file_name)
 
     free((void *)table);
 }
+
+void chain(uint32_t *point, unsigned char *hashed, int col_id, int table_id)
+{
+    reduction(point, hashed, table_id, col_id);
+    for (++col_id; col_id < t; col_id++)
+        hash_reduction(point, hashed, table_id, col_id);
+}
+
+void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_id)
+{
+    for (int col = 0; col < col_id; col++)
+        hash_reduction(candidate, hashed, table_id, col);
+}
+
+void attack(unsigned char *cipher, char *file_name, int size)
+{
+    strcat(file_name, "1.dat");
+    static Pair *dict[DICTSIZE];
+    import(dict, size, file_name);
+    uint32_t endpoint, candidate;
+    int table_id = 0;
+    Pair *pair;
+    unsigned char hashed[SHA256_DIGEST_LENGTH];
+    strcpy((char *restrict)hashed, (char *restrict)cipher);
+    for (int col = t - 1; col >= 0; col--)
+    {
+        chain(&endpoint, hashed, table_id, col);
+        if ((pair = get(endpoint, dict)) != NULL)
+        {
+            candidate = pair->start;
+            rebuild(&candidate, hashed, table_id, col);
+            hash(&candidate, hashed);
+            if (!strcmp((const char *)hashed, (const char *)cipher))
+            {
+                printf("Hash recovered : %u\n", candidate);
+                exit(0);
+            }
+        }
+    }
+    printf("Hash not recovered T_T\n");
+}

@@ -121,7 +121,7 @@ void export(Points *table, int table_size, const char *file_name)
 
 void precomp(char *file_name)
 {
-    strcat(file_name, "1.dat");
+    strcat(file_name, "0.dat");
     int size = (int)ceil(m0);
     Points *table, *perfect;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
