@@ -13,7 +13,6 @@ int main(void)
 
   // test_initialize();
   // test_generate();
-  // test_swap();
   // test_sort();
   // test_gen_sort();
   // test_clean();
@@ -21,7 +20,7 @@ int main(void)
   // test_export();
   // test_precomp();
   
-  // test_ceri();
-  // test_import();
+  test_ceri();
+  test_import();
   return 0;
 }

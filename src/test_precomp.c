@@ -2,17 +2,25 @@
 
 void test_initialize()
 {
+    printf("# Test initialize :\n");
     int size = 6;
-    Points table[size];
-    initialize(table, 1, size);
-    printf("Table :");
+    Points table0[size], table1[size];
+    printf("Initializing two tables of %d elements each\n", size);
+    initialize(table0, 0, size);
+    initialize(table1, 1, size);
+    printf("Table 0 :");
     for (int i = 0; i < size; i++)
-        printf("\n%u\t:\t%u", table[i].start, table[i].end);
+        printf("\n%u\t:\t%u", table0[i].start, table0[i].end);
     printf("\n");
+    printf("Table 1 :");
+    for (int i = 0; i < size; i++)
+        printf("\n%u\t:\t%u", table1[i].start, table1[i].end);
+    printf("\n\n");
 }
 
 void test_generate()
 {
+    printf("# Test generate :\n");
     int size = 1 << 15;
     Points *table;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
@@ -28,44 +36,36 @@ void test_generate()
     generate(table, 0, size, t, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", size, g - i);
+    printf("Table (first 20 rows) :");
     for (Points *current = table, *last = table + 20; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n");
+    printf("\n\n");
     free((void *)table);
-}
-
-void test_swap()
-{
-    Points a, b;
-    a.start = 1;
-    a.end = 1;
-    b.start = 2;
-    b.end = 2;
-    printf("Before\t: a = {%d : %d} & b = {%d : %d}\n", a.start, a.end, b.start, b.end);
-    swap(&a, &b);
-    printf("After\t: a = {%d : %d} & b = {%d : %d}\n", a.start, a.end, b.start, b.end);
 }
 
 void test_sort()
 {
+    printf("# Test sort :\n");
     int size = 1 << 3;
+    printf("Initializing and generating a table of %d elements\n", size);
     Points table[size];
     initialize(table, 0, size);
     int nb_hash = 0;
     generate(table, 0, size, t, &nb_hash);
-    printf("Before :");
+    printf("Table before sort :");
     for (Points *current = table, *last = table + size; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n");
     sort(table, 0, size - 1);
-    printf("After :");
+    printf("Table after sort :");
     for (Points *current = table, *last = table + size; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n");
+    printf("\n\n");
 }
 
 void test_gen_sort()
 {
+    printf("# Test gen sort :\n");
     int size = 1 << 15;
     Points *table;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
@@ -73,6 +73,7 @@ void test_gen_sort()
         printf("Memory allocation problem");
         exit(ERROR_ALLOC);
     }
+    printf("Table size : %d\n", size);
     time_t s = time(NULL);
     initialize(table, 0, size);
     time_t i = time(NULL);
@@ -86,12 +87,13 @@ void test_gen_sort()
     printf("Time to sort %d : %lds\n", size, q - g);
     for (Points *current = table, *last = table + 20; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n");
+    printf("\n\n");
     free((void *)table);
 }
 
 void test_clean()
 {
+    printf("# Test clean :\n");
     int size = 1 << 12;
     Points *table, *perfect;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
@@ -104,6 +106,7 @@ void test_clean()
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
+    printf("Table size : %d\n", size);
     time_t s = time(NULL);
     initialize(table, 0, size);
     time_t i = time(NULL);
@@ -123,7 +126,7 @@ void test_clean()
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    printf("Table cleaned : (%u Points)", size);
+    printf("Table cleaned : (%u rows)", size);
     for (Points *current = perfect, *last = perfect + 20; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n");
@@ -133,29 +136,31 @@ void test_clean()
 
 void test_rice()
 {
-    uint32_t end = 4115;
-    printf("before : %u\n", end);
+    printf("# Test rice :\n");
     uint32_t previous = 4099;
+    printf("Previous endpoint : %u\n", previous);
+    uint32_t end = 4115;
+    printf("Current endpoint (uncompressed): %u\n", end);
     rice(&end, (end - previous - 1), 3);
-    printf("after : %u\n", end);
+    printf("Current endpoint (compressed): %u\n\n", end);
 }
 
 void test_export()
 {
+    printf("# Test export :\n");
     int size = 6;
     Points table[size];
-    initialize(table, 1, size);
-    int nb_hash = 0;
-    generate(table, 1, size, t, &nb_hash);
-    sort(table, 0, size - 1);
+    printf("Initializing and exporting a table of %d elements\n", size);
+    initialize(table, 0, size);
+    export(table, size, "./tableTestExport.dat");
     printf("Table (exported):");
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
-    printf("\n");
-    export(table, size, "./table.dat");
+    printf("\n\n");
 }
 
 void test_precomp()
 {
-    precomp();
+    char file_name[20] = "tableTestPrecomp";
+    precomp(file_name);
 }

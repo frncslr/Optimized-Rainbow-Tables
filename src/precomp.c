@@ -119,8 +119,9 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void precomp()
+void precomp(char *file_name)
 {
+    strcat(file_name, "1.dat");
     int size = (int)ceil(m0);
     Points *table, *perfect;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
@@ -152,7 +153,7 @@ void precomp()
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    export(table, size, "./table2.dat");
+    export(table, size, file_name);
     time_t e = time(NULL);
     printf("Time to export %d\t: %lds\n", size, e - c);
     printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(m0) * t, nb_hash);

@@ -6,7 +6,6 @@
 
 void test_initialize();
 void test_generate();
-void test_swap();
 void test_sort();
 void test_gen_sort();
 void test_clean();
