@@ -59,16 +59,27 @@ void attack(unsigned char *cipher, char *file_name, int size)
     strcat(file_name, "1.dat");
     static Pair *dict[DICTSIZE];
     import(dict, size, file_name);
+    Pair *pair2 = get(10114362, dict);
+    if (pair2 == NULL)
+    {
+        printf("Key %d not found in dictionary\n", 10114362);
+    }
+    else
+    {
+        printf("Pair {%u : %u} found in dictionary\n", pair2->end, pair2->start);
+    }
     uint32_t endpoint, candidate;
     int table_id = 0;
     Pair *pair;
     unsigned char hashed[SHA256_DIGEST_LENGTH];
-    strcpy((char *restrict)hashed, (char *restrict)cipher);
     for (int col = t - 1; col >= 0; col--)
     {
+        strcpy((char *restrict)hashed, (char *restrict)cipher);
         chain(&endpoint, hashed, table_id, col);
+        printf("End %d : %u\n", col, endpoint);
         if ((pair = get(endpoint, dict)) != NULL)
         {
+            printf("got\n");
             candidate = pair->start;
             rebuild(&candidate, hashed, table_id, col);
             hash(&candidate, hashed);

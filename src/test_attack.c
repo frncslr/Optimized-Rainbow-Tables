@@ -107,8 +107,12 @@ void test_attack(){
         printf("\n%u\t:\t%u", perfect[i].start, perfect[i].end);
     printf("\n");
     unsigned char cipher[SHA256_DIGEST_LENGTH];
+    unsigned char hashed[SHA256_DIGEST_LENGTH];
     uint32_t plain = 0;
     hash(&plain, cipher);
+    reduction(&plain, cipher, table_id, 0);
+    hash_reduction(&plain, hashed, table_id, 1);
+    printf("Red : %u\n", plain);
     print_hash(cipher);
     char file_name[21] = "tableTestAttack";
     attack(cipher, file_name, perfect_size);
