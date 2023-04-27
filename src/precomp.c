@@ -121,7 +121,7 @@ void export(Points *table, int table_size, const char *file_name)
 
 void precomp(char *file_name, int size, int width)
 {
-    strcat(file_name, "0.dat");
+    // strcat(file_name, "0.dat");
     Points *table, *perfect;
     if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
     {
@@ -158,7 +158,7 @@ void precomp(char *file_name, int size, int width)
     printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(m0) * t, nb_hash);
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(mt), size);
     printf("Table :");
-    for (Points *current = perfect, *last = perfect + 6; current < last; current++)
+    for (Points *current = perfect, *last = perfect + 7; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n");
     free((void *)table);

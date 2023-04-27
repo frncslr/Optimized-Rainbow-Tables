@@ -161,6 +161,6 @@ void test_export()
 
 void test_precomp()
 {
-    char file_name[22] = "tableTestPrecomp";
+    char file_name[] = "tableTestPrecomp.dat";
     precomp(file_name, (int)ceil(m0), t);
 }

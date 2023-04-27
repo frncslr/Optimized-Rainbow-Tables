@@ -41,10 +41,10 @@ void import(Pair **dict, int dict_size, const char *file_name)
     free((void *)table);
 }
 
-void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id)
+void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id, int width)
 {
     reduction(point, hashed, table_id, col_id);
-    for (++col_id; col_id < t; col_id++)
+    for (++col_id; col_id < width; col_id++)
         hash_reduction(point, hashed, table_id, col_id);
 }
 
@@ -54,25 +54,25 @@ void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_i
         hash_reduction(candidate, hashed, table_id, col);
 }
 
-void attack(unsigned char *cipher, char *file_name, int size)
+void attack(unsigned char *cipher, char *file_name, int size, int width)
 {
-    strcat(file_name, "1.dat");
     static Pair *dict[DICTSIZE];
     import(dict, size, file_name);
-    uint32_t endpoint, candidate;
     int table_id = 0;
     Pair *pair;
-    unsigned char hashed[SHA256_DIGEST_LENGTH];
-    for (int col = t - 1; col >= 0; col--)
+    int toto = 0;
+    uint32_t endpoint, candidate;
+    unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
+    for (int col = width - 1; col >= 0; col--, toto++)
     {
         strcpy((char *restrict)hashed, (char *restrict)cipher);
-        chain(&endpoint, hashed, table_id, col);
+        chain(&endpoint, hashed, table_id, col, width);
         if ((pair = get(endpoint, dict)) != NULL)
         {
             candidate = pair->start;
             rebuild(&candidate, hashed, table_id, col);
             hash(&candidate, hashed);
-            if (!strcmp((const char *)hashed, (const char *)cipher))
+            if (!strcmp((const char *)cipher, (const char *)hashed))
             {
                 printf("Hash recovered (sp : %u ; col : %d): %u\n", pair->start, col, candidate);
                 free_dict(dict);

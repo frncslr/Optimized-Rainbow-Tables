@@ -25,7 +25,7 @@ void test_import()
     int size = 6;
     Points table[size];
     printf("Initializing and exporting a table of %d elements\n", size);
-    initialize(table, 1, size);
+    initialize(table, 0, size);
     export(table, size, "./tableTestImport.dat");
     printf("Table (exported):");
     for (int i = 0; i < size; i++)
@@ -53,25 +53,29 @@ void test_import()
 void test_chain()
 {
     printf("# Test chain :\n");
-    int size = 1;
-    Points table[size];
+    int size = 6;
     int table_id = 0;
+    int table_width = 30;
+    Points table[size];
     printf("Initializing and generating a table of %d elements\n", size);
     initialize(table, table_id, size);
     int nb_hash = 0;
-    generate(table, table_id, size, t, &nb_hash);
+    generate(table, table_id, size, table_width, &nb_hash);
     printf("Table :");
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
     printf("\n");
-    Points point = {0, 0};
-    printf("Point initialized : {%u : %u}\n", point.start, point.end);
+    srand(time(NULL));
+    uint32_t init = (uint32_t)rand() % size;
+    Points point = {init, init};
+    printf("Point initialized randomly : {%u : %u}\n", point.start, point.end);
     unsigned char hashed[SHA256_DIGEST_LENGTH];
-    hash_reduction(&(point.end), hashed, table_id, 0);
-    hash_reduction(&(point.end), hashed, table_id, 1);
-    printf("Point hash reduced twice : {%u : %u}\n", point.start, point.end);
+    int col_id = rand() % table_width;
+    for (int i = 0; i < col_id; i++)
+        hash_reduction(&(point.end), hashed, table_id, i);
+    printf("Point hash reduced %d times : {%u : %u}\n", col_id, point.start, point.end);
     hash(&(point.end), hashed);
-    chain(&(point.end), hashed, 2, table_id);
+    chain(&(point.end), hashed, table_id, col_id, table_width);
     printf("Point chained : {%u : %u}\n\n", point.start, point.end);
 }
 
@@ -79,49 +83,44 @@ void test_rebuild()
 {
     printf("# Test rebuild :\n");
     int table_id = 0;
-    Points point = {0, 0};
-    printf("Point initialized : {%u : %u}\n", point.start, point.end);
+    int table_size = 6;
+    int table_width = 30;
+    srand(time(NULL));
+    uint32_t init = (uint32_t)rand() % table_size;
+    Points point = {init, init};
+    printf("Point initialized randomly : {%u : %u}\n", point.start, point.end);
     unsigned char hashed[SHA256_DIGEST_LENGTH];
-    hash_reduction(&(point.end), hashed, table_id, 0);
-    hash_reduction(&(point.end), hashed, table_id, 1);
-    printf("Point hash reduced twice : {%u : %u}\n", point.start, point.end);
-    rebuild(&(point.start), hashed, table_id, 2);
-    printf("Point rebuild : {%u : %u}\n\n", point.start, point.end);
+    int col_id = rand() % table_width;
+    for (int i = 0; i < col_id; i++)
+        hash_reduction(&(point.end), hashed, table_id, i);
+    printf("EndpointPoint hash reduced %d times : {%u : %u}\n", col_id, point.start, point.end);
+    rebuild(&(point.start), hashed, table_id, col_id);
+    printf("StartPoint rebuild : {%u : %u}\n\n", point.start, point.end);
 }
 
 void test_attack()
 {
     printf("# Test attack :\n");
-    int table_size = 6;
     int table_id = 0;
-    Points table[table_size];
-    printf("Initializing and exporting a table of %d elements\n", table_size);
-    initialize(table, table_id, table_size);
-    int nb_hash = 0;
-    generate(table, table_id, table_size, t, &nb_hash);
-    sort(table, 0, table_size - 1);
+    int table_size = 7;
     int perfect_size = table_size;
-    Points perfect[perfect_size];
-    clean(table, &perfect_size, perfect);
-    export(perfect, perfect_size, "./tableTestAttack1.dat");
-    printf("Table (exported):");
-    for (int i = 0; i < perfect_size; i++)
-        printf("\n%u\t:\t%u", perfect[i].start, perfect[i].end);
-    printf("\n");
+    int table_width = t;
+    char file_name[] = "tableTestAttack.dat";
 
-    unsigned char cipher[SHA256_DIGEST_LENGTH];
-    unsigned char hashed[SHA256_DIGEST_LENGTH];
+    // precomp(file_name, table_size, table_width);
+
+    unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
+    unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
     srand(time(NULL));
     uint32_t plain = (uint32_t) rand() % table_size;
-    printf("Start point : %u\n", plain);
-    int col_id = rand() % t;
-    printf("Column : %d\n", col_id);
+    printf("Random start point : %u\n", plain);
+    int col_id = rand() % table_width;
+    printf("Random column : %d\n", col_id);
     for (int col = 0; col < col_id; col++)
         hash_reduction(&plain, hashed, table_id, col);
-    printf("Plain : %u\n", plain);
+    printf("Random existing plain : %u\n", plain);
     hash(&plain, cipher);
     print_hash(cipher);
-    char file_name[21] = "tableTestAttack";
-    attack(cipher, file_name, perfect_size);
+    attack(cipher, file_name, perfect_size, table_width);
     printf("\n");
 }
