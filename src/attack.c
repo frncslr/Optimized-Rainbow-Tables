@@ -74,7 +74,8 @@ void attack(unsigned char *cipher, char *file_name, int size)
             hash(&candidate, hashed);
             if (!strcmp((const char *)hashed, (const char *)cipher))
             {
-                printf("Hash recovered (sp : %u ; col : %d): %u\n",pair->start, col, candidate);
+                printf("Hash recovered (sp : %u ; col : %d): %u\n", pair->start, col, candidate);
+                free_dict(dict);
                 exit(0);
             }
         }
