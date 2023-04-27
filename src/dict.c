@@ -30,3 +30,15 @@ void put(uint32_t end, uint32_t start, Pair **dict)
         dict[index] = pair;
     }
 }
+
+void free_chain(Pair * pair){
+    if(pair != NULL){
+        free_chain(pair->next);
+        free((void *) pair);
+    }
+}
+
+void free_dict(Pair ** dict){
+    for(Pair **current = dict, **last = dict + DICTSIZE; current < last; current++)
+        free_chain(*(current));
+}

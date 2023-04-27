@@ -113,4 +113,5 @@ void test_dict()
         printf("Pair {%u : %u} found in dictionary\n", pair1031->end, pair1031->start);
     }
     printf("\n");
+    free_dict(dict);
 }
