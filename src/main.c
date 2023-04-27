@@ -24,6 +24,7 @@ int main(void)
   // test_import();
   // test_chain();
   // test_rebuild();
-  test_attack();
+  // test_attack();
+  test_attack_n();
   return 0;
 }

@@ -9,5 +9,6 @@ void test_import();
 void test_chain();
 void test_rebuild();
 void test_attack();
+void test_attack_n();
 
 #endif

@@ -54,16 +54,15 @@ void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_i
         hash_reduction(candidate, hashed, table_id, col);
 }
 
-void attack(unsigned char *cipher, char *file_name, int size, int width)
+void attack(unsigned char *cipher, char *file_name, int size, int width, uint32_t *plain, char *found)
 {
     static Pair *dict[DICTSIZE];
     import(dict, size, file_name);
     int table_id = 0;
     Pair *pair;
-    int toto = 0;
     uint32_t endpoint, candidate;
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
-    for (int col = width - 1; col >= 0; col--, toto++)
+    for (int col = width - 1; col >= 0; col--)
     {
         strcpy((char *restrict)hashed, (char *restrict)cipher);
         chain(&endpoint, hashed, table_id, col, width);
@@ -74,12 +73,12 @@ void attack(unsigned char *cipher, char *file_name, int size, int width)
             hash(&candidate, hashed);
             if (!strcmp((const char *)cipher, (const char *)hashed))
             {
-                printf("Hash recovered (sp : %u ; col : %d): %u\n", pair->start, col, candidate);
-                free_dict(dict);
-                exit(0);
+                // printf("Match for start point : %u in column : %d\n", pair->start, col);
+                *plain = (int)candidate;
+                *found = 1;
+                break;
             }
         }
     }
-    printf("Hash not recovered T_T\n");
     free_dict(dict);
 }
