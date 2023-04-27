@@ -80,4 +80,5 @@ void attack(unsigned char *cipher, char *file_name, int size)
         }
     }
     printf("Hash not recovered T_T\n");
+    free_dict(dict);
 }
