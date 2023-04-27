@@ -75,7 +75,8 @@ void test_chain()
     printf("Point chained : {%u : %u}\n\n", point.start, point.end);
 }
 
-void test_rebuild(){
+void test_rebuild()
+{
     printf("# Test rebuild :\n");
     int table_id = 0;
     Points point = {0, 0};
@@ -88,7 +89,8 @@ void test_rebuild(){
     printf("Point rebuild : {%u : %u}\n\n", point.start, point.end);
 }
 
-void test_attack(){
+void test_attack()
+{
     printf("# Test attack :\n");
     int table_size = 6;
     int table_id = 0;
@@ -97,7 +99,7 @@ void test_attack(){
     initialize(table, table_id, table_size);
     int nb_hash = 0;
     generate(table, table_id, table_size, t, &nb_hash);
-    sort(table, 0, table_size -1);
+    sort(table, 0, table_size - 1);
     int perfect_size = table_size;
     Points perfect[perfect_size];
     clean(table, &perfect_size, perfect);
@@ -106,13 +108,18 @@ void test_attack(){
     for (int i = 0; i < perfect_size; i++)
         printf("\n%u\t:\t%u", perfect[i].start, perfect[i].end);
     printf("\n");
+
     unsigned char cipher[SHA256_DIGEST_LENGTH];
     unsigned char hashed[SHA256_DIGEST_LENGTH];
-    uint32_t plain = 0;
+    srand(time(NULL));
+    uint32_t plain = (uint32_t) rand() % table_size;
+    printf("Start point : %u\n", plain);
+    int col_id = rand() % t;
+    printf("Column : %d\n", col_id);
+    for (int col = 0; col < col_id; col++)
+        hash_reduction(&plain, hashed, table_id, col);
+    printf("Plain : %u\n", plain);
     hash(&plain, cipher);
-    reduction(&plain, cipher, table_id, 0);
-    hash_reduction(&plain, hashed, table_id, 1);
-    printf("Red : %u\n", plain);
     print_hash(cipher);
     char file_name[21] = "tableTestAttack";
     attack(cipher, file_name, perfect_size);

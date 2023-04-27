@@ -41,7 +41,7 @@ void import(Pair **dict, int dict_size, const char *file_name)
     free((void *)table);
 }
 
-void chain(uint32_t *point, unsigned char *hashed, int col_id, int table_id)
+void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id)
 {
     reduction(point, hashed, table_id, col_id);
     for (++col_id; col_id < t; col_id++)
@@ -59,15 +59,6 @@ void attack(unsigned char *cipher, char *file_name, int size)
     strcat(file_name, "1.dat");
     static Pair *dict[DICTSIZE];
     import(dict, size, file_name);
-    Pair *pair2 = get(10114362, dict);
-    if (pair2 == NULL)
-    {
-        printf("Key %d not found in dictionary\n", 10114362);
-    }
-    else
-    {
-        printf("Pair {%u : %u} found in dictionary\n", pair2->end, pair2->start);
-    }
     uint32_t endpoint, candidate;
     int table_id = 0;
     Pair *pair;
@@ -76,16 +67,14 @@ void attack(unsigned char *cipher, char *file_name, int size)
     {
         strcpy((char *restrict)hashed, (char *restrict)cipher);
         chain(&endpoint, hashed, table_id, col);
-        printf("End %d : %u\n", col, endpoint);
         if ((pair = get(endpoint, dict)) != NULL)
         {
-            printf("got\n");
             candidate = pair->start;
             rebuild(&candidate, hashed, table_id, col);
             hash(&candidate, hashed);
             if (!strcmp((const char *)hashed, (const char *)cipher))
             {
-                printf("Hash recovered : %u\n", candidate);
+                printf("Hash recovered (sp : %u ; col : %d): %u\n",pair->start, col, candidate);
                 exit(0);
             }
         }
