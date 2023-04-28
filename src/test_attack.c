@@ -182,3 +182,46 @@ void test_attack_n()
     printf("Number of plains recovered : %u / %u\n (%f%%)", nb, n, (100 * (float)nb / n));
     printf("\n");
 }
+
+void test_attack2()
+{
+    printf("# Test attack 2 :\n");
+    int table_id = 0;
+    int table_size = 1 << 4;
+    int table_width = t;
+    char file_name[] = "tableTestAttack2.dat";
+
+    precomp(file_name, &table_size, table_width);
+
+    int dict_size = table_size;
+    static Pair *dict[DICTSIZE];
+    import(dict, dict_size, file_name);
+
+    unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
+    unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
+    srand(time(NULL));
+    // uint32_t plain = (uint32_t)rand() % table_size;
+    uint32_t plain = 284;
+    printf("Random start point : %u\n", plain);
+    // int col_id = rand() % table_width;
+    int col_id = 388;
+    printf("Random column : %d\n", col_id);
+    for (int col = 0; col < col_id; col++)
+        hash_reduction(&plain, hashed, table_id, col);
+    printf("Random existing plain : %u\n", plain);
+    hash(&plain, cipher);
+    print_hash(cipher);
+    uint32_t result;
+    char found = 0;
+    attack(cipher, hashed, dict, table_width, &result, &found);
+    if (found && (result == plain))
+    {
+        printf("Plain recovered : %u\n", (uint32_t)result);
+    }
+    else
+    {
+        printf("Hash not recovered T_T\n");
+    }
+    printf("\n");
+    free_dict(dict);
+}
