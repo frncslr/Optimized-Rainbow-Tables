@@ -119,44 +119,46 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void precomp(char *file_name, int size, int width)
+void precomp(char *file_name, int *size, int width)
 {
+    printf("Precomputing a table of initially %d elements\n", *size);
     // strcat(file_name, "0.dat");
     Points *table, *perfect;
-    if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+    if ((table = (Points *)calloc(*size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    if ((perfect = (Points *)calloc(size, sizeof(Points))) == NULL)
+    if ((perfect = (Points *)calloc(*size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
     time_t s = time(NULL);
-    initialize(table, 0, size);
+    initialize(table, 0, *size);
     time_t i = time(NULL);
-    printf("Time to init %d\t: %lds\n", size, i - s);
+    printf("Time to initialize\t: %lds\n", i - s);
     int nb_hash = 0;
-    generate(table, 0, size, width, &nb_hash);
+    generate(table, 0, *size, width, &nb_hash);
     time_t g = time(NULL);
-    printf("Time to gen %d\t: %lds\n", size, g - i);
-    sort(table, 0, size - 1);
+    printf("Time to generate\t: %lds\n", g - i);
+    sort(table, 0, *size - 1);
     time_t q = time(NULL);
-    printf("Time to sort %d\t: %lds\n", size, q - g);
-    clean(table, &size, perfect);
+    printf("Time to sort\t\t: %lds\n", q - g);
+    clean(table, size, perfect);
     time_t c = time(NULL);
-    printf("Time to clean %d\t: %lds\n", size, c - q);
-    if ((perfect = (Points *)realloc((void *)perfect, size * sizeof(Points))) == NULL)
+    printf("Time to clean\t\t: %lds\n", c - q);
+    if ((perfect = (Points *)realloc((void *)perfect, *size * sizeof(Points))) == NULL)
     {
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    export(table, size, file_name);
+    c = time(NULL);
+    export(table, *size, file_name);
     time_t e = time(NULL);
-    printf("Time to export %d\t: %lds\n", size, e - c);
+    printf("Time to export\t\t: %lds\n", e - c);
     printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(m0) * t, nb_hash);
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(mt), size);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(mt), *size);
     printf("Table :");
     for (Points *current = perfect, *last = perfect + 7; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);

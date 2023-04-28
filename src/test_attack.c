@@ -102,19 +102,20 @@ void test_attack()
 {
     printf("# Test attack :\n");
     int table_id = 0;
-    int table_size = 7;
-    int perfect_size = table_size;
+    int table_size = 1 << 10;
     int table_width = t;
     char file_name[] = "tableTestAttack.dat";
 
-    // precomp(file_name, table_size, table_width);
+    // precomp(file_name, &table_size, table_width);
 
     unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
     srand(time(NULL));
     uint32_t plain = (uint32_t)rand() % table_size;
+    // uint32_t plain = 284;
     printf("Random start point : %u\n", plain);
     int col_id = rand() % table_width;
+    // int col_id = 388;
     printf("Random column : %d\n", col_id);
     for (int col = 0; col < col_id; col++)
         hash_reduction(&plain, hashed, table_id, col);
@@ -123,6 +124,7 @@ void test_attack()
     uint32_t result;
     char found = 0;
     print_hash(cipher);
+    int perfect_size = 1001;
     attack(cipher, file_name, perfect_size, table_width, &result, &found);
     if (found)
     {
