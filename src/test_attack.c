@@ -102,11 +102,15 @@ void test_attack()
 {
     printf("# Test attack :\n");
     int table_id = 0;
-    int table_size = 1 << 10;
+    int table_size = 1 << 4;
     int table_width = t;
     char file_name[] = "tableTestAttack.dat";
 
     // precomp(file_name, &table_size, table_width);
+
+    int dict_size = table_size;
+    static Pair *dict[DICTSIZE];
+    import(dict, dict_size, file_name);
 
     unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
@@ -121,12 +125,11 @@ void test_attack()
         hash_reduction(&plain, hashed, table_id, col);
     printf("Random existing plain : %u\n", plain);
     hash(&plain, cipher);
+    print_hash(cipher);
     uint32_t result;
     char found = 0;
-    print_hash(cipher);
-    int perfect_size = 1001;
-    attack(cipher, file_name, perfect_size, table_width, &result, &found);
-    if (found)
+    attack(cipher, hashed, dict, table_width, &result, &found);
+    if (found && (result == plain))
     {
         printf("Plain recovered : %u\n", (uint32_t)result);
     }
@@ -135,21 +138,26 @@ void test_attack()
         printf("Hash not recovered T_T\n");
     }
     printf("\n");
+    free_dict(dict);
 }
 
 void test_attack_n()
 {
     printf("# Test attack n :\n");
-    int n = 1 << 3;
-    int nb = n;
+    int n = 10000;
+    int nb = 0;
 
     int table_id = 0;
-    int table_size = 7;
-    int perfect_size = table_size;
+    int table_size = 1 << 4;
     int table_width = t;
-    char file_name[] = "tableTestAttack.dat";
+    char file_name[] = "tableTestAttackN.dat";
 
-    // precomp(file_name, table_size, table_width);
+    // precomp(file_name, &table_size, table_width);
+
+    int dict_size = table_size;
+    static Pair *dict[DICTSIZE];
+    import(dict, dict_size, file_name);
+    printf("Dictionary imported\n");
 
     unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
@@ -157,9 +165,9 @@ void test_attack_n()
     int col_id;
     char found;
     srand(time(NULL));
+    printf("Launching %d attacks\n", n);
     for (int i = 0; i < n; i++)
     {
-        printf("i : %d\n", i);
         found = 0;
         plain = (uint32_t)rand() % table_size;
         col_id = rand() % table_width;
@@ -167,10 +175,10 @@ void test_attack_n()
             hash_reduction(&plain, hashed, table_id, col);
         hash(&plain, cipher);
         uint32_t result;
-        attack(cipher, file_name, perfect_size, table_width, &result, &found);
-        if (found && result != plain)
-            nb--;
+        attack(cipher, hashed, dict, table_width, &result, &found);
+        if (found && (result == plain))
+            nb++;
     }
-    printf("Number of plains recovered : %u / %u\n", nb, n);
+    printf("Number of plains recovered : %u / %u\n (%f%%)", nb, n, (100 * (float)nb / n));
     printf("\n");
 }
