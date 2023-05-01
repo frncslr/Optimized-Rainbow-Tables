@@ -41,19 +41,19 @@ void import(Pair **dict, int dict_size, const char *file_name)
     free((void *)table);
 }
 
-void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id, int width)
+void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id, int table_width)
 {
+    int nb_hash = 0;
     reduction(point, hashed, table_id, col_id);
-    // if (col_id == 25)
-    //     printf("Reduction in chain : %u\n", *point);
-    for (++col_id; col_id < width; col_id++)
-        hash_reduction(point, hashed, table_id, col_id);
+    compute(point, hashed, table_id, col_id + 1, table_width, &nb_hash);
 }
 
 void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_id)
 {
-    for (int col = 0; col < col_id; col++)
-        hash_reduction(candidate, hashed, table_id, col);
+    // for (int col = 0; col < col_id; col++)
+    //     hash_reduction(candidate, hashed, table_id, col);
+    int nb_hash = 0;
+    compute(candidate, hashed, table_id, 0, col_id, &nb_hash);
 }
 
 void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int width, uint32_t *result, char *found)

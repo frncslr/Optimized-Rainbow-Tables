@@ -23,26 +23,28 @@ void test_import()
 {
     printf("# Test import :\n");
     int size = 6;
+    srand(time(NULL));
+    int table_id = rand() % 4;
     Points table[size];
-    printf("Initializing and exporting a table of %d elements\n", size);
-    initialize(table, 0, size);
+
+    printf("Initializing and exporting table %d of %d elements\n", table_id, size);
+    initialize(table, table_id, size);
     export(table, size, "./tableTestImport.dat");
+
     printf("Table (exported):");
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
     printf("\n");
+
     static Pair *dict[DICTSIZE];
-    printf("Importing table in dictionnary\n");
+    printf("Importing table in dictionary\n");
     import(dict, size, "tableTestImport.dat");
-    for (int key = 0; key < size + 2; key++)
+
+    printf("Fetching keys in dictionary\n");
+    Pair *pair;
+    for (int key = 0; key < size * 4; key++)
     {
-        printf("Fetching key %d in dictionary\n", key);
-        Pair *pair = get(key, dict);
-        if (pair == NULL)
-        {
-            printf("Key %d not found in dictionary\n", key);
-        }
-        else
+        if ((pair = get(key, dict)) != NULL)
         {
             printf("Pair {%u : %u} found in dictionary\n", pair->end, pair->start);
         }
@@ -54,57 +56,69 @@ void test_chain()
 {
     printf("# Test chain :\n");
 
-    int table_id = 0;
+    srand(time(NULL));
+    int table_id = rand() % 4;
     int table_size = 1 << 4;
     int table_width = t;
-    char file_name[] = "tableTestAttackExisting.dat";
-
-    precomp(file_name, &table_size, table_width);
-
-    int size = 6;
-    // int table_id = 0;
-    // int table_width = 30;
-    Points table[size];
-    printf("Initializing and generating a table of %d elements\n", size);
-    initialize(table, table_id, size);
-    int nb_hash = 0;
-    generate(table, table_id, size, table_width, &nb_hash);
-    printf("Table :");
-    for (int i = 0; i < size; i++)
-        printf("\n%u\t:\t%u", table[i].start, table[i].end);
-    printf("\n");
-
-    srand(time(NULL));
-    uint32_t init = (uint32_t)rand() % size;
-    Points point = {init, init};
-    printf("Point initialized randomly : {%u : %u}\n", point.start, point.end);
+    char table_name[] = "tableTestChain.dat";
     unsigned char hashed[SHA256_DIGEST_LENGTH];
+
+    precomp(table_name, table_id, &table_size, table_width);
+
+    static Pair *dict[DICTSIZE];
+    import(dict, table_size, table_name);
+
+    uint32_t point;
+    do
+    {
+        point = table_id * table_size + (uint32_t)rand() % table_size;
+    } while (!present(point, dict));
+    printf("Random existing start point \t: %u\n", point);
     int col_id = rand() % table_width;
-    for (int i = 0; i < col_id; i++)
-        hash_reduction(&(point.end), hashed, table_id, i);
-    printf("Point hash reduced %d times : {%u : %u}\n", col_id, point.start, point.end);
-    hash(&(point.end), hashed);
-    chain(&(point.end), hashed, table_id, col_id, table_width);
-    printf("Point chained : {%u : %u}\n\n", point.start, point.end);
+    printf("Random existing column \t\t: %d\n", col_id);
+
+    int nb_hash = 0;
+    compute(&point, hashed, table_id, 0, col_id, &nb_hash);
+    printf("Start point computed \t\t: %u\n", point);
+    printf("Number of hashes done \t\t: %d\n", nb_hash);
+
+    hash(&point, hashed);
+    print_hash(hashed);
+
+    printf("Number of hashes to chain \t: %d\n", table_width - col_id);
+    chain(&point, hashed, table_id, col_id, table_width);
+    printf("End point chained \t\t: %u\n", point);
+    Pair *pair;
+    if ((pair = get(point, dict)) != NULL)
+    {
+        printf("Pair {sp : %u ; ep : %u} found in dictionary\n", pair->start, pair->end);
+    }
+    else
+    {
+        printf("End point not found in dictionary\n");
+    }
 }
 
 void test_rebuild()
 {
     printf("# Test rebuild :\n");
     int table_id = 0;
-    int table_size = 6;
+    int table_size = 16;
     int table_width = 30;
-    srand(time(NULL));
-    uint32_t init = (uint32_t)rand() % table_size;
-    Points point = {init, init};
-    printf("Point initialized randomly : {%u : %u}\n", point.start, point.end);
     unsigned char hashed[SHA256_DIGEST_LENGTH];
+
+    srand(time(NULL));
+    uint32_t point = (uint32_t)rand() % table_size;
+    printf("Ramdom point %%%d \t\t: %u\n", table_size, point);
+    uint32_t copy = point;
+    printf("Copy of point \t\t\t: %u\n", copy);
     int col_id = rand() % table_width;
-    for (int i = 0; i < col_id; i++)
-        hash_reduction(&(point.end), hashed, table_id, i);
-    printf("EndpointPoint hash reduced %d times : {%u : %u}\n", col_id, point.start, point.end);
-    rebuild(&(point.start), hashed, table_id, col_id);
-    printf("StartPoint rebuild : {%u : %u}\n\n", point.start, point.end);
+    printf("Random column \t\t\t: %d\n", col_id);
+    for (int col = 0; col < col_id; col++)
+        hash_reduction(&copy, hashed, table_id, col);
+    printf("Copy hash reduced %d times \t: %u\n", col_id, copy);
+    rebuild(&point, hashed, table_id, col_id);
+    printf("Point rebuild \t\t\t: %u\n\n", point);
 }
 
 void test_attack_existing()
@@ -163,7 +177,7 @@ void test_attack_existing_n()
     int table_width = t;
     char file_name[] = "tableTestAttackExistingN.dat";
 
-    precomp(file_name, &table_size, table_width);
+    precomp(file_name, table_id, &table_size, table_width);
 
     int dict_size = table_size;
     static Pair *dict[DICTSIZE];
@@ -214,7 +228,7 @@ void test_attack_random()
     int table_width = t;
     char file_name[] = "tableTestAttack2.dat";
 
-    precomp(file_name, &table_size, table_width);
+    precomp(file_name, table_id, &table_size, table_width);
 
     int dict_size = table_size;
     static Pair *dict[DICTSIZE];

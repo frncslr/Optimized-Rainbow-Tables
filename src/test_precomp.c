@@ -12,7 +12,7 @@ void test_initialize()
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table0[i].start, table0[i].end);
     printf("\n");
-    
+
     initialize(table1, 1, size);
     printf("Table 1 :");
     for (int i = 0; i < size; i++)
@@ -39,11 +39,11 @@ void test_generate()
     initialize(table, table_id, table_size);
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", table_size, i - s);
-    
+
     generate(table, table_id, table_size, table_width, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
-    
+
     printf("Table (first 16 rows) :");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -57,19 +57,19 @@ void test_sort()
     int size = 1 << 3;
     Points table[size];
     printf("Initializing and generating a table of %d elements\n", size);
-    
+
     initialize(table, 0, size);
-    
+
     int nb_hash = 0;
     generate(table, 0, size, t, &nb_hash);
-    
+
     printf("Table before sort :");
     for (Points *current = table, *last = table + size; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n");
-    
+
     sort(table, 0, size - 1);
-    
+
     printf("Table after sort :");
     for (Points *current = table, *last = table + size; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -174,7 +174,9 @@ void test_export()
 
 void test_precomp()
 {
-    char file_name[] = "tableTestPrecomp.dat";
-    int size = (int)ceil(m0);
-    precomp(file_name, &size, t);
+    char table_name[] = "tableTestPrecomp.dat";
+    int table_size = (int)ceil(m0);
+    int table_id = 0;
+    int table_width = t;
+    precomp(table_name, table_id, &table_size, table_width);
 }

@@ -19,12 +19,12 @@ int main(void)
   // test_clean();
   // test_rice();
   // test_export();
-  test_precomp();
+  // test_precomp();
 
   // test_ceri();
   // test_import();
   // test_chain();
-  // test_rebuild();
+  test_rebuild();
   // test_attack_existing();
   // test_attack_existing_n();
   // test_attack_random();
