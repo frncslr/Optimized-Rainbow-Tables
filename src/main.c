@@ -9,7 +9,7 @@ int main(void)
   // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
-  test_compute();
+  // test_compute();
   // test_dict();
 
   // test_initialize();
@@ -19,7 +19,7 @@ int main(void)
   // test_clean();
   // test_rice();
   // test_export();
-  // test_precomp();
+  test_precomp();
 
   // test_ceri();
   // test_import();

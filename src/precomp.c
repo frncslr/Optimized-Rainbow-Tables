@@ -12,12 +12,11 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size, int ti, int *nb_hash)
+void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash)
 {
     unsigned char hashed[SHA256_DIGEST_LENGTH];
     for (Points *current = table, *last = table + table_size; current < last; current++)
-        for (int col_id = 0; col_id < ti; col_id++, (*nb_hash)++)
-            hash_reduction(&(current->end), hashed, table_id, col_id);
+        compute(&(current->end), hashed, table_id, 0, table_width, nb_hash);
 }
 
 void swap(Points *a, Points *b)
@@ -138,13 +137,16 @@ void precomp(char *file_name, int *size, int width)
     initialize(table, 0, *size);
     time_t i = time(NULL);
     printf("Time to initialize\t: %lds\n", i - s);
+    
     int nb_hash = 0;
     generate(table, 0, *size, width, &nb_hash);
     time_t g = time(NULL);
     printf("Time to generate\t: %lds\n", g - i);
+    
     sort(table, 0, *size - 1);
     time_t q = time(NULL);
     printf("Time to sort\t\t: %lds\n", q - g);
+    
     clean(table, size, perfect);
     time_t c = time(NULL);
     printf("Time to clean\t\t: %lds\n", c - q);
@@ -153,10 +155,12 @@ void precomp(char *file_name, int *size, int width)
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
+    
     c = time(NULL);
     export(table, *size, file_name);
     time_t e = time(NULL);
     printf("Time to export\t\t: %lds\n", e - c);
+    
     printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(m0) * t, nb_hash);
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(mt), *size);
     printf("Table :");

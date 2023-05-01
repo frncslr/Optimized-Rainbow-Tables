@@ -66,7 +66,9 @@ void test_compute()
     printf("Random point %%N\t\t: %u\n", point);
     uint32_t copy = point;
     printf("Copy of point\t\t: %u\n", copy);
-    compute(&point, hashed, table_id, col_start, col_end);
+    int nb_hash = 0;
+    compute(&point, hashed, table_id, col_start, col_end, &nb_hash);
+    printf("Number of hashes\t: %d\n", nb_hash);
     printf("Point computed\t\t: %u\n", point);
 
     hash_reduction(&copy, hashed, table_id, col_start);
