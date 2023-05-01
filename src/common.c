@@ -2,7 +2,6 @@
 
 void print_hash(unsigned char *hashed_value)
 {
-    printf("Digest is : ");
     for (unsigned int i = 0; i < 32; i++)
         printf("%02x", hashed_value[i]);
     printf("\n");

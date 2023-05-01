@@ -41,44 +41,34 @@ void import(Pair **dict, int dict_size, const char *file_name)
     free((void *)table);
 }
 
-void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id, int table_width)
+void chain(uint32_t *point, unsigned char *cipher, unsigned char *hashed, int table_id, int col_id, int table_width)
 {
     int nb_hash = 0;
-    reduction(point, hashed, table_id, col_id);
+    reduction(point, cipher, table_id, col_id);
     compute(point, hashed, table_id, col_id + 1, table_width, &nb_hash);
 }
 
 void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_id)
 {
-    // for (int col = 0; col < col_id; col++)
-    //     hash_reduction(candidate, hashed, table_id, col);
     int nb_hash = 0;
     compute(candidate, hashed, table_id, 0, col_id, &nb_hash);
 }
 
-void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int width, uint32_t *result, char *found)
+void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int table_id, int table_width, uint32_t *result, char *found)
 {
-    int table_id = 0;
     Pair *pair;
-    uint32_t endpoint = 0;
-    uint32_t candidate;
-    for (int col = width - 1; col >= 0; col--)
+    uint32_t startpoint, endpoint;
+    for (int col = table_width - 1; col >= 0; col--)
     {
-        strcpy((char *restrict)hashed, (char *restrict)cipher);
-        // if (col == 25)
-        //     printf("Chaining in : endpoint = %u, table_id = %d, col_id = %d, table_width = %d\n", endpoint, table_id, col, width);
-        chain(&endpoint, hashed, table_id, col, width);
-        // if (col == 25)
-        //     printf("End %d : %u\n", col, endpoint);
+        chain(&endpoint, cipher, hashed, table_id, col, table_width);
         if ((pair = get(endpoint, dict)) != NULL)
         {
-            candidate = pair->start;
-            rebuild(&candidate, hashed, table_id, col);
-            hash(&candidate, hashed);
+            startpoint = pair->start;
+            rebuild(&startpoint, hashed, table_id, col);
+            hash(&startpoint, hashed);
             if (!strcmp((const char *)cipher, (const char *)hashed))
             {
-                // printf("Match for start point : %u in column : %d\n", pair->start, col);
-                *result = (int)candidate;
+                *result = startpoint;
                 *found = 1;
                 break;
             }
