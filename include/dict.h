@@ -16,6 +16,7 @@ typedef struct pair
 
 int idx(uint32_t);
 Pair *get(uint32_t, Pair **);
+char present(uint32_t, Pair **);
 void put(uint32_t, uint32_t, Pair **);
 void free_chain(Pair *);
 void free_dict(Pair **);

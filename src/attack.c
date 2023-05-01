@@ -44,6 +44,8 @@ void import(Pair **dict, int dict_size, const char *file_name)
 void chain(uint32_t *point, unsigned char *hashed, int table_id, int col_id, int width)
 {
     reduction(point, hashed, table_id, col_id);
+    // if (col_id == 25)
+    //     printf("Reduction in chain : %u\n", *point);
     for (++col_id; col_id < width; col_id++)
         hash_reduction(point, hashed, table_id, col_id);
 }
@@ -54,15 +56,20 @@ void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_i
         hash_reduction(candidate, hashed, table_id, col);
 }
 
-void attack(unsigned char *cipher, unsigned char *hashed, Pair ** dict, int width, uint32_t *result, char *found)
+void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int width, uint32_t *result, char *found)
 {
     int table_id = 0;
     Pair *pair;
-    uint32_t endpoint, candidate;
+    uint32_t endpoint = 0;
+    uint32_t candidate;
     for (int col = width - 1; col >= 0; col--)
     {
         strcpy((char *restrict)hashed, (char *restrict)cipher);
+        // if (col == 25)
+        //     printf("Chaining in : endpoint = %u, table_id = %d, col_id = %d, table_width = %d\n", endpoint, table_id, col, width);
         chain(&endpoint, hashed, table_id, col, width);
+        // if (col == 25)
+        //     printf("End %d : %u\n", col, endpoint);
         if ((pair = get(endpoint, dict)) != NULL)
         {
             candidate = pair->start;

@@ -53,6 +53,14 @@ void test_import()
 void test_chain()
 {
     printf("# Test chain :\n");
+
+    int table_id = 0;
+    int table_size = 1 << 4;
+    int table_width = t;
+    char file_name[] = "tableTestAttackExisting.dat";
+
+    precomp(file_name, &table_size, table_width);
+
     int size = 6;
     int table_id = 0;
     int table_width = 30;
@@ -65,6 +73,7 @@ void test_chain()
     for (int i = 0; i < size; i++)
         printf("\n%u\t:\t%u", table[i].start, table[i].end);
     printf("\n");
+
     srand(time(NULL));
     uint32_t init = (uint32_t)rand() % size;
     Points point = {init, init};
@@ -98,13 +107,13 @@ void test_rebuild()
     printf("StartPoint rebuild : {%u : %u}\n\n", point.start, point.end);
 }
 
-void test_attack()
+void test_attack_existing()
 {
-    printf("# Test attack :\n");
+    printf("# Test attack existing:\n");
     int table_id = 0;
     int table_size = 1 << 4;
     int table_width = t;
-    char file_name[] = "tableTestAttack.dat";
+    char file_name[] = "tableTestAttackExisting.dat";
 
     // precomp(file_name, &table_size, table_width);
 
@@ -115,13 +124,15 @@ void test_attack()
     unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
     srand(time(NULL));
-    uint32_t plain = (uint32_t)rand() % table_size;
-    // uint32_t plain = 284;
-    printf("Random start point : %u\n", plain);
+    uint32_t plain;
+    do
+    {
+        plain = (uint32_t)rand() % table_size;
+    } while (!present(plain, dict));
+    printf("Random existing start point : %u\n", plain);
     int col_id = rand() % table_width;
-    // int col_id = 388;
     printf("Random column : %d\n", col_id);
-    for (int col = 0; col < col_id; col++)
+    for (int col = 0; col <= col_id; col++)
         hash_reduction(&plain, hashed, table_id, col);
     printf("Random existing plain : %u\n", plain);
     hash(&plain, cipher);
@@ -141,18 +152,18 @@ void test_attack()
     free_dict(dict);
 }
 
-void test_attack_n()
+void test_attack_existing_n()
 {
-    printf("# Test attack n :\n");
-    int n = 10000;
+    printf("# Test attack existing n :\n");
+    int n = 100;
     int nb = 0;
 
     int table_id = 0;
     int table_size = 1 << 4;
     int table_width = t;
-    char file_name[] = "tableTestAttackN.dat";
+    char file_name[] = "tableTestAttackExistingN.dat";
 
-    // precomp(file_name, &table_size, table_width);
+    precomp(file_name, &table_size, table_width);
 
     int dict_size = table_size;
     static Pair *dict[DICTSIZE];
@@ -161,7 +172,7 @@ void test_attack_n()
 
     unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
-    uint32_t plain;
+    uint32_t plain, sp;
     int col_id;
     char found;
     srand(time(NULL));
@@ -170,20 +181,32 @@ void test_attack_n()
     {
         found = 0;
         plain = (uint32_t)rand() % table_size;
+        if (!present(plain, dict))
+        {
+            i--;
+            continue;
+        }
+        sp = plain;
         col_id = rand() % table_width;
-        for (int col = 0; col < col_id; col++)
+        for (int col = 0; col <= col_id; col++)
             hash_reduction(&plain, hashed, table_id, col);
         hash(&plain, cipher);
         uint32_t result;
         attack(cipher, hashed, dict, table_width, &result, &found);
         if (found && (result == plain))
+        {
             nb++;
+        }
+        else
+        {
+            printf("Not recovered : sp : %u \t& col : %d \tfound : %d\n", sp, col_id, present(sp, dict));
+        }
     }
     printf("Number of plains recovered : %u / %u\n (%f%%)", nb, n, (100 * (float)nb / n));
     printf("\n");
 }
 
-void test_attack2()
+void test_attack_random()
 {
     printf("# Test attack 2 :\n");
     int table_id = 0;
@@ -201,18 +224,25 @@ void test_attack2()
     unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
     srand(time(NULL));
     // uint32_t plain = (uint32_t)rand() % table_size;
-    uint32_t plain = 284;
+    uint32_t plain = 3;
+    // uint32_t plain = 284;
     printf("Random start point : %u\n", plain);
+    printf("Start point %u present : %d\n", plain, present(plain, dict));
     // int col_id = rand() % table_width;
-    int col_id = 388;
+    // int col_id = 388;
+    int col_id = 25;
     printf("Random column : %d\n", col_id);
-    for (int col = 0; col < col_id; col++)
+    for (int col = 0; col <= col_id; col++)
         hash_reduction(&plain, hashed, table_id, col);
     printf("Random existing plain : %u\n", plain);
     hash(&plain, cipher);
     print_hash(cipher);
     uint32_t result;
     char found = 0;
+    uint32_t clair = plain;
+    printf("Chaining out : clair = %u, table_id = %d, col_id = %d, table_width = %d\n", clair, table_id, col_id, table_width);
+    chain(&clair, hashed, table_id, col_id, table_width);
+    printf("endpoint chained %d: %u\n", col_id, clair);
     attack(cipher, hashed, dict, table_width, &result, &found);
     if (found && (result == plain))
     {

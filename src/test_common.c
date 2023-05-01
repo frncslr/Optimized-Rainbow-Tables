@@ -112,6 +112,22 @@ void test_dict()
     {
         printf("Pair {%u : %u} found in dictionary\n", pair1031->end, pair1031->start);
     }
+    if (present(32, dict))
+    {
+        printf("Start point 32 found in dictionary\n");
+    }
+    else
+    {
+        printf("Start point 32 not found in dictionary T_T\n");
+    }
+    if (present(14, dict))
+    {
+        printf("Start point 14 found in dictionary\n");
+    }
+    else
+    {
+        printf("Start point 14 not found in dictionary T_T\n");
+    }
     printf("\n");
     free_dict(dict);
 }
