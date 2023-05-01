@@ -51,6 +51,30 @@ void test_hash_reduction()
     printf("\n");
 }
 
+void test_compute()
+{
+    printf("# Test compute :\n");
+    srand(time(NULL));
+    int table_id = rand() % 4;
+    printf("Random table id %%4\t: %u\n", table_id);
+    int col_start = rand() % (t - 3);
+    printf("Random column start %%997: %u\n", col_start);
+    int col_end = col_start + 3;
+    unsigned char hashed[SHA256_DIGEST_LENGTH];
+
+    uint32_t point = rand() % N;
+    printf("Random point %%N\t\t: %u\n", point);
+    uint32_t copy = point;
+    printf("Copy of point\t\t: %u\n", copy);
+    compute(&point, hashed, table_id, col_start, col_end);
+    printf("Point computed\t\t: %u\n", point);
+
+    hash_reduction(&copy, hashed, table_id, col_start);
+    hash_reduction(&copy, hashed, table_id, col_start + 1);
+    hash_reduction(&copy, hashed, table_id, col_start + 2);
+    printf("Copy hash reduced \t: %u\n", copy);
+}
+
 void test_dict()
 {
     printf("# Test dict :\n");

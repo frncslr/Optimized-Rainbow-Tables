@@ -9,6 +9,7 @@ int main(void)
   // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
+  test_compute();
   // test_dict();
 
   // test_initialize();
@@ -24,8 +25,8 @@ int main(void)
   // test_import();
   // test_chain();
   // test_rebuild();
-  test_attack_existing();
-  test_attack_existing_n();
+  // test_attack_existing();
+  // test_attack_existing_n();
   // test_attack_random();
   return 0;
 }

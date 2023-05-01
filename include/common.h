@@ -27,12 +27,12 @@ void print_hash(unsigned char *);
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);
 void hash_reduction(uint32_t *, unsigned char *, int, int);
+void compute(uint32_t *, unsigned char *, int, int, int);
 
 typedef struct
 {
     uint32_t start;
     uint32_t end;
 } Points;
-
 
 #endif

@@ -62,8 +62,8 @@ void test_chain()
     precomp(file_name, &table_size, table_width);
 
     int size = 6;
-    int table_id = 0;
-    int table_width = 30;
+    // int table_id = 0;
+    // int table_width = 30;
     Points table[size];
     printf("Initializing and generating a table of %d elements\n", size);
     initialize(table, table_id, size);
