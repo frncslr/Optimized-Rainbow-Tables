@@ -161,8 +161,16 @@ void precomp(char *table_name, int table_id, int *table_size, int table_width)
     time_t e = time(NULL);
     printf("Time to export\t\t: %lds\n", e - c);
 
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(m0) * t, nb_hash);
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n", (int)ceil(mt), *table_size);
+    int expec_hash = (int)ceil(m0) * t;
+    int diff_hash = expec_hash - nb_hash;
+    double diff_hash_perc = diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+
+    int expec_ep = (int)ceil(mt);
+    int diff_ep = expec_ep - *table_size;
+    double diff_ep_perc = diff_ep * 100 / expec_ep;
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f)\n", expec_ep, *table_size, diff_ep, diff_ep_perc);
+    
     printf("Table (6 first):");
     for (Points *current = perfect, *last = perfect + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
