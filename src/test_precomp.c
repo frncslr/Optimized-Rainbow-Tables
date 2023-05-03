@@ -40,7 +40,6 @@ void test_generate()
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", table_size, i - s);
 
-
     unsigned char buffer[SHA256_DIGEST_LENGTH];
     generate(table, table_id, table_size, table_width, &nb_hash, buffer);
     time_t g = time(NULL);
@@ -84,30 +83,25 @@ void test_sort()
     printf("Table after sort (first 16) :");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
-    
+
     printf("\n\n");
     free((void *)table);
-
 }
 
 void test_clean()
 {
     printf("# Test clean :\n");
     int table_id = 1;
-    int table_size = 1 << 15;
+    int table_size = 1 << 14;
     int table_width = t;
-    Points *table, *perfect;
+    Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
         printf("Memory allocation problem");
         exit(ERROR_ALLOC);
     }
-    if ((perfect = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-    {
-        printf("Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    printf("Initializing, generating and sorting table %d of %d elements\n", table_id, table_size);
+
+    printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
 
     initialize(table, table_id, table_size);
 
@@ -115,24 +109,17 @@ void test_clean()
     unsigned char buffer[SHA256_DIGEST_LENGTH];
     generate(table, table_id, table_size, table_width, &nb_hash, buffer);
 
+    int htable_size = table_size;
+    clean(table, &table_size, htable_size);
+    
     sort(table, table_size);
 
-    printf("Table before clean (first 16) : (%u rows)\n", table_size);
+    printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("%u\t:\t%u\n", current->start, current->end);
-    
-    clean(table, &table_size, perfect);
-    if ((perfect = (Points *)realloc((void *)perfect, table_size * sizeof(Points))) == NULL)
-    {
-        printf("Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    printf("Table cleaned (first 16): (%u rows)\n", table_size);
-    for (Points *current = perfect, *last = perfect + 20; current < last; current++)
-        printf("%u\t:\t%u\n", current->start, current->end);
+
     printf("\n");
     free((void *)table);
-    free((void *)perfect);
 }
 
 void test_rice()
@@ -149,23 +136,63 @@ void test_rice()
 void test_export()
 {
     printf("# Test export :\n");
-    int size = 6;
-    Points table[size];
-    printf("Initializing and exporting a table of %d elements\n", size);
-    initialize(table, 0, size);
-    export(table, size, "tableTestExport.dat");
-    printf("Table (exported):");
-    for (int i = 0; i < size; i++)
-        printf("\n%u\t:\t%u", table[i].start, table[i].end);
-    printf("\n\n");
+    int table_id = 1;
+    int table_size = 1 << 14;
+    int table_width = t;
+    char table_name[] = "tableTestExport.dat";
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+
+    initialize(table, table_id, table_size);
+
+    int nb_hash = 0;
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
+
+    int htable_size = 17000;
+    clean(table, &table_size, htable_size);
+
+    sort(table, table_size);
+
+    printf("Exporting table %d intialized, generated, cleaned and sorted\n", table_id);
+    export(table, table_size, table_name);
+
+    printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
+    for (Points *current = table, *last = table + 16; current < last; current++)
+        printf("%u\t:\t%u\n", current->start, current->end);
+
+    printf("\n");
+    free((void *)table);
 }
 
-void test_precomp()
+void test_precompute()
 {
-    printf("# Test precomp :\n");
-    char table_name[] = "tableTestPrecomp.dat";
-    int table_id = 0;
+    printf("# Test precompute :\n");
+    int table_id = 3;
     int table_size = (int)ceil(m0);
+    int expec_size = (int)ceil(mt);
     int table_width = t;
-    precomp(table_name, table_id, &table_size, table_width);
+    char table_name[] = "tableTestPrecomp";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(table_name, extension);
+    int nb_filtres = 1;
+    int filtres[] = {table_width};
+    int nb_hash = 0;
+
+    printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
+    precompute(table_name, table_id, &table_size, table_width, filtres, nb_filtres, &nb_hash);
+
+    int expec_hash = (int)ceil(m0) * t;
+    int diff_hash = expec_hash - nb_hash;
+    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+
+    int diff_size = table_size - expec_size;
+    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 }

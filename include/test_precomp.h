@@ -10,6 +10,6 @@ void test_sort();
 void test_clean();
 void test_rice();
 void test_export();
-void test_precomp();
+void test_precompute();
 
 #endif

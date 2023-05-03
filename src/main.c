@@ -16,10 +16,10 @@ int main(void)
   // test_initialize();
   // test_generate();
   // test_sort();
-  test_clean();
+  // test_clean();
   // test_rice();
   // test_export();
-  // test_precomp();
+  test_precompute();
 
   // test_ceri();
   // test_import();

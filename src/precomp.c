@@ -75,35 +75,42 @@ void quicksort(Points *array, int low, int high)
     }
 }
 
-void sort(Points* table, int table_size){
-    quicksort(table, 0, table_size-1);
+void sort(Points *table, int table_size)
+{
+    quicksort(table, 0, table_size - 1);
 }
 
-void clean(Points *table, int *table_size, Points *perfect)
+void clean(Points *table, int *table_size, int htable_size)
 {
-    uint32_t previous = table->end - 1;
-    Points *new = perfect;
-    uint32_t perfect_size = 0;
-    for (Points *current = table, *last = table + *table_size; current < last; current++)
-        if (current->end > previous)
-        {
-            *new = *current;
-            previous = (new ++)->end;
-            perfect_size++;
-        }
-    *table_size = new - perfect;
+    Hashtable htable;
+    if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
 
-    // Hashtable htable;
-    // if ((htable = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
-    // {
-    //     fprintf(stderr, "Memory allocation problem\n");
-    //     exit(ERROR_ALLOC);
-    // }
-    // init(htable, *table_size);
-    // *table_size = 0;
-    // for (Points *current = table, *last = table + *table_size; current < last; current++)
-    //     *table_size += insert(htable, *table_size, current->start, current->end);
-    
+    init(htable, htable_size);
+
+    int nb_inserted = 0;
+    for (Points *current = table, *last = table + *table_size; current < last; current++)
+        nb_inserted += insert(htable, htable_size, current->start, current->end);
+    *table_size = nb_inserted;
+
+    if ((table = (Points *)realloc((void *)table, *table_size * sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+
+    for (Points *inserted = table, *current = htable, *last = htable + htable_size; current < last; current++)
+        if (current->end != MAX)
+        {
+            inserted->start = current->start;
+            inserted->end = current->end;
+            inserted++;
+        }
+
+    free((void *)htable);
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
@@ -133,64 +140,42 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void precomp(char *table_name, int table_id, int *table_size, int table_width)
+void precompute(char *table_name, int table_id, int *table_size, int table_width, int *filtres, int nb_filtres, int *nb_hash)
 {
-    printf("Precomputing table %d of initially %d elements\n", table_id, *table_size);
-    // strcat(file_name, "0.dat");
-    Points *table, *perfect;
+    Points *table;
     if ((table = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    if ((perfect = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
+
     time_t s = time(NULL);
     initialize(table, table_id, *table_size);
     time_t i = time(NULL);
     printf("Time to initialize\t: %lds\n", i - s);
 
-    int nb_hash = 0;
     unsigned char buffer[SHA256_DIGEST_LENGTH];
-    generate(table, table_id, *table_size, table_width, &nb_hash, buffer);
+    i = time(NULL);
+    generate(table, table_id, *table_size, table_width, nb_hash, buffer);
     time_t g = time(NULL);
     printf("Time to generate\t: %lds\n", g - i);
 
-    sort(table, *table_size);
-    time_t q = time(NULL);
-    printf("Time to sort\t\t: %lds\n", q - g);
 
-    clean(table, table_size, perfect);
+    int htable_size = (int)ceil(1.5 * mt);
+    g = time(NULL);
+    clean(table, table_size, htable_size);
     time_t c = time(NULL);
-    printf("Time to clean\t\t: %lds\n", c - q);
-    if ((perfect = (Points *)realloc((void *)perfect, *table_size * sizeof(Points))) == NULL)
-    {
-        printf("Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
+    printf("Time to clean\t\t: %lds\n", c - g);
 
     c = time(NULL);
+    sort(table, *table_size);
+    time_t q = time(NULL);
+    printf("Time to sort\t\t: %lds\n", q - c);
+
+    q = time(NULL);
     export(table, *table_size, table_name);
     time_t e = time(NULL);
-    printf("Time to export\t\t: %lds\n", e - c);
+    printf("Time to export\t\t: %lds\n", e - q);
 
-    int expec_hash = (int)ceil(m0) * t;
-    int diff_hash = expec_hash - nb_hash;
-    double diff_hash_perc = diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-    int expec_ep = (int)ceil(mt);
-    int diff_ep = expec_ep - *table_size;
-    double diff_ep_perc = diff_ep * 100 / expec_ep;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f)\n", expec_ep, *table_size, diff_ep, diff_ep_perc);
-
-    printf("Table (6 first):");
-    for (Points *current = perfect, *last = perfect + 16; current < last; current++)
-        printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n");
     free((void *)table);
-    free((void *)perfect);
 }
