@@ -7,7 +7,6 @@
 void test_initialize();
 void test_generate();
 void test_sort();
-void test_gen_sort();
 void test_clean();
 void test_rice();
 void test_export();

@@ -11,12 +11,12 @@ int main(void)
   // test_hash_reduction();
   // test_compute();
   // test_dict();
+  // test_hashtable();
 
   // test_initialize();
   // test_generate();
   // test_sort();
-  // test_gen_sort();
-  // test_clean();
+  test_clean();
   // test_rice();
   // test_export();
   // test_precomp();
@@ -28,7 +28,7 @@ int main(void)
   // test_chain_rebuild();
   // test_attack_existing();
   // test_attack_existing_n();
-  test_attack_random();
+  // test_attack_random();
   // test_attack_random_n();
   return 0;
 }

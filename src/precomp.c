@@ -12,11 +12,10 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash)
+void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash, unsigned char *buffer)
 {
-    unsigned char hashed[SHA256_DIGEST_LENGTH];
     for (Points *current = table, *last = table + table_size; current < last; current++)
-        compute(&(current->end), hashed, table_id, 0, table_width, nb_hash);
+        compute(&(current->end), buffer, table_id, 0, table_width, nb_hash);
 }
 
 void swap(Points *a, Points *b)
@@ -58,7 +57,7 @@ int partition(Points *array, int low, int high)
     return (i + 1);
 }
 
-void sort(Points *array, int low, int high)
+void quicksort(Points *array, int low, int high)
 {
     if (low < high)
     {
@@ -69,11 +68,15 @@ void sort(Points *array, int low, int high)
         int pi = partition(array, low, high);
 
         // recursive call on the left of pivot
-        sort(array, low, pi - 1);
+        quicksort(array, low, pi - 1);
 
         // recursive call on the right of pivot
-        sort(array, pi + 1, high);
+        quicksort(array, pi + 1, high);
     }
+}
+
+void sort(Points* table, int table_size){
+    quicksort(table, 0, table_size-1);
 }
 
 void clean(Points *table, int *table_size, Points *perfect)
@@ -89,6 +92,18 @@ void clean(Points *table, int *table_size, Points *perfect)
             perfect_size++;
         }
     *table_size = new - perfect;
+
+    // Hashtable htable;
+    // if ((htable = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
+    // {
+    //     fprintf(stderr, "Memory allocation problem\n");
+    //     exit(ERROR_ALLOC);
+    // }
+    // init(htable, *table_size);
+    // *table_size = 0;
+    // for (Points *current = table, *last = table + *table_size; current < last; current++)
+    //     *table_size += insert(htable, *table_size, current->start, current->end);
+    
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
@@ -139,11 +154,12 @@ void precomp(char *table_name, int table_id, int *table_size, int table_width)
     printf("Time to initialize\t: %lds\n", i - s);
 
     int nb_hash = 0;
-    generate(table, table_id, *table_size, table_width, &nb_hash);
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, *table_size, table_width, &nb_hash, buffer);
     time_t g = time(NULL);
     printf("Time to generate\t: %lds\n", g - i);
 
-    sort(table, 0, *table_size - 1);
+    sort(table, *table_size);
     time_t q = time(NULL);
     printf("Time to sort\t\t: %lds\n", q - g);
 
@@ -170,7 +186,7 @@ void precomp(char *table_name, int table_id, int *table_size, int table_width)
     int diff_ep = expec_ep - *table_size;
     double diff_ep_perc = diff_ep * 100 / expec_ep;
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f)\n", expec_ep, *table_size, diff_ep, diff_ep_perc);
-    
+
     printf("Table (6 first):");
     for (Points *current = perfect, *last = perfect + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);

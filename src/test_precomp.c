@@ -23,8 +23,8 @@ void test_initialize()
 void test_generate()
 {
     printf("# Test generate :\n");
-    int table_id = 0;
-    int table_size = 1 << 4;
+    int table_id = 3;
+    int table_size = 1 << 10;
     int table_width = t;
     int nb_hash = 0;
 
@@ -40,11 +40,14 @@ void test_generate()
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", table_size, i - s);
 
-    generate(table, table_id, table_size, table_width, &nb_hash);
+
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
+
     printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %d\n", table_size * table_width, nb_hash);
-    printf("Table (first 16 rows) :");
+    printf("Table (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n\n");
@@ -54,94 +57,79 @@ void test_generate()
 void test_sort()
 {
     printf("# Test sort :\n");
-    int size = 1 << 3;
-    Points table[size];
-    printf("Initializing and generating a table of %d elements\n", size);
-
-    initialize(table, 0, size);
-
-    int nb_hash = 0;
-    generate(table, 0, size, t, &nb_hash);
-
-    printf("Table before sort :");
-    for (Points *current = table, *last = table + size; current < last; current++)
-        printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n");
-
-    sort(table, 0, size - 1);
-
-    printf("Table after sort :");
-    for (Points *current = table, *last = table + size; current < last; current++)
-        printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n\n");
-}
-
-void test_gen_sort()
-{
-    printf("# Test gen sort :\n");
-    int size = 1 << 15;
+    int table_id = 1;
+    int table_size = 1 << 15;
+    int table_width = t;
     Points *table;
-    if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
         printf("Memory allocation problem");
         exit(ERROR_ALLOC);
     }
-    printf("Table size : %d\n", size);
-    time_t s = time(NULL);
-    initialize(table, 0, size);
-    time_t i = time(NULL);
-    printf("Time to init %d : %lds\n", size, i - s);
+    printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
+
+    initialize(table, table_id, table_size);
+
     int nb_hash = 0;
-    generate(table, 0, size, t, &nb_hash);
-    time_t g = time(NULL);
-    printf("Time to gen %d : %lds\n", size, g - i);
-    sort(table, 0, size - 1);
-    time_t q = time(NULL);
-    printf("Time to sort %d : %lds\n", size, q - g);
-    for (Points *current = table, *last = table + 20; current < last; current++)
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
+
+    printf("Table before sort (first 16):");
+    for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
+    printf("\n");
+
+    sort(table, table_size);
+
+    printf("Table after sort (first 16) :");
+    for (Points *current = table, *last = table + 16; current < last; current++)
+        printf("\n%u\t:\t%u", current->start, current->end);
+    
     printf("\n\n");
     free((void *)table);
+
 }
 
 void test_clean()
 {
     printf("# Test clean :\n");
-    int size = 1 << 15;
+    int table_id = 1;
+    int table_size = 1 << 15;
+    int table_width = t;
     Points *table, *perfect;
-    if ((table = (Points *)calloc(size, sizeof(Points))) == NULL)
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+    if ((perfect = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    if ((perfect = (Points *)calloc(size, sizeof(Points))) == NULL)
-    {
-        printf("Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    printf("Table size : %d\n", size);
-    time_t s = time(NULL);
-    initialize(table, 0, size);
-    time_t i = time(NULL);
-    printf("Time to init %d : %lds\n", size, i - s);
+    printf("Initializing, generating and sorting table %d of %d elements\n", table_id, table_size);
+
+    initialize(table, table_id, table_size);
+
     int nb_hash = 0;
-    generate(table, 0, size, t, &nb_hash);
-    time_t g = time(NULL);
-    printf("Time to gen %d : %lds\n", size, g - i);
-    sort(table, 0, size - 1);
-    time_t q = time(NULL);
-    printf("Time to sort %d : %lds\n", size, q - g);
-    clean(table, &size, perfect);
-    time_t c = time(NULL);
-    printf("Time to clean %d : %lds\n", size, c - q);
-    if ((perfect = (Points *)realloc((void *)perfect, size * sizeof(Points))) == NULL)
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
+
+    sort(table, table_size);
+
+    printf("Table before clean (first 16) : (%u rows)\n", table_size);
+    for (Points *current = table, *last = table + 16; current < last; current++)
+        printf("%u\t:\t%u\n", current->start, current->end);
+    
+    clean(table, &table_size, perfect);
+    if ((perfect = (Points *)realloc((void *)perfect, table_size * sizeof(Points))) == NULL)
     {
         printf("Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    printf("Table cleaned : (%u rows)", size);
+    printf("Table cleaned (first 16): (%u rows)\n", table_size);
     for (Points *current = perfect, *last = perfect + 20; current < last; current++)
-        printf("\n%u\t:\t%u", current->start, current->end);
+        printf("%u\t:\t%u\n", current->start, current->end);
     printf("\n");
     free((void *)table);
     free((void *)perfect);
