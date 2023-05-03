@@ -8,6 +8,7 @@ void test_ceri();
 void test_import();
 void test_chain();
 void test_rebuild();
+void test_chain_rebuild();
 void test_attack_existing();
 void test_attack_existing_n();
 void test_attack_random();

@@ -43,7 +43,7 @@ void test_generate()
     generate(table, table_id, table_size, table_width, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
-
+    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %d\n", table_size * table_width, nb_hash);
     printf("Table (first 16 rows) :");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -174,9 +174,10 @@ void test_export()
 
 void test_precomp()
 {
+    printf("# Test precomp :\n");
     char table_name[] = "tableTestPrecomp.dat";
-    int table_size = (int)ceil(m0);
     int table_id = 0;
+    int table_size = (int)ceil(m0);
     int table_width = t;
     precomp(table_name, table_id, &table_size, table_width);
 }

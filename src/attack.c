@@ -44,14 +44,19 @@ void import(Pair **dict, int dict_size, const char *file_name)
 void chain(uint32_t *point, unsigned char *cipher, unsigned char *hashed, int table_id, int col_id, int table_width)
 {
     int nb_hash = 0;
+    // printf("** chain point : %u\n", *point);
     reduction(point, cipher, table_id, col_id);
+    // printf("** chain col_id : %d\n", col_id);
     compute(point, hashed, table_id, col_id + 1, table_width, &nb_hash);
+    // printf("** chain nb hash : %d\n", nb_hash);
 }
 
 void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_id)
 {
     int nb_hash = 0;
     compute(candidate, hashed, table_id, 0, col_id, &nb_hash);
+    // printf("reb nb hash : %d\n", nb_hash);
+
 }
 
 void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int table_id, int table_width, uint32_t *result, char *found)
@@ -64,9 +69,18 @@ void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int table
         if ((pair = get(endpoint, dict)) != NULL)
         {
             startpoint = pair->start;
+            printf("** start point : %u\n", startpoint);
+            
             rebuild(&startpoint, hashed, table_id, col);
+            printf("** rebuilt : %u\n", startpoint);
+            
             hash(&startpoint, hashed);
-            if (!strcmp((const char *)cipher, (const char *)hashed))
+            printf("** cipher : ");
+            print_hash(cipher);
+            printf("** hashed : ");
+            print_hash(hashed);
+            
+            if (!memcmp((const char *)cipher, (const char *)hashed, SHA256_DIGEST_LENGTH))
             {
                 *result = startpoint;
                 *found = 1;

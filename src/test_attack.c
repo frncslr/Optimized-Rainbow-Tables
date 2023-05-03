@@ -127,11 +127,55 @@ void test_rebuild()
     printf("Point rebuilt \t\t\t: %u\n\n", point);
 }
 
+void test_chain_rebuild()
+{
+    int table_id = 1;
+    int table_size = 1;
+    int table_width = 1000;
+    Points table[1];
+    initialize(table, table_id, table_size);
+    int nb_hash = 0;
+    generate(table, table_id, table_size, table_width, &nb_hash);
+    printf("Table : {%u : %u}\n", table->start, table->end);
+
+    static unsigned char buffer[SHA256_DIGEST_LENGTH];
+
+    int col_id = 990;
+    printf("COL : %d\n", col_id);
+
+    uint32_t ip = table->start;
+    compute(&ip, buffer, table_id, 0, col_id, &nb_hash);
+    printf("IP  : %u\n", ip);
+
+    hash(&ip, buffer);
+    uint32_t cp;
+    chain(&cp, buffer, buffer, table_id, col_id, table_width);
+    if (cp == table->end)
+        printf("CP  : %u\n", cp);
+
+    uint32_t rp = table->start;
+    rebuild(&rp, buffer, table_id, col_id);
+    if (rp == ip)
+        printf("RP  : %u\n", rp);
+
+    uint32_t cep = table->start;
+    hash(&cep, buffer);
+    chain(&cep, buffer, buffer, table_id, 0, table_width);
+    if (cep == table->end)
+        printf("CEP : %u\n", cep);
+
+    uint32_t rep = table->start;
+    rebuild(&rep, buffer, table_id, table_width);
+    if (rep == table->end)
+        printf("REP : %u\n", rep);
+    printf("\n");
+}
+
 void test_attack_existing()
 {
     printf("# Test attack existing:\n");
     srand(time(NULL));
-    int table_id = 3;
+    int table_id = 1;
     printf("Chosen table id : %d\n", table_id);
     int table_size = 1 << 10;
     int table_width = t;
@@ -181,11 +225,11 @@ void test_attack_existing()
 void test_attack_existing_n()
 {
     printf("# Test attack existing n :\n");
-    int n = 10000;
+    int n = 1000;
     int nb = 0;
 
     int table_id = 1;
-    int table_size = 1 << 10;
+    int table_size = (int)ceil(m0);
     int table_width = t;
     char file_name[] = "tableTestAttackExistingN.dat";
 
@@ -212,6 +256,7 @@ void test_attack_existing_n()
             i--;
             continue;
         }
+        
         sp = plain;
         col_id = rand() % table_width;
         compute(&plain, hashed, table_id, 0, col_id, &nb_hash);
@@ -236,7 +281,7 @@ void test_attack_random()
 {
     printf("# Test attack random:\n");
     srand(time(NULL));
-    int table_id = 3;
+    int table_id = 0;
     printf("Chosen table id : %d\n", table_id);
     int table_size = (int)ceil(m0);
     int table_width = t;
@@ -247,15 +292,14 @@ void test_attack_random()
 
     precomp(table_name, table_id, &table_size, table_width);
 
-    int dict_size = table_size;
     static Pair *dict[DICTSIZE];
-    import(dict, dict_size, table_name);
+    import(dict, table_size, table_name);
 
-    static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
-    static unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
     uint32_t point = rand() % N;
     printf("Random plain \t: %u\n", point);
 
+    static unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
+    static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     hash(&point, cipher);
 
     uint32_t result;
@@ -269,6 +313,53 @@ void test_attack_random()
     {
         printf("Hash not recovered T_T\n");
     }
+    printf("**Plain expected : %u\n", point);
+    print_hash(cipher);
+    printf("\n");
+    free_dict(dict);
+}
+
+void test_attack_random_n()
+{
+    printf("# Test attack random n :\n");
+    int n = 1;
+    int nb = 0;
+
+    int table_id = 0;
+    int table_size = (int)ceil(m0);
+    int table_width = t;
+    char file_name[] = "tableTestAttackRandomN.dat";
+
+    // precomp(file_name, table_id, &table_size, table_width);
+
+    int dict_size = table_size;
+    dict_size = 31921;
+    static Pair *dict[DICTSIZE];
+    import(dict, dict_size, file_name);
+    printf("Dictionary imported\n");
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
+    static unsigned char hashed[SHA256_DIGEST_LENGTH + 1];
+    uint32_t plain, result;
+    char found;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        found = 0;
+        plain = rand() % N;
+        // plain = 112921;
+        // printf("** plain : %u\n", plain);
+        hash(&plain, cipher);
+        attack(cipher, hashed, dict, table_id, table_width, &result, &found);
+        if (found && (result == plain))
+        {
+            nb++;
+            printf("found : %u & sp : %d\n", result, present(result, dict));
+        }
+    }
+    printf("Plains recovered : %u / %u (%3.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("**Plain expected : %u\n", plain);
     printf("\n");
     free_dict(dict);
 }

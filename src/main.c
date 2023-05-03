@@ -25,8 +25,10 @@ int main(void)
   // test_import();
   // test_chain();
   // test_rebuild();
+  // test_chain_rebuild();
   // test_attack_existing();
-  test_attack_existing_n();
-  // test_attack_random();
+  // test_attack_existing_n();
+  test_attack_random();
+  // test_attack_random_n();
   return 0;
 }

@@ -25,6 +25,11 @@ void hash_reduction(uint32_t *point, unsigned char *hashed, int table_id, int co
 
 void compute(uint32_t *point, unsigned char *hashed, int table_id, int col_start, int col_end, int *nb_hash)
 {
+    // printf("** col_start : %d \t col_end : %d\n", col_start, col_end);
     for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
+    {
+        // if (col_id == 990)
+        //     printf("** 990 = %u\n", *point);
         hash_reduction(point, hashed, table_id, col_id);
+    }
 }
