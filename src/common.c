@@ -40,7 +40,7 @@ void init(Hashtable hashtable, int size)
         current->end = MAX;
 }
 
-void insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
+int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
 {
     Points *point;
     int i;
@@ -51,16 +51,12 @@ void insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
         {
             point->end = end;
             point->start = start;
-            break;
+            return 1;
         }
         if ((point->end) == end)
-            break;
+            return 0;
     }
-    if (i == size)
-    {
-        fprintf(stderr, "Hashtable insertion problem\n");
-        exit(ERROR_INSERT);
-    }
+    return 0;
 }
 
 Points *search(Hashtable hashtable, int size, uint32_t end)

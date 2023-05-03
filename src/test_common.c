@@ -138,6 +138,38 @@ void test_dict()
     {
         printf("Pair {%u : %u} found in dictionary\n", pair1031->end, pair1031->start);
     }
+
+    printf("\n\n");
+    Pair *pairrrr = dict[31];
+    if (pairrrr == NULL)
+    {
+        printf("NUUUUUL\n");
+    }
+    else
+    {
+        printf("%u : %u\n", pairrrr->start, pairrrr->end);
+        pairrrr = pairrrr->next;
+        if (pairrrr == NULL)
+        {
+            printf("NUUUUUL aussi\n");
+        }
+        else
+        {
+            printf("%u : %u\n", pairrrr->start, pairrrr->end);
+        }
+    }
+    printf("Fetching key 31\n");
+    pair31 = get(31, dict);
+    if (pair31 == NULL)
+    {
+        printf("Key 31 not found in dictionary\n");
+    }
+    else
+    {
+        printf("Pair {%u : %u} found in dictionary\n", pair31->end, pair31->start);
+    }
+    printf("\n\n");
+
     if (present(32, dict))
     {
         printf("Start point 32 found in dictionary\n");
@@ -156,4 +188,85 @@ void test_dict()
     }
     printf("\n");
     free_dict(dict);
+}
+
+void test_hashtable()
+{
+    printf("# Test hashtable :\n");
+
+    Hashtable htable;
+    int size = 10;
+    if ((htable = (Points *)calloc(size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(111);
+    }
+    init(htable, size);
+    printf("Hashtable empty\n");
+
+    printf("Fetching endpoint 31\n");
+    Points *points31 = search(htable, size, 31);
+    if (points31 == NULL)
+    {
+        printf("Endpoint 31 not found in hashtable\n");
+    }
+    else
+    {
+        printf("Points {%u : %u} found in hashtable\n", points31->start, points31->end);
+    }
+
+    printf("Adding points {32 : 31} to hashtable\n");
+    printf("Inserted : %d\n",insert(htable, size, 32, 31));
+    printf("Fetching endpoint 31\n");
+    points31 = search(htable, size, 31);
+    if (points31 == NULL)
+    {
+        printf("Endpoint 31 not found in hashtable\n");
+    }
+    else
+    {
+        printf("Points {%u : %u} found in hashtable\n", points31->start, points31->end);
+    }
+
+    printf("Trying add points {33 : 31} to hashtable\n");
+    printf("Inserted : %d\n",insert(htable, size, 33, 31));
+    printf("Fetching endpoint 31\n");
+    points31 = search(htable, size, 31);
+    if (points31 == NULL)
+    {
+        printf("Endpoint 31 not found in hashtable\n");
+    }
+    else
+    {
+        printf("Points {%u : %u} found in hashtable\n", points31->start, points31->end);
+    }
+
+    printf("Fetching endpoint 1031\n");
+    Points *points1031 = search(htable, size, 1031);
+    if (points1031 == NULL)
+    {
+        printf("Endpoint 1031 not found in hashtable\n");
+    }
+    else
+    {
+        printf("Points {%u : %u} found in hashtable\n", points1031->start, points1031->end);
+    }
+    printf("Adding points {1032 : 1031} to hashtable\n");
+    printf("Inserted : %d\n",insert(htable, size, 1032, 1031));
+    printf("Fetching endpoint 1031\n");
+    points1031 = search(htable, size, 1031);
+    if (points1031 == NULL)
+    {
+        printf("Endpoint 1031 not found in hashtable\n");
+    }
+    else
+    {
+        printf("Points {%u : %u} found in hashtable\n", points1031->start, points1031->end);
+    }
+
+    printf("idx 1 : {%u : %u}\n", htable[1].start, htable[1].end);
+    printf("idx 2 : {%u : %u}\n", htable[2].start, htable[2].end);
+
+    printf("\n");
+    free(htable);
 }

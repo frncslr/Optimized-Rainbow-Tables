@@ -36,11 +36,11 @@ typedef struct
     uint32_t end;
 } Points;
 
-#define MAX (1 << 31)
+#define MAX ((uint32_t) 1 << 31)
 
 typedef Points *Hashtable;
 
 void init(Hashtable, int);
-void insert(Hashtable, int, uint32_t, uint32_t);
+int insert(Hashtable, int, uint32_t, uint32_t);
 Points *search(Hashtable, int, uint32_t);
 #endif
