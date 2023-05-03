@@ -9,5 +9,6 @@ void test_reduction();
 void test_hash_reduction();
 void test_compute();
 void test_dict();
+void test_hashtable();
 
 #endif

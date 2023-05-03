@@ -2,7 +2,7 @@
 
 void print_hash(unsigned char *hashed_value)
 {
-    for (unsigned int i = 0; i < 32; i++)
+    for (unsigned int i = 0; i < SHA256_DIGEST_LENGTH; i++)
         printf("%02x", hashed_value[i]);
     printf("\n");
 }
@@ -32,4 +32,46 @@ void compute(uint32_t *point, unsigned char *hashed, int table_id, int col_start
         //     printf("** 990 = %u\n", *point);
         hash_reduction(point, hashed, table_id, col_id);
     }
+}
+
+void init(Hashtable hashtable, int size)
+{
+    for (Points *current = hashtable, *last = hashtable + size; current < last; current++)
+        current->end = MAX;
+}
+
+void insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
+{
+    Points *point;
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        point = hashtable + (end + i) % size;
+        if (point->end == MAX)
+        {
+            point->end = end;
+            point->start = start;
+            break;
+        }
+        if ((point->end) == end)
+            break;
+    }
+    if (i == size)
+    {
+        fprintf(stderr, "Hashtable insertion problem\n");
+        exit(ERROR_INSERT);
+    }
+}
+
+Points *search(Hashtable hashtable, int size, uint32_t end)
+{
+    Points *point;
+    int i, idx = end %size;
+    for (i = 0; i < size; i++)
+    {
+        point = hashtable + (idx + i) % size;
+        if (point->end == end)
+            return point;
+    }
+    return NULL;
 }

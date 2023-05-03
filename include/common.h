@@ -6,6 +6,7 @@
 #define ERROR_FCLOSE 1223
 #define ERROR_FWRITE 1103
 #define ERROR_FREAD 1049
+#define ERROR_INSERT 1031
 
 #define N (1 << 24)
 #define r 20.0
@@ -35,4 +36,11 @@ typedef struct
     uint32_t end;
 } Points;
 
+#define MAX (1 << 31)
+
+typedef Points *Hashtable;
+
+void init(Hashtable, int);
+void insert(Hashtable, int, uint32_t, uint32_t);
+Points *search(Hashtable, int, uint32_t);
 #endif
