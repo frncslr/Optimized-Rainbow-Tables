@@ -113,6 +113,35 @@ void clean(Points *table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
+void cover(Points *table, int table_id, int table_size, int table_width, int *coverage, unsigned char *buffer)
+{
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    *coverage = 0;
+    uint32_t point;
+    for (Points *current = table, *last = table + table_size; current < last; current++)
+    {
+        point = current->start;
+        for (int col_id = 0; col_id < table_width; col_id++)
+        {
+            if (!covered[point])
+            {
+                covered[point] = 1;
+                ++*coverage;
+            }
+            hash_reduction(&point, buffer, table_id, col_id);
+        }
+        if (point != current->end)
+            printf("Error : EP not obtained\n");
+    }
+    free(covered);
+}
+
 void rice(uint32_t *end, uint32_t value, char k)
 {
     *end = ((1 << (value >> k)) - 1) << (k + 1) | (value & ((1 << k) - 1));
@@ -140,7 +169,7 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void precompute(char *table_name, int table_id, int *table_size, int table_width, int *filtres, int nb_filtres, int *nb_hash)
+void precompute(char *table_name, int table_id, int *table_size, int table_width, int *nb_hash, int *coverage)
 {
     Points *table;
     if ((table = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
@@ -160,7 +189,6 @@ void precompute(char *table_name, int table_id, int *table_size, int table_width
     time_t g = time(NULL);
     printf("Time to generate\t: %lds\n", g - i);
 
-
     int htable_size = (int)ceil(1.5 * mt);
     g = time(NULL);
     clean(table, table_size, htable_size);
@@ -171,6 +199,11 @@ void precompute(char *table_name, int table_id, int *table_size, int table_width
     sort(table, *table_size);
     time_t q = time(NULL);
     printf("Time to sort\t\t: %lds\n", q - c);
+
+    q = time(NULL);
+    cover(table, table_id, *table_size, table_width, coverage, buffer);
+    time_t f = time(NULL);
+    printf("Time to cover\t\t: %lds\n", f-q);
 
     q = time(NULL);
     export(table, *table_size, table_name);

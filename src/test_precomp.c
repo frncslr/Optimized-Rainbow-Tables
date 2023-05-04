@@ -111,7 +111,7 @@ void test_clean()
 
     int htable_size = table_size;
     clean(table, &table_size, htable_size);
-    
+
     sort(table, table_size);
 
     printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
@@ -120,6 +120,36 @@ void test_clean()
 
     printf("\n");
     free((void *)table);
+}
+
+void test_cover()
+{
+    printf("# Test coverage :\n");
+    int table_id = 1;
+    int table_size = 1 << 3;
+    int table_width = t;
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+
+    initialize(table, table_id, table_size);
+
+    int nb_hash = 0;
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
+
+
+    printf("Table %d of %d rows initialized :\n", table_id, table_size);
+    for (Points *current = table, *last = table + table_size; current < last; current++)
+        printf("%u\t:\t%u\n", current->start, current->end);
+
+    int coverage = 0;
+    cover(table, table_id, table_size, table_width, &coverage, buffer);
+
+    printf("Coverage of the table : %d\n\n", coverage);
 }
 
 void test_rice()
@@ -176,16 +206,15 @@ void test_precompute()
     int table_size = (int)ceil(m0);
     int expec_size = (int)ceil(mt);
     int table_width = t;
-    char table_name[] = "tableTestPrecomp";
+    char table_name[30] = "tableTestPrecomp";
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_filtres = 1;
-    int filtres[] = {table_width};
     int nb_hash = 0;
+    int coverage = 0;
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-    precompute(table_name, table_id, &table_size, table_width, filtres, nb_filtres, &nb_hash);
+    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
 
     int expec_hash = (int)ceil(m0) * t;
     int diff_hash = expec_hash - nb_hash;
@@ -195,4 +224,7 @@ void test_precompute()
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+
+    double coverage_perc = (double)coverage *100 / N;
+    printf("Coverage of the table \t: %d (%3.2f%%)\n\n", coverage, coverage_perc);
 }

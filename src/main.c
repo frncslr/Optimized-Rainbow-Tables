@@ -17,6 +17,7 @@ int main(void)
   // test_generate();
   // test_sort();
   // test_clean();
+  // test_cover();
   // test_rice();
   // test_export();
   test_precompute();
