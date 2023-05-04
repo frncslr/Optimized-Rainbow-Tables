@@ -20,13 +20,13 @@ int main(void)
   // test_cover();
   // test_rice();
   // test_export();
-  test_precompute();
+  // test_precompute();
 
   // test_ceri();
   // test_import();
   // test_chain();
   // test_rebuild();
-  // test_chain_rebuild();
+  test_chain_rebuild();
   // test_attack_existing();
   // test_attack_existing_n();
   // test_attack_random();

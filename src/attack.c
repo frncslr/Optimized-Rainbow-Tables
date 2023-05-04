@@ -5,37 +5,37 @@ void ceri(uint32_t *end, uint32_t value, char k, int nb_bits)
     *end = ((nb_bits - k - 1) << k) | (value & ((1 << k) - 1));
 }
 
-void import(Pair **dict, int dict_size, const char *file_name)
+void import(Hashtable htable, int htable_size, const char *table_name)
 {
     FILE *file;
-    if ((file = fopen(file_name, "rb")) == (FILE *)NULL)
+    if ((file = fopen(table_name, "rb")) == (FILE *)NULL)
     {
-        fprintf(stderr, "Opening file problem : %s\n", file_name);
+        fprintf(stderr, "Opening file problem : %s\n", table_name);
         exit(ERROR_FOPEN);
     }
 
     Points *table;
-    if ((table = (Points *)calloc(dict_size, sizeof(Points))) == NULL)
+    if ((table = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
 
-    if ((fread(table, sizeof(Points), dict_size, file)) != (size_t)dict_size)
+    if ((fread(table, sizeof(Points), htable_size, file)) != (size_t)htable_size)
     {
-        fprintf(stderr, "Reading file problem : %s\n", file_name);
+        fprintf(stderr, "Reading file problem : %s\n", table_name);
         exit(ERROR_FWRITE);
     }
 
     if (fclose(file))
     {
-        fprintf(stderr, "Closing file problem : %s", file_name);
+        fprintf(stderr, "Closing file problem : %s", table_name);
         exit(ERROR_FCLOSE);
     }
 
-    for (Points *current = table, *last = table + dict_size; current < last; current++)
+    for (Points *current = table, *last = table + htable_size; current < last; current++)
     {
-        put(current->end, current->start, dict);
+        insert(htable, htable_size, current->start, current->end);
     }
 
     free((void *)table);
@@ -69,16 +69,16 @@ void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int table
         if ((pair = get(endpoint, dict)) != NULL)
         {
             startpoint = pair->start;
-            printf("** start point : %u\n", startpoint);
+            // printf("** start point : %u\n", startpoint);
             
             rebuild(&startpoint, hashed, table_id, col);
-            printf("** rebuilt : %u\n", startpoint);
+            // printf("** rebuilt : %u\n", startpoint);
             
             hash(&startpoint, hashed);
-            printf("** cipher : ");
-            print_hash(cipher);
-            printf("** hashed : ");
-            print_hash(hashed);
+            // printf("** cipher : ");
+            // print_hash(cipher);
+            // printf("** hashed : ");
+            // print_hash(hashed);
             
             if (!memcmp((const char *)cipher, (const char *)hashed, SHA256_DIGEST_LENGTH))
             {
