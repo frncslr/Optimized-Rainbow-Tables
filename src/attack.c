@@ -44,45 +44,31 @@ void import(Hashtable htable, int htable_size, const char *table_name)
 void chain(uint32_t *point, unsigned char *cipher, unsigned char *hashed, int table_id, int col_id, int table_width)
 {
     int nb_hash = 0;
-    // printf("** chain point : %u\n", *point);
     reduction(point, cipher, table_id, col_id);
-    // printf("** chain col_id : %d\n", col_id);
     compute(point, hashed, table_id, col_id + 1, table_width, &nb_hash);
-    // printf("** chain nb hash : %d\n", nb_hash);
 }
 
 void rebuild(uint32_t *candidate, unsigned char *hashed, int table_id, int col_id)
 {
     int nb_hash = 0;
     compute(candidate, hashed, table_id, 0, col_id, &nb_hash);
-    // printf("reb nb hash : %d\n", nb_hash);
-
 }
 
-void attack(unsigned char *cipher, unsigned char *hashed, Pair **dict, int table_id, int table_width, uint32_t *result, char *found)
+void attack(unsigned char *cipher, Hashtable htable, int htable_size, int table_id, int table_width, uint32_t *result, char *found, unsigned char *buffer)
 {
-    Pair *pair;
-    uint32_t startpoint, endpoint;
+    Points *points;
+    uint32_t candidate, endpoint;
     for (int col = table_width - 1; col >= 0; col--)
     {
-        chain(&endpoint, cipher, hashed, table_id, col, table_width);
-        if ((pair = get(endpoint, dict)) != NULL)
+        chain(&endpoint, cipher, buffer, table_id, col, table_width);
+        if ((points = search(htable, htable_size, endpoint)) != NULL)
         {
-            startpoint = pair->start;
-            // printf("** start point : %u\n", startpoint);
-            
-            rebuild(&startpoint, hashed, table_id, col);
-            // printf("** rebuilt : %u\n", startpoint);
-            
-            hash(&startpoint, hashed);
-            // printf("** cipher : ");
-            // print_hash(cipher);
-            // printf("** hashed : ");
-            // print_hash(hashed);
-            
-            if (!memcmp((const char *)cipher, (const char *)hashed, SHA256_DIGEST_LENGTH))
+            candidate = points->start;
+            rebuild(&candidate, buffer, table_id, col);
+            hash(&candidate, buffer);
+            if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
             {
-                *result = startpoint;
+                *result = candidate;
                 *found = 1;
                 break;
             }
