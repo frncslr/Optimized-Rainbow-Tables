@@ -12,10 +12,10 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash, unsigned char *buffer)
+void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash)
 {
     for (Points *current = table, *last = table + table_size; current < last; current++)
-        compute(&(current->end), buffer, table_id, 0, table_width, nb_hash);
+        compute(&(current->end), table_id, 0, table_width, nb_hash);
 }
 
 void swap(Points *a, Points *b)
@@ -113,33 +113,28 @@ void clean(Points *table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
-void cover(Points *table, int table_id, int table_size, int table_width, int *coverage, unsigned char *buffer)
+void precompute(Points *table, int table_id, int *table_size, int table_width, int *nb_hash)
 {
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
+    time_t s = time(NULL);
+    initialize(table, table_id, *table_size);
+    time_t i = time(NULL);
+    printf("Time to initialize\t: %lds\n", i - s);
 
-    *coverage = 0;
-    uint32_t point;
-    for (Points *current = table, *last = table + table_size; current < last; current++)
-    {
-        point = current->start;
-        for (int col_id = 0; col_id < table_width; col_id++)
-        {
-            if (!covered[point])
-            {
-                covered[point] = 1;
-                ++*coverage;
-            }
-            hash_reduction(&point, buffer, table_id, col_id);
-        }
-        if (point != current->end)
-            printf("Error : EP not obtained\n");
-    }
-    free(covered);
+    i = time(NULL);
+    generate(table, table_id, *table_size, table_width, nb_hash);
+    time_t g = time(NULL);
+    printf("Time to generate\t: %lds\n", g - i);
+
+    int htable_size = (int)ceil(1.5 * mt);
+    g = time(NULL);
+    clean(table, table_size, htable_size);
+    time_t c = time(NULL);
+    printf("Time to clean\t\t: %lds\n", c - g);
+
+    c = time(NULL);
+    sort(table, *table_size);
+    time_t q = time(NULL);
+    printf("Time to sort\t\t: %lds\n", q - c);
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
@@ -169,46 +164,31 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void precompute(char *table_name, int table_id, int *table_size, int table_width, int *nb_hash, int *coverage)
+void cover(Points *table, int table_id, int table_size, int table_width, int *coverage)
 {
-    Points *table;
-    if ((table = (Points *)calloc(*table_size, sizeof(Points))) == NULL)
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
 
-    time_t s = time(NULL);
-    initialize(table, table_id, *table_size);
-    time_t i = time(NULL);
-    printf("Time to initialize\t: %lds\n", i - s);
-
-    unsigned char buffer[SHA256_DIGEST_LENGTH];
-    i = time(NULL);
-    generate(table, table_id, *table_size, table_width, nb_hash, buffer);
-    time_t g = time(NULL);
-    printf("Time to generate\t: %lds\n", g - i);
-
-    int htable_size = (int)ceil(1.5 * mt);
-    g = time(NULL);
-    clean(table, table_size, htable_size);
-    time_t c = time(NULL);
-    printf("Time to clean\t\t: %lds\n", c - g);
-
-    c = time(NULL);
-    sort(table, *table_size);
-    time_t q = time(NULL);
-    printf("Time to sort\t\t: %lds\n", q - c);
-
-    q = time(NULL);
-    cover(table, table_id, *table_size, table_width, coverage, buffer);
-    time_t f = time(NULL);
-    printf("Time to cover\t\t: %lds\n", f-q);
-
-    q = time(NULL);
-    export(table, *table_size, table_name);
-    time_t e = time(NULL);
-    printf("Time to export\t\t: %lds\n", e - q);
-
-    free((void *)table);
+    *coverage = 0;
+    uint32_t point;
+    for (Points *current = table, *last = table + table_size; current < last; current++)
+    {
+        point = current->start;
+        for (int col_id = 0; col_id < table_width; col_id++)
+        {
+            if (!covered[point])
+            {
+                covered[point] = 1;
+                ++*coverage;
+            }
+            hash_reduction(&point, table_id, col_id);
+        }
+        if (point != current->end)
+            printf("Error : EP not obtained\n");
+    }
+    free(covered);
 }

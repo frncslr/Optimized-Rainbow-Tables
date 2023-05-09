@@ -27,8 +27,10 @@
 void print_hash(unsigned char *);
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);
-void hash_reduction(uint32_t *, unsigned char *, int, int);
-void compute(uint32_t *, unsigned char *, int, int, int, int *);
+void hash_reduction(uint32_t *, int, int);
+void compute(uint32_t *, int, int, int, int *);
+
+static unsigned char buffer[SHA256_DIGEST_LENGTH];
 
 typedef struct
 {
@@ -36,7 +38,8 @@ typedef struct
     uint32_t end;
 } Points;
 
-#define MAX ((uint32_t) 1 << 31)
+#define MAX ((uint32_t)1 << 31)
+#define LOAD_FACTOR 1.5
 
 typedef Points *Hashtable;
 

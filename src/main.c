@@ -1,4 +1,3 @@
-#include "../include/precomp.h"
 #include "../include/test_common.h"
 #include "../include/test_precomp.h"
 #include "../include/test_attack.h"
@@ -17,10 +16,11 @@ int main(void)
   // test_generate();
   // test_sort();
   // test_clean();
-  // test_cover();
+  // test_precompute();
   // test_rice();
   // test_export();
-  // test_precompute();
+  // test_cover();
+  // test_precompute_full();
 
   // test_ceri();
   // test_import();

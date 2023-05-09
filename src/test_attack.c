@@ -47,7 +47,7 @@ void test_import()
     printf("\n");
 
     Hashtable htable;
-    int htable_size = table_size;
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -55,11 +55,11 @@ void test_import()
     }
     init(htable, htable_size);
     printf("Importing table in dictionary\n");
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
     printf("Fetching endpoints in hashtable\n");
     Points *points;
-    for (uint32_t end = 0; end < (uint32_t)htable_size * 4; end++)
+    for (uint32_t end = 0; end < (uint32_t)table_size * 4; end++)
     {
         if ((points = search(htable, htable_size, end)) != NULL)
         {
@@ -87,14 +87,20 @@ void test_chain()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_hash = 0;
-    int coverage = 0;
 
-    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    int nb_hash = 0;
+    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    export(table, table_size, table_name);
 
     Hashtable htable;
-    // 2^18 500 :   0 : 47840 ; 1 47840: ; 2 : 47840; 3 : 47840
-    int htable_size = table_size;
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -102,9 +108,8 @@ void test_chain()
     }
     init(htable, htable_size);
     printf("Importing table in hashtable\n");
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
-    unsigned char buffer[SHA256_DIGEST_LENGTH];
     unsigned char cipher[SHA256_DIGEST_LENGTH];
     uint32_t point;
     srand(time(NULL));
@@ -117,7 +122,7 @@ void test_chain()
     printf("Random existing column \t\t: %d\n", col_id);
 
     nb_hash = 0;
-    compute(&point, buffer, table_id, 0, col_id, &nb_hash);
+    compute(&point, table_id, 0, col_id, &nb_hash);
     printf("Intermediary point computed \t: %u\n", point);
     printf("Number of hashes done \t\t: %d\n", nb_hash);
 
@@ -126,7 +131,7 @@ void test_chain()
     print_hash(cipher);
 
     nb_hash = 0;
-    chain(&point, cipher, table_id, table_width, col_id, &nb_hash, buffer);
+    chain(&point, cipher, table_id, table_width, col_id, &nb_hash);
     printf("End point chained \t\t: %u\n", point);
     printf("Number of hashes done \t\t: %d\n", nb_hash);
     printf("Cipher after chain \t\t: ");
@@ -140,7 +145,8 @@ void test_chain()
     {
         printf("End point not found in dictionary\n\n");
     }
-    free(htable);
+    free((void *)htable);
+    free((void *)table);
 }
 
 void test_rebuild()
@@ -148,7 +154,6 @@ void test_rebuild()
     printf("# Test rebuild :\n");
     int table_id = 0;
     int table_width = t;
-    unsigned char buffer[SHA256_DIGEST_LENGTH];
 
     srand(time(NULL));
     uint32_t point = (uint32_t)rand() % N;
@@ -158,10 +163,10 @@ void test_rebuild()
     int col_id = rand() % table_width;
     printf("Random column\t: %d\n", col_id);
     for (int col = 0; col < col_id; col++)
-        hash_reduction(&copy, buffer, table_id, col);
-    printf("Copy hred \t: %u\n", copy);
+        hash_reduction(&copy, table_id, col);
+    printf("Copy hashred \t: %u\n", copy);
     int nb_hash = 0;
-    rebuild(&point, table_id, col_id, &nb_hash, buffer);
+    rebuild(&point, table_id, col_id, &nb_hash);
     printf("Point rebuilt\t: %u\n", point);
     printf("Number of hashes done\t: %d\n\n", nb_hash);
 }
@@ -176,29 +181,28 @@ void test_chain_rebuild()
     initialize(table, table_id, table_size);
     int nb_hash = 0;
     unsigned char buffer[SHA256_DIGEST_LENGTH];
-    generate(table, table_id, table_size, table_width, &nb_hash, buffer);
+    generate(table, table_id, table_size, table_width, &nb_hash);
     printf("Table : {%u : %u}\n", table->start, table->end);
     printf("id : %d\n size : %d\n width : %d\n", table_id, table_size, table_width);
-
 
     int col_id = rand() % table_width;
     printf("Random column\t\t: %d\n", col_id);
 
     uint32_t ip = table->start;
-    compute(&ip, buffer, table_id, 0, col_id, &nb_hash);
+    compute(&ip, table_id, 0, col_id, &nb_hash);
     printf("Intermediary point\t: %u\n", ip);
 
     hash(&ip, buffer);
     uint32_t cp;
     nb_hash = 0;
-    chain(&cp, buffer, table_id, table_width, col_id, &nb_hash, buffer);
+    chain(&cp, buffer, table_id, table_width, col_id, &nb_hash);
     if (cp == table->end)
         printf("Chained point\t\t: %u\n", cp);
     printf("Number of hashes done\t: %d\n", nb_hash);
 
     uint32_t rp = table->start;
     nb_hash = 0;
-    rebuild(&rp, table_id, col_id, &nb_hash, buffer);
+    rebuild(&rp, table_id, col_id, &nb_hash);
     if (rp == ip)
         printf("Reduced point\t\t: %u\n", rp);
     printf("Number of hashes done\t: %d\n", nb_hash);
@@ -206,14 +210,14 @@ void test_chain_rebuild()
     uint32_t cep = table->start;
     hash(&cep, buffer);
     nb_hash = 0;
-    chain(&cep, buffer, table_id, table_width, 0, &nb_hash, buffer);
+    chain(&cep, buffer, table_id, table_width, 0, &nb_hash);
     if (cep == table->end)
         printf("Chained endpoint\t: %u\n", cep);
     printf("Number of hashes done\t: %d\n", nb_hash);
 
     uint32_t rep = table->start;
     nb_hash = 0;
-    rebuild(&rep, table_id, table_width, &nb_hash, buffer);
+    rebuild(&rep, table_id, table_width, &nb_hash);
     if (rep == table->end)
         printf("Reduced endpoint\t: %u\n", rep);
     printf("Number of hashes done\t: %d\n\n", nb_hash);
@@ -225,19 +229,26 @@ void test_attack_existing()
 
     int table_id = 1;
     int table_size = 1 << 12;
-    int table_width = 500;
+    int table_width = 2;
     printf("Table :\n index : %d\n size  : %d\n width : %d\n", table_id, table_size, table_width);
     char table_name[30] = "tableTestAttackExisting";
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
     int nb_hash = 0;
-    int coverage = 0;
 
-    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    export(table, table_size, table_name);
 
     Hashtable htable;
-    int htable_size = table_size;
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -245,22 +256,23 @@ void test_attack_existing()
     }
     init(htable, htable_size);
     printf("Importing table in hashtable\n");
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
-    unsigned char buffer[SHA256_DIGEST_LENGTH];
     unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Points *points;
     uint32_t point;
     srand(time(NULL));
     do
     {
-        point = htable[rand() % htable_size].start;
-    } while (point == MAX);
+        points = htable + rand() % htable_size;
+    } while (points->end == MAX);
+    point = points->start;
     printf("Random existing start point \t: %u\n", point);
     int col_id = rand() % table_width;
     printf("Random existing column \t\t: %d\n", col_id);
 
     nb_hash = 0;
-    compute(&point, buffer, table_id, 0, col_id, &nb_hash);
+    compute(&point, table_id, 0, col_id, &nb_hash);
     printf("Random existing point \t\t: %u\n", point);
     printf("Number of hashes done \t\t: %d\n", nb_hash);
 
@@ -269,7 +281,7 @@ void test_attack_existing()
     uint32_t result;
     char found = 0;
     nb_hash = 0;
-    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash, buffer);
+    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
     if (found && (result == point))
     {
         printf("Plain recovered \t\t: %u\n", (uint32_t)result);
@@ -278,8 +290,10 @@ void test_attack_existing()
     else
     {
         printf("Hash not recovered T_T\n");
+        printf("Number of hashes done \t\t: %d\n", nb_hash);
     }
     printf("\n");
+    free((void *)table);
     free((void *)htable);
 }
 
@@ -300,25 +314,30 @@ void test_attack_existing_n()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_hash = 0;
-    int coverage = 0;
 
-    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
-    printf("Unique endpoints in table %d : %d\n", table_id, table_size);
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    int nb_hash = 0;
+    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    export(table, table_size, table_name);
 
     Hashtable htable;
-    // int htable_size = 47840;
-    int htable_size = table_size;
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
     init(htable, htable_size);
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
-    static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
-    static unsigned char buffer[SHA256_DIGEST_LENGTH + 1];
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Points *points;
     uint32_t plain, sp;
     int col_id;
     char found;
@@ -327,20 +346,21 @@ void test_attack_existing_n()
     for (int i = 0; i < n; i++)
     {
         found = 0;
-        plain = htable[rand() % htable_size].start;
-        if (plain == MAX)
+        points = htable + (rand() % htable_size);
+        if (points->end == MAX)
         {
             i--;
             continue;
         }
+        plain = points->start;
         sp = plain;
         col_id = rand() % table_width;
         nb_hash = 0;
-        compute(&plain, buffer, table_id, 0, col_id, &nb_hash);
+        compute(&plain, table_id, 0, col_id, &nb_hash);
         hash(&plain, cipher);
         uint32_t result;
         nb_hash = 0;
-        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash, buffer);
+        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
         if (found && (result == plain))
         {
             nb++;
@@ -352,6 +372,7 @@ void test_attack_existing_n()
     }
     printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
     printf("\n");
+    free((void *)table);
     free((void *)htable);
 }
 
@@ -368,9 +389,15 @@ void test_attack_random()
     *extension = table_id + '0';
     strcat(table_name, extension);
     int nb_hash = 0;
-    int coverage = 0;
 
-    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    precompute(table, table_id, &table_size, table_width, &nb_hash);
     // printf("Unique endpoints in table %d : %d\n", table_id, table_size);
 
     Hashtable htable;
@@ -384,9 +411,8 @@ void test_attack_random()
     }
     init(htable, htable_size);
     printf("Importing table in hashtable\n");
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
-    unsigned char buffer[SHA256_DIGEST_LENGTH];
     unsigned char cipher[SHA256_DIGEST_LENGTH];
     srand(time(NULL));
     uint32_t point = rand() % N;
@@ -397,7 +423,7 @@ void test_attack_random()
     uint32_t result;
     char found = 0;
     nb_hash = 0;
-    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash, buffer);
+    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
     if (found && (result == point))
     {
         printf("Point recovered : %u\n", (uint32_t)result);
@@ -408,16 +434,17 @@ void test_attack_random()
         printf("Hash not recovered T_T\n");
     }
     printf("\n");
+    free((void *)table);
     free((void *)htable);
 }
 
 void test_attack_random_n()
 {
     printf("# Test attack random n :\n");
-    int n = 10000;
+    int n = 1000;
     int nb = 0;
 
-    int table_id = 2;
+    int table_id = 3;
     int table_size = (int)ceil(m0);
     int table_width = t;
     char table_name[30] = "tableTestAttackRandomN";
@@ -427,8 +454,17 @@ void test_attack_random_n()
     int nb_hash = 0;
     int coverage = 0;
 
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-    precompute(table_name, table_id, &table_size, table_width, &nb_hash, &coverage);
+    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    export(table, table_size, table_name);
+    cover(table, table_id, table_size, table_width, &coverage);
 
     int expec_hash = (int)ceil(m0) * t;
     int diff_hash = expec_hash - nb_hash;
@@ -446,7 +482,7 @@ void test_attack_random_n()
     printf("Coverage of the table :\n\texpected\t: %3.2f%%\n\texperimental\t: %3.2f%%\n\tdifference\t: %3.2f%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     Hashtable htable;
-    int htable_size = table_size;
+    int htable_size = (int)(1.5 * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -454,7 +490,7 @@ void test_attack_random_n()
     }
     init(htable, htable_size);
     printf("Importing table in hashtable\n");
-    import(htable, htable_size, table_name);
+    import(htable, htable_size, table_size, table_name);
 
     static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     static unsigned char buffer[SHA256_DIGEST_LENGTH + 1];
@@ -469,15 +505,17 @@ void test_attack_random_n()
         nb_hash = 0;
         plain = rand() % N;
         hash(&plain, cipher);
-        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash, buffer);
+        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
         if (found && (result == plain))
         {
             nb++;
-            total_hash += nb_hash;
         }
+        total_hash += nb_hash;
     }
     printf("Plains recovered\n: %u / %u (%3.2f%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
+
+    free(table);
     free(htable);
 }

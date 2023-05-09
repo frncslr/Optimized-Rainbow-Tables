@@ -5,9 +5,8 @@ void test_hash()
     printf("# Test hash :\n");
     uint32_t point = 123456;
     printf("Value  is : %u\n", point);
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    hash(&point, c);
-    print_hash(c);
+    hash(&point, buffer);
+    print_hash(buffer);
     printf("\n");
 }
 
@@ -17,10 +16,9 @@ void test_hash_n()
     uint32_t n = 1 << 24;
     printf("Time to hash %d : ", n);
     fflush(stdout);
-    unsigned char c[SHA256_DIGEST_LENGTH];
     time_t s = time(NULL);
     for (uint32_t point = 0; point < n; point++)
-        hash(&point, c);
+        hash(&point, buffer);
     time_t e = time(NULL);
     printf("%lds\n", e - s);
     printf("\n");
@@ -29,25 +27,23 @@ void test_hash_n()
 void test_reduction()
 {
     printf("# Test reduction :\n");
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    uint32_t point = 123456;
+    srand(time(NULL));
+    uint32_t point = rand() % N;
     printf("Value  is : %u\n", point);
-    hash(&point, c);
-    print_hash(c);
-    reduction(&point, c, 1, 0);
-    printf("Reduce is : %d\n", point);
-    printf("\n");
+    hash(&point, buffer);
+    printf("Digest is : ");
+    print_hash(buffer);
+    reduction(&point, buffer, 1, 0);
+    printf("Reduce is : %d\n\n", point);
 }
 
 void test_hash_reduction()
 {
     printf("# Test hash reduction :\n");
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    uint32_t point = 123456;
+    srand(time(NULL));
+    uint32_t point = rand() % N;
     printf("Value  is : %u\n", point);
-    hash_reduction(&point, c, 1, 0);
-    printf("Hash is : ");
-    print_hash(c);
+    hash_reduction(&point, 1, 0);
     printf("Reduce is : %d\n", point);
     printf("\n");
 }
@@ -61,7 +57,6 @@ void test_compute()
     int col_start = rand() % (t - 3);
     printf("Random column start %%%d: %u\n", t - 3, col_start);
     int col_end = col_start + 3;
-    unsigned char hashed[SHA256_DIGEST_LENGTH];
 
     uint32_t point = rand() % N;
     printf("Random point %%N\t\t: %u\n", point);
@@ -69,13 +64,13 @@ void test_compute()
     printf("Copy of point\t\t: %u\n", copy);
     int nb_hash = 0;
     printf("Computing point between columns %d & %d\n", col_start, col_end);
-    compute(&point, hashed, table_id, col_start, col_end, &nb_hash);
+    compute(&point, table_id, col_start, col_end, &nb_hash);
     printf("Number of hashes\t: %d\n", nb_hash);
     printf("Point computed\t\t: %u\n", point);
 
-    hash_reduction(&copy, hashed, table_id, col_start);
-    hash_reduction(&copy, hashed, table_id, col_start + 1);
-    hash_reduction(&copy, hashed, table_id, col_start + 2);
+    hash_reduction(&copy, table_id, col_start);
+    hash_reduction(&copy, table_id, col_start + 1);
+    hash_reduction(&copy, table_id, col_start + 2);
     printf("Copy hash reduced \t: %u\n", copy);
 }
 
