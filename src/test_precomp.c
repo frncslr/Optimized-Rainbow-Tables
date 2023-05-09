@@ -244,15 +244,9 @@ void test_precompute_full()
     precompute(table, table_id, &table_size, table_width, &nb_hash);
 
     int coverage = 0;
-    size_t q = time(NULL);
     cover(table, table_id, table_size, table_width, &coverage);
-    time_t f = time(NULL);
-    printf("Time to cover\t\t: %lds\n", f - q);
-
-    q = time(NULL);
+    
     export(table, table_size, table_name);
-    time_t e = time(NULL);
-    printf("Time to export\t\t: %lds\n", e - q);
 
     int expec_hash = (int)ceil(m0) * t;
     int diff_hash = expec_hash - nb_hash;

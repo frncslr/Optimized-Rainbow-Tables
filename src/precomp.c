@@ -115,26 +115,14 @@ void clean(Points *table, int *table_size, int htable_size)
 
 void precompute(Points *table, int table_id, int *table_size, int table_width, int *nb_hash)
 {
-    time_t s = time(NULL);
     initialize(table, table_id, *table_size);
-    time_t i = time(NULL);
-    printf("Time to initialize\t: %lds\n", i - s);
-
-    i = time(NULL);
+    
     generate(table, table_id, *table_size, table_width, nb_hash);
-    time_t g = time(NULL);
-    printf("Time to generate\t: %lds\n", g - i);
-
+    
     int htable_size = (int)ceil(1.5 * mt);
-    g = time(NULL);
     clean(table, table_size, htable_size);
-    time_t c = time(NULL);
-    printf("Time to clean\t\t: %lds\n", c - g);
-
-    c = time(NULL);
+    
     sort(table, *table_size);
-    time_t q = time(NULL);
-    printf("Time to sort\t\t: %lds\n", q - c);
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
