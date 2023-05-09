@@ -22,7 +22,6 @@
 #include <time.h>
 #include <math.h>
 #include <openssl/sha.h>
-#include "dict.h"
 
 void print_hash(unsigned char *);
 void hash(uint32_t *, unsigned char *);
