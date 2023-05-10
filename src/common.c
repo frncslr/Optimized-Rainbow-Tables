@@ -23,7 +23,7 @@ void hash_reduction(uint32_t *point, int table_id, int col_id)
     reduction(point, buffer, table_id, col_id);
 }
 
-void compute(uint32_t *point, int table_id, int col_start, int col_end, int *nb_hash)
+void compute(uint32_t *point, int table_id, int col_start, int col_end, uint32_t *nb_hash)
 {
     for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
         hash_reduction(point, table_id, col_id);

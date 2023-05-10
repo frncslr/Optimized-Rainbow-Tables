@@ -12,7 +12,7 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size, int table_width, int *nb_hash)
+void generate(Points *table, int table_id, int table_size, int table_width, uint32_t *nb_hash)
 {
     for (Points *current = table, *last = table + table_size; current < last; current++)
         compute(&(current->end), table_id, 0, table_width, nb_hash);
@@ -116,7 +116,7 @@ void clean(Points *table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
-void precompute(Points *table, int table_id, int *table_size, int table_width, int *nb_hash)
+void precompute(Points *table, int table_id, int *table_size, int table_width, uint32_t *nb_hash)
 {
     initialize(table, table_id, *table_size);
 

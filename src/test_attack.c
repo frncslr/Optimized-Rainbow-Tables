@@ -95,7 +95,7 @@ void test_chain()
         exit(ERROR_ALLOC);
     }
 
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     precompute(table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
@@ -124,7 +124,7 @@ void test_chain()
     nb_hash = 0;
     compute(&point, table_id, 0, col_id, &nb_hash);
     printf("Intermediary point computed \t: %u\n", point);
-    printf("Number of hashes done \t\t: %d\n", nb_hash);
+    printf("Number of hashes done \t\t: %u\n", nb_hash);
 
     hash(&point, cipher);
     printf("Cipher before chain \t\t: ");
@@ -133,7 +133,7 @@ void test_chain()
     nb_hash = 0;
     chain(&point, cipher, table_id, table_width, col_id, &nb_hash);
     printf("End point chained \t\t: %u\n", point);
-    printf("Number of hashes done \t\t: %d\n", nb_hash);
+    printf("Number of hashes done \t\t: %u\n", nb_hash);
     printf("Cipher after chain \t\t: ");
     print_hash(cipher);
     Points *points;
@@ -165,10 +165,10 @@ void test_rebuild()
     for (int col = 0; col < col_id; col++)
         hash_reduction(&copy, table_id, col);
     printf("Copy hashred \t: %u\n", copy);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     rebuild(&point, table_id, col_id, &nb_hash);
     printf("Point rebuilt\t: %u\n", point);
-    printf("Number of hashes done\t: %d\n\n", nb_hash);
+    printf("Number of hashes done\t: %u\n\n", nb_hash);
 }
 
 void test_chain_rebuild()
@@ -179,7 +179,7 @@ void test_chain_rebuild()
     int table_width = 1000;
     Points table[1];
     initialize(table, table_id, table_size);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     unsigned char buffer[SHA256_DIGEST_LENGTH];
     generate(table, table_id, table_size, table_width, &nb_hash);
     printf("Table : {%u : %u}\n", table->start, table->end);
@@ -198,14 +198,14 @@ void test_chain_rebuild()
     chain(&cp, buffer, table_id, table_width, col_id, &nb_hash);
     if (cp == table->end)
         printf("Chained point\t\t: %u\n", cp);
-    printf("Number of hashes done\t: %d\n", nb_hash);
+    printf("Number of hashes done\t: %u\n", nb_hash);
 
     uint32_t rp = table->start;
     nb_hash = 0;
     rebuild(&rp, table_id, col_id, &nb_hash);
     if (rp == ip)
         printf("Reduced point\t\t: %u\n", rp);
-    printf("Number of hashes done\t: %d\n", nb_hash);
+    printf("Number of hashes done\t: %u\n", nb_hash);
 
     uint32_t cep = table->start;
     hash(&cep, buffer);
@@ -213,14 +213,14 @@ void test_chain_rebuild()
     chain(&cep, buffer, table_id, table_width, 0, &nb_hash);
     if (cep == table->end)
         printf("Chained endpoint\t: %u\n", cep);
-    printf("Number of hashes done\t: %d\n", nb_hash);
+    printf("Number of hashes done\t: %u\n", nb_hash);
 
     uint32_t rep = table->start;
     nb_hash = 0;
     rebuild(&rep, table_id, table_width, &nb_hash);
     if (rep == table->end)
         printf("Reduced endpoint\t: %u\n", rep);
-    printf("Number of hashes done\t: %d\n\n", nb_hash);
+    printf("Number of hashes done\t: %u\n\n", nb_hash);
 }
 
 void test_attack_existing()
@@ -235,7 +235,7 @@ void test_attack_existing()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -274,7 +274,7 @@ void test_attack_existing()
     nb_hash = 0;
     compute(&point, table_id, 0, col_id, &nb_hash);
     printf("Random existing point \t\t: %u\n", point);
-    printf("Number of hashes done \t\t: %d\n", nb_hash);
+    printf("Number of hashes done \t\t: %u\n", nb_hash);
 
     hash(&point, cipher);
 
@@ -285,12 +285,12 @@ void test_attack_existing()
     if (found && (result == point))
     {
         printf("Plain recovered \t\t: %u\n", (uint32_t)result);
-        printf("Number of hashes done \t\t: %d\n", nb_hash);
+        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
     else
     {
         printf("Hash not recovered T_T\n");
-        printf("Number of hashes done \t\t: %d\n", nb_hash);
+        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
     printf("\n");
     free((void *)table);
@@ -322,7 +322,7 @@ void test_attack_existing_n()
         exit(ERROR_ALLOC);
     }
 
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     precompute(table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
@@ -388,7 +388,7 @@ void test_attack_random()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -427,7 +427,7 @@ void test_attack_random()
     if (found && (result == point))
     {
         printf("Point recovered : %u\n", (uint32_t)result);
-        printf("Number of hashes done \t\t: %d\n", nb_hash);
+        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
     else
     {
@@ -451,7 +451,7 @@ void test_attack_random_n()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     int coverage = 0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
@@ -473,20 +473,20 @@ void test_attack_random_n()
     export(table, table_size, table_name);
     cover(table, table_id, table_size, table_width, covered, &coverage);
 
-    int expec_hash = (int)ceil(m0) * t;
-    int diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = (int)ceil(m0) * t;
+    uint32_t diff_hash = expec_hash - nb_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int expec_size = (int)ceil(mt);
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 
     double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
     double coverage_perc = (double)coverage * 100 / N;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-    printf("Coverage of the table :\n\texpected\t: %3.2f%%\n\texperimental\t: %3.2f%%\n\tdifference\t: %3.2f%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
+    printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     Hashtable htable;
     int htable_size = (int)(1.5 * table_size);
@@ -503,7 +503,7 @@ void test_attack_random_n()
     static unsigned char buffer[SHA256_DIGEST_LENGTH + 1];
     uint32_t plain, result;
     char found;
-    int total_hash = 0;
+    uint32_t total_hash = 0;
     srand(time(NULL));
     printf("Launching %d random attacks\n", n);
     for (int i = 0; i < n; i++)
@@ -519,7 +519,7 @@ void test_attack_random_n()
         }
         total_hash += nb_hash;
     }
-    printf("Plains recovered\n: %u / %u (%3.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Plains recovered\n: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
 

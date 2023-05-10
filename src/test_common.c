@@ -62,10 +62,10 @@ void test_compute()
     printf("Random point %%N\t\t: %u\n", point);
     uint32_t copy = point;
     printf("Copy of point\t\t: %u\n", copy);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     printf("Computing point between columns %d & %d\n", col_start, col_end);
     compute(&point, table_id, col_start, col_end, &nb_hash);
-    printf("Number of hashes\t: %d\n", nb_hash);
+    printf("Number of hashes\t: %u\n", nb_hash);
     printf("Point computed\t\t: %u\n", point);
 
     hash_reduction(&copy, table_id, col_start);

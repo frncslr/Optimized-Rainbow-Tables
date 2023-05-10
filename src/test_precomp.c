@@ -27,7 +27,7 @@ void test_generate()
     printf("Table id : %d\n", table_id);
     int table_size = 1 << 10;
     int table_width = t;
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -45,7 +45,7 @@ void test_generate()
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
 
-    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %d\n", table_size * table_width, nb_hash);
+    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size * table_width, nb_hash);
     printf("Table (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -69,7 +69,7 @@ void test_sort()
 
     initialize(table, table_id, table_size);
 
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     generate(table, table_id, table_size, table_width, &nb_hash);
 
     printf("Table before sort (first 16):");
@@ -104,7 +104,7 @@ void test_clean()
 
     initialize(table, table_id, table_size);
 
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     generate(table, table_id, table_size, table_width, &nb_hash);
 
     int htable_size = table_size;
@@ -125,7 +125,6 @@ void test_precompute()
     printf("# Test precompute :\n");
     int table_id = 3;
     int table_size = (int)ceil(m0);
-    int expec_size = (int)ceil(mt);
     int table_width = t;
     char table_name[30] = "tableTestPrecomp";
     char extension[6] = "i.dat";
@@ -140,17 +139,18 @@ void test_precompute()
     }
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     precompute(table, table_id, &table_size, table_width, &nb_hash);
 
-    int expec_hash = (int)ceil(m0) * t;
-    int diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = (uint32_t)ceil(m0) * t;
+    uint32_t diff_hash = expec_hash - nb_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
+    int expec_size = (int)ceil(mt);
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 
     free((void *)table);
 }
@@ -207,7 +207,7 @@ void test_cover()
 
     initialize(table, table_id, table_size);
 
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     generate(table, table_id, table_size, table_width, &nb_hash);
 
     printf("Table %d of %d rows initialized :\n", table_id, table_size);
@@ -248,7 +248,7 @@ void test_precompute_full()
     }
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
     precompute(table, table_id, &table_size, table_width, &nb_hash);
 
     int coverage = 0;
@@ -262,19 +262,19 @@ void test_precompute_full()
 
     export(table, table_size, table_name);
 
-    int expec_hash = (int)ceil(m0) * t;
-    int diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = (int)ceil(m0) * t;
+    uint32_t diff_hash = expec_hash - nb_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 
     double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
     double coverage_perc = (double)coverage * 100 / N;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-    printf("Coverage of the table :\n\texpected\t: %3.2f%%\n\texperimental\t: %3.2f%%\n\tdifference\t: %3.2f%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
+    printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     free((void *)table);
     free((void *)covered);
@@ -294,7 +294,7 @@ void test_precompute_full_n()
     Points *table;
     int table_size;
     int total_size = 0;
-    int nb_hash = 0;
+    uint32_t nb_hash = 0;
 
     int coverage = 0;
     char *covered;
@@ -325,20 +325,20 @@ void test_precompute_full_n()
         free((void *)table);
     }
 
-    int expec_hash = nb_tables * (int)ceil(m0) * t;
-    int diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = nb_tables * (int)ceil(m0) * t;
+    uint32_t diff_hash = expec_hash - nb_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int expec_size = nb_tables * (int)ceil(mt);
     int diff_size = total_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2f%%)\n", expec_size, total_size, diff_size, diff_size_perc);
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, total_size, diff_size, diff_size_perc);
 
     double expec_coverage_perc = (1 - pow(1 -(1- pow((double)1 - mt / N, (double)t)), (double)nb_tables)) * 100;
     double coverage_perc = (double)coverage * 100 / N;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-    printf("Coverage of the table :\n\texpected\t: %3.2f%%\n\texperimental\t: %3.2f%%\n\tdifference\t: %3.2f%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
+    printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     free((void *)covered);
 }
