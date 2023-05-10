@@ -57,7 +57,7 @@ void test_sort()
 {
     printf("# Test sort :\n");
     int table_id = 1;
-    int table_size = 1 << 15;
+    int table_size = 1 << 12;
     int table_width = t;
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -91,7 +91,7 @@ void test_clean()
 {
     printf("# Test clean :\n");
     int table_id = 1;
-    int table_size = 1 << 15;
+    int table_size = 1 << 9;
     int table_width = t;
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -107,8 +107,8 @@ void test_clean()
     uint32_t nb_hash = 0;
     generate(table, table_id, table_size, table_width, &nb_hash);
 
-    int htable_size = table_size;
-    clean(table, &table_size, htable_size);
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
+    clean(&table, &table_size, htable_size);
 
     sort(table, table_size);
 
