@@ -21,14 +21,14 @@ int main(void)
   // test_export();
   // test_cover();
   // test_precompute_full();
-  test_precompute_full_n();
+  // test_precompute_full_n();
 
   // test_ceri();
   // test_import();
   // test_chain();
   // test_rebuild();
   // test_chain_rebuild();
-  // test_attack_existing();
+  test_attack_existing();
   // test_attack_existing_n();
   // test_attack_random();
   // test_attack_random_n();

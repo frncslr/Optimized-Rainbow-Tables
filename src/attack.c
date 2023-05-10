@@ -52,7 +52,7 @@ void rebuild(uint32_t *candidate, int table_id, int col_id, uint32_t *nb_hash)
     compute(candidate, table_id, 0, col_id, nb_hash);
 }
 
-void attack(unsigned char *cipher, Hashtable htable, int htable_size, int table_id, int table_width, uint32_t *result, char *found, uint32_t *nb_hash)
+void attack(unsigned char *cipher, Hashtable htable, int htable_size, int table_id, int table_width, uint32_t *result, uint32_t *nb_hash)
 {
     Points *points;
     uint32_t candidate, endpoint;
@@ -68,7 +68,6 @@ void attack(unsigned char *cipher, Hashtable htable, int htable_size, int table_
             if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
             {
                 *result = candidate;
-                *found = 1;
                 break;
             }
         }

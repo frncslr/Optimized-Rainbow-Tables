@@ -229,7 +229,7 @@ void test_attack_existing()
 
     int table_id = 1;
     int table_size = 1 << 12;
-    int table_width = 2;
+    int table_width = t;
     printf("Table :\n index : %d\n size  : %d\n width : %d\n", table_id, table_size, table_width);
     char table_name[30] = "tableTestAttackExisting";
     char extension[6] = "i.dat";
@@ -278,11 +278,10 @@ void test_attack_existing()
 
     hash(&point, cipher);
 
-    uint32_t result;
-    char found = 0;
+    uint32_t result = MAX;
     nb_hash = 0;
-    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
-    if (found && (result == point))
+    attack(cipher, htable, htable_size, table_id, table_width, &result, &nb_hash);
+    if (result == point)
     {
         printf("Plain recovered \t\t: %u\n", (uint32_t)result);
         printf("Number of hashes done \t\t: %u\n", nb_hash);
@@ -338,14 +337,13 @@ void test_attack_existing_n()
 
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
     Points *points;
-    uint32_t plain, sp;
+    uint32_t plain, result, sp;
     int col_id;
-    char found;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
     for (int i = 0; i < n; i++)
     {
-        found = 0;
+        result = MAX;
         points = htable + (rand() % htable_size);
         if (points->end == MAX)
         {
@@ -358,10 +356,9 @@ void test_attack_existing_n()
         nb_hash = 0;
         compute(&plain, table_id, 0, col_id, &nb_hash);
         hash(&plain, cipher);
-        uint32_t result;
         nb_hash = 0;
-        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
-        if (found && (result == plain))
+        attack(cipher, htable, htable_size, table_id, table_width, &result, &nb_hash);
+        if (result == plain)
         {
             nb++;
         }
@@ -420,11 +417,10 @@ void test_attack_random()
 
     hash(&point, cipher);
 
-    uint32_t result;
-    char found = 0;
+    uint32_t result = MAX;
     nb_hash = 0;
-    attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
-    if (found && (result == point))
+    attack(cipher, htable, htable_size, table_id, table_width, &result, &nb_hash);
+    if (result == point)
     {
         printf("Point recovered : %u\n", (uint32_t)result);
         printf("Number of hashes done \t\t: %u\n", nb_hash);
@@ -501,19 +497,17 @@ void test_attack_random_n()
 
     static unsigned char cipher[SHA256_DIGEST_LENGTH + 1];
     static unsigned char buffer[SHA256_DIGEST_LENGTH + 1];
-    uint32_t plain, result;
-    char found;
+    uint32_t plain, result = MAX;
     uint32_t total_hash = 0;
     srand(time(NULL));
     printf("Launching %d random attacks\n", n);
     for (int i = 0; i < n; i++)
     {
-        found = 0;
         nb_hash = 0;
         plain = rand() % N;
         hash(&plain, cipher);
-        attack(cipher, htable, htable_size, table_id, table_width, &result, &found, &nb_hash);
-        if (found && (result == plain))
+        attack(cipher, htable, htable_size, table_id, table_width, &result, &nb_hash);
+        if (result == plain)
         {
             nb++;
         }
