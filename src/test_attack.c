@@ -453,6 +453,12 @@ void test_attack_random_n()
     strcat(table_name, extension);
     int nb_hash = 0;
     int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -462,9 +468,10 @@ void test_attack_random_n()
     }
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
+
     precompute(table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
-    cover(table, table_id, table_size, table_width, &coverage);
+    cover(table, table_id, table_size, table_width, covered, &coverage);
 
     int expec_hash = (int)ceil(m0) * t;
     int diff_hash = expec_hash - nb_hash;
@@ -516,6 +523,7 @@ void test_attack_random_n()
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
 
-    free(table);
-    free(htable);
+    free((void *)table);
+    free((void *)htable);
+    free((void *)covered);
 }

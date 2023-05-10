@@ -19,7 +19,7 @@ int main(void)
   // test_precompute();
   // test_rice();
   // test_export();
-  // test_cover();
+  test_cover();
   // test_precompute_full();
 
   // test_ceri();
@@ -30,6 +30,6 @@ int main(void)
   // test_attack_existing();
   // test_attack_existing_n();
   // test_attack_random();
-  test_attack_random_n();
+  // test_attack_random_n();
   return 0;
 }

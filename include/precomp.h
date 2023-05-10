@@ -13,6 +13,6 @@ void clean(Points *, int *, int);
 void precompute(Points *, int, int *, int, int *);
 void rice(uint32_t *, uint32_t, char);
 void export(Points *, int, const char *);
-void cover(Points *, int, int, int, int *);
+void cover(Points *, int, int, int, char *, int *);
 
 #endif

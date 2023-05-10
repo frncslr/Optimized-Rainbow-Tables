@@ -116,12 +116,12 @@ void clean(Points *table, int *table_size, int htable_size)
 void precompute(Points *table, int table_id, int *table_size, int table_width, int *nb_hash)
 {
     initialize(table, table_id, *table_size);
-    
+
     generate(table, table_id, *table_size, table_width, nb_hash);
-    
+
     int htable_size = (int)ceil(1.5 * mt);
     clean(table, table_size, htable_size);
-    
+
     sort(table, *table_size);
 }
 
@@ -152,16 +152,8 @@ void export(Points *table, int table_size, const char *file_name)
     }
 }
 
-void cover(Points *table, int table_id, int table_size, int table_width, int *coverage)
+void cover(Points *table, int table_id, int table_size, int table_width, char *covered, int *coverage)
 {
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-
-    *coverage = 0;
     uint32_t point;
     for (Points *current = table, *last = table + table_size; current < last; current++)
     {
@@ -176,7 +168,9 @@ void cover(Points *table, int table_id, int table_size, int table_width, int *co
             hash_reduction(&point, table_id, col_id);
         }
         if (point != current->end)
-            printf("Error : EP not obtained\n");
+        {
+            fprintf(stderr, "Cover problem : endpoint not retrieved\n");
+            exit(ERROR_COVER);
+        }
     }
-    free(covered);
 }

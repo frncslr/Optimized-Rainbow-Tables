@@ -215,9 +215,17 @@ void test_cover()
         printf("%u\t:\t%u\n", current->start, current->end);
 
     int coverage = 0;
-    cover(table, table_id, table_size, table_width, &coverage);
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, table_size, table_width, covered, &coverage);
     printf("Coverage of the table : %d\n\n", coverage);
+
     free((void *)table);
+    free((void *)covered);
 }
 
 void test_precompute_full()
@@ -244,8 +252,14 @@ void test_precompute_full()
     precompute(table, table_id, &table_size, table_width, &nb_hash);
 
     int coverage = 0;
-    cover(table, table_id, table_size, table_width, &coverage);
-    
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, table_size, table_width, covered, &coverage);
+
     export(table, table_size, table_name);
 
     int expec_hash = (int)ceil(m0) * t;
@@ -263,4 +277,5 @@ void test_precompute_full()
     printf("Coverage of the table :\n\texpected\t: %3.2f%%\n\texperimental\t: %3.2f%%\n\tdifference\t: %3.2f%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     free((void *)table);
+    free((void *)covered);
 }

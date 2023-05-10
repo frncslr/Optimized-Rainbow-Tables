@@ -7,6 +7,7 @@
 #define ERROR_FWRITE 1103
 #define ERROR_FREAD 1049
 #define ERROR_INSERT 1031
+#define ERROR_COVER 1019
 
 #define N (1 << 24)
 #define r 20.0
