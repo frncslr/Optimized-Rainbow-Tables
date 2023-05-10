@@ -19,8 +19,9 @@ int main(void)
   // test_precompute();
   // test_rice();
   // test_export();
-  test_cover();
+  // test_cover();
   // test_precompute_full();
+  test_precompute_full_n();
 
   // test_ceri();
   // test_import();

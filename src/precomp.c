@@ -94,12 +94,15 @@ void clean(Points *table, int *table_size, int htable_size)
     int nb_inserted = 0;
     for (Points *current = table, *last = table + *table_size; current < last; current++)
         nb_inserted += insert(htable, htable_size, current->start, current->end);
-    *table_size = nb_inserted;
 
-    if ((table = (Points *)realloc((void *)table, *table_size * sizeof(Points))) == NULL)
+    if (*table_size != nb_inserted)
     {
-        printf("Memory allocation problem");
-        exit(ERROR_ALLOC);
+        *table_size = nb_inserted;
+        if ((table = (Points *)realloc((void *)table, *table_size * sizeof(Points))) == NULL)
+        {
+            printf("Memory allocation problem");
+            exit(ERROR_ALLOC);
+        }
     }
 
     for (Points *inserted = table, *current = htable, *last = htable + htable_size; current < last; current++)
