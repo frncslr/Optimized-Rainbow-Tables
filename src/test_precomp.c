@@ -91,7 +91,7 @@ void test_clean()
 {
     printf("# Test clean :\n");
     int table_id = 1;
-    int table_size = 1 << 9;
+    int table_size = 1 << 10;
     int table_width = t;
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -140,7 +140,7 @@ void test_precompute()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
     uint32_t nb_hash = 0;
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, table_width, &nb_hash);
 
     uint32_t expec_hash = (uint32_t)ceil(m0) * t;
     uint32_t diff_hash = expec_hash - nb_hash;
@@ -249,7 +249,7 @@ void test_precompute_full()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
     uint32_t nb_hash = 0;
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, table_width, &nb_hash);
 
     int coverage = 0;
     char *covered;
@@ -313,7 +313,7 @@ void test_precompute_full_n()
             exit(ERROR_ALLOC);
         }
 
-        precompute(table, table_id, &table_size, table_width, &nb_hash);
+        precompute(&table, table_id, &table_size, table_width, &nb_hash);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
@@ -335,7 +335,7 @@ void test_precompute_full_n()
     double diff_size_perc = (double)diff_size * 100 / expec_size;
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, total_size, diff_size, diff_size_perc);
 
-    double expec_coverage_perc = (1 - pow(1 -(1- pow((double)1 - mt / N, (double)t)), (double)nb_tables)) * 100;
+    double expec_coverage_perc = (1 - pow(1 - (1 - pow((double)1 - mt / N, (double)t)), (double)nb_tables)) * 100;
     double coverage_perc = (double)coverage * 100 / N;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
     printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);

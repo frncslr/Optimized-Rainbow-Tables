@@ -96,7 +96,7 @@ void test_chain()
     }
 
     uint32_t nb_hash = 0;
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -244,7 +244,7 @@ void test_attack_existing()
         exit(ERROR_ALLOC);
     }
 
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -322,9 +322,10 @@ void test_attack_existing_n()
     }
 
     uint32_t nb_hash = 0;
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
-    export(table, table_size, table_name);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // export(table, table_size, table_name);
 
+    table_size = 31882;
     Hashtable htable;
     int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
@@ -394,7 +395,7 @@ void test_attack_random()
         exit(ERROR_ALLOC);
     }
 
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, table_width, &nb_hash);
     // printf("Unique endpoints in table %d : %d\n", table_id, table_size);
 
     Hashtable htable;
@@ -465,25 +466,26 @@ void test_attack_random_n()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
 
-    precompute(table, table_id, &table_size, table_width, &nb_hash);
-    export(table, table_size, table_name);
-    cover(table, table_id, table_size, table_width, covered, &coverage);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // export(table, table_size, table_name);
+    // cover(table, table_id, table_size, table_width, covered, &coverage);
 
-    uint32_t expec_hash = (int)ceil(m0) * t;
-    uint32_t diff_hash = expec_hash - nb_hash;
-    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    // uint32_t expec_hash = (int)ceil(m0) * t;
+    // uint32_t diff_hash = expec_hash - nb_hash;
+    // double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    // printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
-    int expec_size = (int)ceil(mt);
-    int diff_size = table_size - expec_size;
-    double diff_size_perc = (double)diff_size * 100 / expec_size;
-    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+    // int expec_size = (int)ceil(mt);
+    // int diff_size = table_size - expec_size;
+    // double diff_size_perc = (double)diff_size * 100 / expec_size;
+    // printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 
-    double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
-    double coverage_perc = (double)coverage * 100 / N;
-    double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-    printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
+    // double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
+    // double coverage_perc = (double)coverage * 100 / N;
+    // double diff_coverage_perc = coverage_perc - expec_coverage_perc;
+    // printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
+    table_size = 31927;
     Hashtable htable;
     int htable_size = (int)(1.5 * table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)

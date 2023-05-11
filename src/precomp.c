@@ -116,16 +116,16 @@ void clean(Points **table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
-void precompute(Points *table, int table_id, int *table_size, int table_width, uint32_t *nb_hash)
+void precompute(Points **table, int table_id, int *table_size, int table_width, uint32_t *nb_hash)
 {
-    initialize(table, table_id, *table_size);
+    initialize(*table, table_id, *table_size);
 
-    generate(table, table_id, *table_size, table_width, nb_hash);
+    generate(*table, table_id, *table_size, table_width, nb_hash);
 
     int htable_size = (int)ceil(1.5 * mt);
-    clean(&table, table_size, htable_size);
+    clean(table, table_size, htable_size);
 
-    sort(table, *table_size);
+    sort(*table, *table_size);
 }
 
 void rice(uint32_t *end, uint32_t value, char k)
