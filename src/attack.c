@@ -52,23 +52,26 @@ void rebuild(uint32_t *candidate, int table_id, int col_id, uint32_t *nb_hash)
     compute(candidate, table_id, 0, col_id, nb_hash);
 }
 
-void attack(unsigned char *cipher, Hashtable htable, int htable_size, int table_id, int table_width, uint32_t *result, uint32_t *nb_hash)
+void attack(unsigned char *cipher, Hashtable *htables, int *htables_sizes, int nb_tables, int table_width, uint32_t *result, uint32_t *nb_hash)
 {
     Points *points;
     uint32_t candidate, endpoint;
     for (int col_id = table_width - 1; col_id >= 0; col_id--)
     {
-        chain(&endpoint, cipher, table_id, table_width, col_id, nb_hash);
-        if ((points = search(htable, htable_size, endpoint)) != NULL)
+        for (int table_id = 0; table_id < nb_tables; table_id++)
         {
-            candidate = points->start;
-            rebuild(&candidate, table_id, col_id, nb_hash);
-            hash(&candidate, buffer);
-            (*nb_hash)++;
-            if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
+            chain(&endpoint, cipher, table_id, table_width, col_id, nb_hash);
+            if ((points = search(htables[table_id], htables_sizes[table_id], endpoint)) != NULL)
             {
-                *result = candidate;
-                break;
+                candidate = points->start;
+                rebuild(&candidate, table_id, col_id, nb_hash);
+                hash(&candidate, buffer);
+                (*nb_hash)++;
+                if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
+                {
+                    *result = candidate;
+                    return;
+                }
             }
         }
     }
