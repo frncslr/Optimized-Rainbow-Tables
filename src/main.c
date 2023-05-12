@@ -1,8 +1,37 @@
-#include <stdio.h>
+#include "../include/test_common.h"
+#include "../include/test_precomp.h"
+#include "../include/test_attack.h"
 
-int main(int argc, char const *argv[])
+int main(void)
 {
-    printf("Hello World!\n");
+  // test_hash();
+  // test_hash_n();
+  // test_reduction();
+  // test_hash_reduction();
+  // test_compute();
+  // test_hashtable();
 
-    return 0;
+  // test_initialize();
+  // test_generate();
+  // test_sort();
+  // test_clean();
+  // test_precompute();
+  // test_rice();
+  // test_export();
+  // test_cover();
+  // test_precompute_full();
+  // test_precompute_full_n();
+
+  // test_ceri();
+  // test_import();
+  // test_import_m();
+  // test_chain();
+  // test_rebuild();
+  // test_chain_rebuild();
+  // test_attack_existing();
+  // test_attack_existing_n();
+  // test_attack_random();
+  // test_attack_random_n();
+  test_attack_random_n_m();
+  return 0;
 }
