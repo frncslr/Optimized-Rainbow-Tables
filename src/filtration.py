@@ -12,8 +12,12 @@ nh = 1 # number of hasing nodes
 vh = 1 # number of hash reductions per second
 nf = 1 # number of filtrating nodes
 vf = 1 # number of filtrations per second
-d0 = 0 # average overhead time per point
+do = 0 # average overhead time per point
 dc = 0 # average nodes communication time
+
+a = 1
+c0 = 0
+ca = t
 
 
 def mci(i):
@@ -35,7 +39,7 @@ def precompO(pos):
     result = 0
     for i in range(1, len(pos), 1):
         result += mci(i-1)
-    return d0*result
+    return do*result
 
 def precompC(pos):
     result = 0
@@ -51,10 +55,27 @@ def f(x):
 
 if __name__ == "__main__":
     # print(minimize(f, 2.0))
-    print(m0)
-    print(mci(0))
-    print(precompH([0, t+1]))
-    print(precompF([0, t+1]))
-    print(precompO([0, t+1]))
-    print(precompC([0, t+1]))
-    print(precompT([0, t+1]))
+    print("m0 : ", m0)
+    print("mc : ", mci(0))
+    pos = [0] * (a+1)
+    pos[0] = c0
+    pos[a] = ca
+    print(pos)
+    print("H : ", precompH(pos))
+    print("F : ", precompF(pos))
+    print("O : ", precompO(pos))
+    print("C : ", precompC(pos))
+    print("T : ", precompT(pos))
+    
+    a += 1
+    pos = [0] * (a+1)
+    pos[0] = c0
+    pos[a] = ca
+    pos[a-1] = t/3
+    print(pos)
+    print("H : ", precompH(pos))
+    print("F : ", precompF(pos))
+    print("O : ", precompO(pos))
+    print("C : ", precompC(pos))
+    print("T : ", precompT(pos))
+    print(min(664522214, 670418890))
