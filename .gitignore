@@ -3,3 +3,5 @@ output/main
 src/*.d
 src/*.o
 *.dat
+venv
+*.pyc
