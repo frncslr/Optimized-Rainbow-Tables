@@ -609,7 +609,7 @@ void test_attack_random_n()
 void test_attack_random_n_m()
 {
     printf("# Test precompute full n m:\n");
-    int n = 10000;
+    int n = 100000;
     int nb = 0;
 
     int nb_tables = 4;
