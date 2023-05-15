@@ -712,6 +712,9 @@ void test_attack_random_n_m()
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
 
+    Points res = {avg_hash, avg_hash};
+    export(&res, 1, "averageOperations.txt");
+
     for (int table_id = 0; table_id < nb_tables; table_id++)
         free((void *)htables[table_id]);
     free((void *)htables);
