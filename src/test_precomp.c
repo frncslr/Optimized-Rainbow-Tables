@@ -20,6 +20,39 @@ void test_initialize()
     printf("\n\n");
 }
 
+void test_clean()
+{
+    printf("# Test clean :\n");
+    int table_id = 1;
+    int table_size = 1 << 10;
+    int table_width = t;
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
+
+    initialize(table, table_id, table_size);
+
+    uint32_t nb_hash = 0;
+    generate(table, table_id, table_size, table_width, &nb_hash);
+
+    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
+    clean(&table, &table_size, htable_size);
+
+    sort(table, table_size);
+
+    printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
+    for (Points *current = table, *last = table + 16; current < last; current++)
+        printf("%u\t:\t%u\n", current->start, current->end);
+
+    printf("\n");
+    free((void *)table);
+}
+
 void test_generate()
 {
     printf("# Test generate :\n");
@@ -84,39 +117,6 @@ void test_sort()
         printf("\n%u\t:\t%u", current->start, current->end);
 
     printf("\n\n");
-    free((void *)table);
-}
-
-void test_clean()
-{
-    printf("# Test clean :\n");
-    int table_id = 1;
-    int table_size = 1 << 10;
-    int table_width = t;
-    Points *table;
-    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-    {
-        printf("Memory allocation problem");
-        exit(ERROR_ALLOC);
-    }
-
-    printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
-
-    initialize(table, table_id, table_size);
-
-    uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
-
-    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
-    clean(&table, &table_size, htable_size);
-
-    sort(table, table_size);
-
-    printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
-    for (Points *current = table, *last = table + 16; current < last; current++)
-        printf("%u\t:\t%u\n", current->start, current->end);
-
-    printf("\n");
     free((void *)table);
 }
 

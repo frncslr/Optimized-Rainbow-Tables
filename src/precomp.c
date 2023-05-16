@@ -12,10 +12,53 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
-void generate(Points *table, int table_id, int table_size, int table_width, uint32_t *nb_hash)
+void clean(Points **table, int *table_size, int htable_size)
 {
-    for (Points *current = table, *last = table + table_size; current < last; current++)
-        compute(&(current->end), table_id, 0, table_width, nb_hash);
+    Hashtable htable;
+    if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    init(htable, htable_size);
+
+    int nb_inserted = 0;
+    for (Points *current = *table, *last = *table + *table_size; current < last; current++)
+        nb_inserted += insert(htable, htable_size, current->start, current->end);
+
+    if (*table_size != nb_inserted)
+    {
+        *table_size = nb_inserted;
+        if ((*table = (Points *)realloc((void *)(*table), (*table_size) * sizeof(Points))) == NULL)
+        {
+            printf("Memory allocation problem");
+            exit(ERROR_ALLOC);
+        }
+    }
+
+    for (Points *inserted = *table, *current = htable, *last = htable + htable_size; current < last; current++)
+        if (current->end != MAX)
+        {
+            inserted->start = current->start;
+            inserted->end = current->end;
+            inserted++;
+        }
+
+    free((void *)htable);
+}
+
+void generate(Points *table, int table_id, int table_size, int *filters, int nb_filters, uint32_t *nb_hash)
+{
+    int htable_size, col_start = 0;
+    for (int *col_end = filters, *last = filters + nb_filters; col_end < last; col_end++)
+    {
+        for (Points *current = table, *last = table + table_size; current < last; current++)
+            compute(&(current->end), table_id, col_start, col_end, nb_hash);
+        htable_size = (int)ceil(LOAD_FACTOR * table_size);
+        clean(&table, &table_size, htable_size);
+        col_start = col_end;
+    }
 }
 
 void swap(Points *a, Points *b)
@@ -80,47 +123,11 @@ void sort(Points *table, int table_size)
     quicksort(table, 0, table_size - 1);
 }
 
-void clean(Points **table, int *table_size, int htable_size)
-{
-    Hashtable htable;
-    if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-
-    init(htable, htable_size);
-
-    int nb_inserted = 0;
-    for (Points *current = *table, *last = *table + *table_size; current < last; current++)
-        nb_inserted += insert(htable, htable_size, current->start, current->end);
-
-    if (*table_size != nb_inserted)
-    {
-        *table_size = nb_inserted;
-        if ((*table = (Points *)realloc((void *)(*table), (*table_size) * sizeof(Points))) == NULL)
-        {
-            printf("Memory allocation problem");
-            exit(ERROR_ALLOC);
-        }
-    }
-
-    for (Points *inserted = *table, *current = htable, *last = htable + htable_size; current < last; current++)
-        if (current->end != MAX)
-        {
-            inserted->start = current->start;
-            inserted->end = current->end;
-            inserted++;
-        }
-
-    free((void *)htable);
-}
-
 void precompute(Points **table, int table_id, int *table_size, int table_width, uint32_t *nb_hash)
 {
     initialize(*table, table_id, *table_size);
 
-    generate(*table, table_id, *table_size, table_width, nb_hash);
+    // generate(*table, table_id, *table_size, table_width, nb_hash);
 
     int htable_size = (int)ceil(1.5 * mt);
     clean(table, table_size, htable_size);
