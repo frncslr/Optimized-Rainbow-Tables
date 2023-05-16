@@ -24,8 +24,8 @@ void test_clean()
 {
     printf("# Test clean :\n");
     int table_id = 1;
-    int table_size = 1 << 10;
-    int table_width = t;
+    int table_size = 1 << 4;
+    
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
@@ -33,20 +33,26 @@ void test_clean()
         exit(ERROR_ALLOC);
     }
 
-    printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
+    srand(time(NULL));
+    for (int i = 0; i < 4; i++)
+    {
+        uint32_t end = rand() % N;
+        for (int j = 4 * i; j < 4 * (i + 1); j++)
+        {
+            table[j].start = j;
+            table[j].end = end;
+        }
+    }
 
-    initialize(table, table_id, table_size);
-
-    uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    printf("Table before clean :\n");
+    for (Points *current = table, *last = table + table_size; current < last; current++)
+        printf("%u\t:\t%u\n", current->start, current->end);
 
     int htable_size = (int)ceil(LOAD_FACTOR * table_size);
     clean(&table, &table_size, htable_size);
 
-    sort(table, table_size);
-
-    printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
-    for (Points *current = table, *last = table + 16; current < last; current++)
+    printf("Table after clean :\n");
+    for (Points *current = table, *last = table + table_size; current < last; current++)
         printf("%u\t:\t%u\n", current->start, current->end);
 
     printf("\n");
@@ -58,9 +64,11 @@ void test_generate()
     printf("# Test generate :\n");
     int table_id = 3;
     printf("Table id : %d\n", table_id);
-    int table_size = 1 << 10;
+    int table_size_init = 1 << 10;
+    int table_size = table_size_init;
     int table_width = t;
-    uint32_t nb_hash = 0;
+    int nb_filters = 1;
+    int filters = t;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -74,11 +82,12 @@ void test_generate()
     time_t i = time(NULL);
     printf("Time to init %d : %lds\n", table_size, i - s);
 
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    uint32_t nb_hash = 0;
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
 
-    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size * table_width, nb_hash);
+    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size_init * table_width, nb_hash);
     printf("Table (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -103,7 +112,7 @@ void test_sort()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    // generate(table, table_id, table_size, table_width, &nb_hash);
 
     printf("Table before sort (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
@@ -208,7 +217,7 @@ void test_cover()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    // generate(table, table_id, table_size, table_width, &nb_hash);
 
     printf("Table %d of %d rows initialized :\n", table_id, table_size);
     for (Points *current = table, *last = table + table_size; current < last; current++)

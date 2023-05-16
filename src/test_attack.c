@@ -258,7 +258,7 @@ void test_chain_rebuild()
     Points table[1];
     initialize(table, table_id, table_size);
     uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    // generate(table, table_id, table_size, table_width, &nb_hash);
     printf("Table : {%u : %u}\n", table->start, table->end);
     printf("id : %d\n size : %d\n width : %d\n", table_id, table_size, table_width);
 

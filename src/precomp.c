@@ -48,16 +48,16 @@ void clean(Points **table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
-void generate(Points *table, int table_id, int table_size, int *filters, int nb_filters, uint32_t *nb_hash)
+void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
 {
     int htable_size, col_start = 0;
     for (int *col_end = filters, *last = filters + nb_filters; col_end < last; col_end++)
     {
-        for (Points *current = table, *last = table + table_size; current < last; current++)
-            compute(&(current->end), table_id, col_start, col_end, nb_hash);
-        htable_size = (int)ceil(LOAD_FACTOR * table_size);
-        clean(&table, &table_size, htable_size);
-        col_start = col_end;
+        for (Points *current = table, *last = table + *table_size; current < last; current++)
+            compute(&(current->end), table_id, col_start, *col_end, nb_hash);
+        htable_size = (int)ceil(LOAD_FACTOR * *table_size);
+        clean(&table, table_size, htable_size);
+        col_start = *col_end;
     }
 }
 
