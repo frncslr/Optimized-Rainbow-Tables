@@ -79,24 +79,23 @@ def positions(amax):
 def export(filters, filename):
     with open(filename, "wb") as file:
         for filter in filters:
-            file.write(filter.to_bytes(4, "big"))
-            print(filter.to_bytes(4, "big"))
+            file.write(filter.to_bytes(4, "little"))
            
 def check(filename):
     filters = []
     with open(filename, "rb") as file:
-        nb_filters = int.from_bytes(file.read(4), "big")
+        nb_filters = int.from_bytes(file.read(4), "little")
         content = file.read(nb_filters*4)
     for i in range(nb_filters):
-        filters.append(int.from_bytes(content[4*i:4*(i+1)], "big"))
+        filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
     return nb_filters, filters
 
 if __name__ == "__main__": 
     amax = 38
     # filters = positions(amax)
     # print(f"filters : {filters}")
-    # export(filters, "filters.dat")
+    # export(filters, "configTestPositions.dat")
     
-    # nb, f = check("filters.dat")
-    # print(nb)
-    # print(f)
+    nb, f = check("configTestPositions.dat")
+    print(nb)
+    print(f)
