@@ -13,7 +13,9 @@ int main(void)
 
   // test_initialize();
   // test_clean();
-  test_generate();
+  // test_generate();
+  // test_positions();
+  test_filters();
   // test_sort();
   // test_precompute();
   // test_rice();

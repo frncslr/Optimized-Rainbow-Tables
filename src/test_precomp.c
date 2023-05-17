@@ -25,7 +25,7 @@ void test_clean()
     printf("# Test clean :\n");
     int table_id = 1;
     int table_size = 1 << 4;
-    
+
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
@@ -92,6 +92,53 @@ void test_generate()
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n\n");
+    free((void *)table);
+}
+
+void test_positions()
+{
+    printf("# Test positions :\n");
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+    printf("**ici\n");
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    free(filters);
+}
+
+void test_filters()
+{
+    printf("# Test filters :\n");
+    int table_id = 3;
+    printf("Table id : %d\n", table_id);
+    int table_size_init = (int)ceil(m0);
+    int table_size = table_size_init;
+    int table_width = t;
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        printf("Memory allocation problem");
+        exit(ERROR_ALLOC);
+    }
+
+    time_t s = time(NULL);
+    initialize(table, table_id, table_size);
+    time_t i = time(NULL);
+    printf("Time to init %d : %lds\n", table_size, i - s);
+
+    uint32_t nb_hash = 0;
+    generate(table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    time_t g = time(NULL);
+    printf("Time to gen %d : %lds\n", table_size, g - i);
+
+    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size_init * table_width, nb_hash);
+
+    free((void *)filters);
     free((void *)table);
 }
 

@@ -6,6 +6,7 @@
 void initialize(Points *, int, int);
 void clean(Points **, int *, int);
 void generate(Points *, int, int *, int*, int, uint32_t *);
+void positions(int **, int *, const char *);
 void swap(Points *, Points *);
 int partition(Points *, int, int);
 void quicksort(Points *, int, int);
