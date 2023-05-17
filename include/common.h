@@ -16,6 +16,8 @@
 #define alpha (r / (r + 1))
 #define m0 (2 * r * N / (t + 2))
 #define mt (2 * alpha * N / (t + 2))
+#define GAMMA (2 * N / m0)
+#define mci(i) (2 * N / (i + GAMMA))
 
 #include <stdio.h>
 #include <string.h>

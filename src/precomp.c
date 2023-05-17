@@ -12,6 +12,40 @@ void initialize(Points *table, int table_id, int table_size)
     }
 }
 
+void positions(int **filters, int *nb_filters, const char *file_name)
+{
+    FILE *file;
+    if ((file = fopen(file_name, "rb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", file_name);
+        exit(ERROR_FOPEN);
+    }
+
+    if ((fread(nb_filters, sizeof(int), 1, file)) != (size_t)1)
+    {
+        fprintf(stderr, "Reading file problem 1: %s\n", file_name);
+        exit(ERROR_FWRITE);
+    }
+
+    if ((*filters = (int *)calloc(*nb_filters, sizeof(int))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    if ((fread(*filters, sizeof(int), *nb_filters, file)) != (size_t)*nb_filters)
+    {
+        fprintf(stderr, "Reading file problem : %s\n", file_name);
+        exit(ERROR_FWRITE);
+    }
+
+    if (fclose(file))
+    {
+        fprintf(stderr, "Closing file problem : %s", file_name);
+        exit(ERROR_FCLOSE);
+    }
+}
+
 void clean(Points **table, int *table_size, int htable_size)
 {
     Hashtable htable;
@@ -61,39 +95,16 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
     }
 }
 
-void positions(int **filters, int *nb_filters, const char *file_name)
+void operations(int *filters, int nb_filters, uint32_t *nb_hash)
 {
-    FILE *file;
-    if ((file = fopen(file_name, "rb")) == (FILE *)NULL)
+    int previous = 0;
+    long result = 0.0;
+    for (int *current = filters, *last = filters + nb_filters - 1; current < last; current++)
     {
-        fprintf(stderr, "Opening file problem : %s\n", file_name);
-        exit(ERROR_FOPEN);
+        result += mci(previous) * (*current - previous);
+        previous = *current;
     }
-
-    if ((fread(nb_filters, sizeof(int), 1, file)) != (size_t)1)
-    {
-        fprintf(stderr, "Reading file problem 1: %s\n", file_name);
-        exit(ERROR_FWRITE);
-    }
-
-
-    if ((*filters = (int *)calloc(*nb_filters, sizeof(int))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-
-    if ((fread(*filters, sizeof(int), *nb_filters, file)) != (size_t)*nb_filters)
-    {
-        fprintf(stderr, "Reading file problem : %s\n", file_name);
-        exit(ERROR_FWRITE);
-    }
-
-    if (fclose(file))
-    {
-        fprintf(stderr, "Closing file problem : %s", file_name);
-        exit(ERROR_FCLOSE);
-    }
+    *nb_hash = (uint32_t)ceill(result);
 }
 
 void swap(Points *a, Points *b)

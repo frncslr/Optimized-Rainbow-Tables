@@ -12,9 +12,10 @@ int main(void)
   // test_hashtable();
 
   // test_initialize();
+  // test_positions();
   // test_clean();
   // test_generate();
-  // test_positions();
+  // test_operations();
   test_filters();
   // test_sort();
   // test_precompute();

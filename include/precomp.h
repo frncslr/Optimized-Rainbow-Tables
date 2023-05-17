@@ -4,9 +4,10 @@
 #include "common.h"
 
 void initialize(Points *, int, int);
-void clean(Points **, int *, int);
-void generate(Points *, int, int *, int*, int, uint32_t *);
 void positions(int **, int *, const char *);
+void clean(Points **, int *, int);
+void generate(Points *, int, int *, int *, int, uint32_t *);
+void operations(int *, int, uint32_t *);
 void swap(Points *, Points *);
 int partition(Points *, int, int);
 void quicksort(Points *, int, int);

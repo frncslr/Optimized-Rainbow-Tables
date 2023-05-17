@@ -20,6 +20,18 @@ void test_initialize()
     printf("\n\n");
 }
 
+void test_positions()
+{
+    printf("# Test positions :\n");
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    free(filters);
+}
+
 void test_clean()
 {
     printf("# Test clean :\n");
@@ -59,6 +71,19 @@ void test_clean()
     free((void *)table);
 }
 
+void test_operations()
+{
+    printf("# Test positions :\n");
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+    uint32_t nb_hash = 0;
+    // int nb_filters = 37;
+    // int filters[37] = {9, 20, 32, 45, 58, 73, 88, 105, 122, 141, 160, 180, 202, 224, 247, 271, 296, 322, 349, 377, 406, 436, 467, 499, 532, 600, 636, 672, 710, 748, 788, 828, 870, 912, 955, 1000};
+    operations(filters, nb_filters, &nb_hash);
+    printf("Expected number of hash operations : %u\n", nb_hash);
+}
+
 void test_generate()
 {
     printf("# Test generate :\n");
@@ -93,19 +118,6 @@ void test_generate()
         printf("\n%u\t:\t%u", current->start, current->end);
     printf("\n\n");
     free((void *)table);
-}
-
-void test_positions()
-{
-    printf("# Test positions :\n");
-    int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
-    positions(&filters, &nb_filters, file_name);
-    printf("**ici\n");
-    for (int i = 0; i < nb_filters; i++)
-        printf("position %d : %d\n", i, filters[i]);
-    printf("\n");
-    free(filters);
 }
 
 void test_filters()
