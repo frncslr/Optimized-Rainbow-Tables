@@ -71,19 +71,6 @@ void test_clean()
     free((void *)table);
 }
 
-void test_operations()
-{
-    printf("# Test positions :\n");
-    int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
-    positions(&filters, &nb_filters, file_name);
-    uint32_t nb_hash = 0;
-    // int nb_filters = 37;
-    // int filters[37] = {9, 20, 32, 45, 58, 73, 88, 105, 122, 141, 160, 180, 202, 224, 247, 271, 296, 322, 349, 377, 406, 436, 467, 499, 532, 600, 636, 672, 710, 748, 788, 828, 870, 912, 955, 1000};
-    operations(filters, nb_filters, &nb_hash);
-    printf("Expected number of hash operations : %u\n", nb_hash);
-}
-
 void test_generate()
 {
     printf("# Test generate :\n");
@@ -120,7 +107,20 @@ void test_generate()
     free((void *)table);
 }
 
-void test_filters()
+void test_operations()
+{
+    printf("# Test positions :\n");
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTesOperaions.dat";
+    positions(&filters, &nb_filters, file_name);
+    uint32_t nb_hash = 0;
+    // int nb_filters = 37;
+    int filters[37] = {9, 20, 32, 45, 58, 73, 88, 105, 122, 141, 160, 180, 202, 224, 247, 271, 296, 322, 349, 377, 406, 436, 467, 499, 532, 600, 636, 672, 710, 748, 788, 828, 870, 912, 955, 1000};
+    operations(filters, nb_filters, &nb_hash);
+    printf("Expected number of hash operations : %u\n", nb_hash);
+}
+
+void test_generate_f()
 {
     printf("# Test filters :\n");
     int table_id = 3;
@@ -129,7 +129,7 @@ void test_filters()
     int table_size = table_size_init;
     int table_width = t;
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "configTestGenerateF.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -148,7 +148,16 @@ void test_filters()
     time_t g = time(NULL);
     printf("Time to gen %d : %lds\n", table_size, g - i);
 
-    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size_init * table_width, nb_hash);
+    uint32_t expec_hash;
+    operations(filters, nb_filters, &expec_hash);
+    uint32_t diff_hash = expec_hash - nb_hash;
+    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+
+    int expec_size = (int)ceil(mt);
+    int diff_size = table_size - expec_size;
+    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
 
     free((void *)filters);
     free((void *)table);
@@ -158,8 +167,10 @@ void test_sort()
 {
     printf("# Test sort :\n");
     int table_id = 1;
-    int table_size = 1 << 12;
+    int table_size = 1 << 14;
     int table_width = t;
+    int nb_filters = 1;
+    int filters = t;
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
@@ -171,8 +182,7 @@ void test_sort()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
-    // generate(table, table_id, table_size, table_width, &nb_hash);
-
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
     printf("Table before sort (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
