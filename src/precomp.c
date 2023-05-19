@@ -136,7 +136,7 @@ void rice(uint32_t *end, uint32_t value, char k)
 void export(Points *table, int table_size, const char *file_name)
 {
     FILE *file;
-    if ((file = fopen(file_name, "wb")) == (FILE *)NULL)
+    if ((file = fopen(file_name, "ab")) == (FILE *)NULL)
     {
         fprintf(stderr, "Opening file problem : %s\n", file_name);
         exit(ERROR_FOPEN);
