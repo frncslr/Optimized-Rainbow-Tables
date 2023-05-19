@@ -71,7 +71,7 @@ void test_compute()
     hash_reduction(&copy, table_id, col_start);
     hash_reduction(&copy, table_id, col_start + 1);
     hash_reduction(&copy, table_id, col_start + 2);
-    printf("Copy hash reduced \t: %u\n", copy);
+    printf("Copy hash reduced \t: %u\n\n", copy);
 }
 
 void test_hashtable()

@@ -85,26 +85,34 @@ void clean(Points **table, int *table_size, int htable_size)
 void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
 {
     int htable_size, col_start = 0;
+    size_t start, mid, end, total_compute = 0, total_clean = 0;
     for (int *col_end = filters, *last = filters + nb_filters; col_end < last; col_end++)
     {
+        start = time(NULL);
         for (Points *current = table, *last = table + *table_size; current < last; current++)
             compute(&(current->end), table_id, col_start, *col_end, nb_hash);
+        mid = time(NULL);
+        total_compute += mid - start;
         htable_size = (int)ceil(LOAD_FACTOR * *table_size);
         clean(&table, table_size, htable_size);
+        end = time(NULL);
+        total_clean += (end - mid) * 100000;
         col_start = *col_end;
     }
+    total_clean /= 100000;
+    printf("Time to :\n\t- compute : %lds\n\t- clean   : %lds\n", total_compute, total_clean);
 }
 
 void operations(int *filters, int nb_filters, uint32_t *nb_hash)
 {
     int previous = 0;
-    long result = 0.0;
-    for (int *current = filters, *last = filters + nb_filters - 1; current < last; current++)
+    double result = 0;
+    for (int *current = filters, *last = filters + nb_filters; current < last; current++)
     {
-        result += mci(previous) * (*current - previous);
+        result += ceil(mci(previous)) * (*current - previous);
         previous = *current;
     }
-    *nb_hash = (uint32_t)ceill(result);
+    *nb_hash = (uint32_t)ceil(result);
 }
 
 void swap(Points *a, Points *b)
