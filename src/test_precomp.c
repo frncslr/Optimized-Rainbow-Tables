@@ -60,8 +60,7 @@ void test_clean()
     for (Points *current = table, *last = table + table_size; current < last; current++)
         printf("%u\t:\t%u\n", current->start, current->end);
 
-    int htable_size = (int)ceil(LOAD_FACTOR * table_size);
-    clean(&table, &table_size, htable_size);
+    clean(&table, &table_size);
 
     printf("Table after clean :\n");
     for (Points *current = table, *last = table + table_size; current < last; current++)

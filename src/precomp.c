@@ -46,9 +46,10 @@ void positions(int **filters, int *nb_filters, const char *file_name)
     }
 }
 
-void clean(Points **table, int *table_size, int htable_size)
+void clean(Points **table, int *table_size)
 {
     Hashtable htable;
+    int htable_size = (int)ceil(LOAD_FACTOR * *table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -94,7 +95,7 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
         mid = time(NULL);
         total_compute += mid - start;
         htable_size = (int)ceil(LOAD_FACTOR * *table_size);
-        clean(&table, table_size, htable_size);
+        // clean(&table, table_size, htable_size);
         end = time(NULL);
         total_clean += (end - mid) * 100000;
         col_start = *col_end;
@@ -178,7 +179,7 @@ void precompute(Points **table, int table_id, int *table_size, int table_width, 
     // generate(*table, table_id, *table_size, table_width, nb_hash);
 
     int htable_size = (int)ceil(1.5 * mt);
-    clean(table, table_size, htable_size);
+    // clean(table, table_size, htable_size);
 
     sort(*table, *table_size);
 }

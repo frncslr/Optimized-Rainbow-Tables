@@ -5,7 +5,7 @@
 
 void initialize(Points *, int, int);
 void positions(int **, int *, const char *);
-void clean(Points **, int *, int);
+void clean(Points **, int *);
 void generate(Points *, int, int *, int *, int, uint32_t *);
 void operations(int *, int, uint32_t *);
 void swap(Points *, Points *);
