@@ -111,11 +111,12 @@ void test_operations()
 {
     printf("# Test operations :\n");
     int nb_filters, *filters = NULL;
-    uint32_t expec_hash = 0;
+    uint32_t expec_hash;
 
     nb_filters = 1;
     int filtres = t;
     filters = &filtres;
+    expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
 
@@ -124,6 +125,7 @@ void test_operations()
     nb_filters = 37;
     int filtres2[37] = {9, 20, 32, 45, 58, 73, 88, 105, 122, 141, 160, 180, 202, 224, 247, 271, 296, 322, 349, 377, 406, 436, 467, 499, 532, 565, 600, 636, 672, 710, 748, 788, 828, 870, 912, 955, 1000};
     filters = &filtres2;
+    expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
     printf("\n");

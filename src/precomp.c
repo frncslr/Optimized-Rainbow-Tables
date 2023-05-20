@@ -103,16 +103,10 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
     printf("Time to :\n\t- compute : %lds\n\t- clean   : %lds\n", total_compute, total_clean);
 }
 
-void operations(int *filters, int nb_filters, uint32_t *nb_hash)
+void operations(int *filters, int nb_filters, uint32_t *expec_hash)
 {
-    int previous = 0;
-    double result = 0;
-    for (int *current = filters, *last = filters + nb_filters; current < last; current++)
-    {
-        result += ceil(mci(previous)) * (*current - previous);
-        previous = *current;
-    }
-    *nb_hash = (uint32_t)ceil(result);
+    for (int previous = 0, *current = filters, *last = filters + nb_filters; current < last; previous = *(current++))
+        *expec_hash += (uint32_t)ceil(mci(previous)) * (*current - previous);
 }
 
 void swap(Points *a, Points *b)
