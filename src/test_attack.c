@@ -174,7 +174,7 @@ void test_chain()
     }
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -322,7 +322,7 @@ void test_attack_existing()
         exit(ERROR_ALLOC);
     }
 
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -401,7 +401,7 @@ void test_attack_existing_n()
     }
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -476,7 +476,7 @@ void test_attack_random()
         exit(ERROR_ALLOC);
     }
 
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -642,7 +642,7 @@ void test_attack_random_n_m()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size, table_width, &nb_hash);
+        // precompute(&table, table_id, &table_size, table_width, &nb_hash);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);

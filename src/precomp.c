@@ -169,15 +169,12 @@ void sort(Points *table, int table_size)
     quicksort(table, 0, table_size - 1);
 }
 
-void precompute(Points **table, int table_id, int *table_size, int table_width, uint32_t *nb_hash)
+void precompute(Points **table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
 {
     initialize(*table, table_id, *table_size);
 
-    // generate(*table, table_id, *table_size, table_width, nb_hash);
-
-    int htable_size = (int)ceil(1.5 * mt);
-    // clean(table, table_size, htable_size);
-
+    generate(*table, table_id, table_size, filters, nb_filters, nb_hash);
+    printf("** ici\n");
     sort(*table, *table_size);
 }
 

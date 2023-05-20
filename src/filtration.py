@@ -91,10 +91,10 @@ def check(filename):
     return nb_filters, filters
 
 if __name__ == "__main__": 
-    amax = 38
-    # filters = positions(amax)
-    # print(f"filters : {filters}")
-    # export(filters, "configTestPositions.dat")
+    amax = 40
+    filters = positions(amax)
+    print(f"filters : {filters}")
+    export(filters, "configTestPositions.dat")
     
     nb, f = check("configTestPositions.dat")
     print(nb)
