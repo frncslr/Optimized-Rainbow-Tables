@@ -162,7 +162,7 @@ void test_generate_f()
     time_t g = time(NULL);
     printf("Time to generate %d : %lds\n", table_size, g - i);
 
-    uint32_t expec_hash;
+    uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
     int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
