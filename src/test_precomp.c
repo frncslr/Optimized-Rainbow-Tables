@@ -444,5 +444,6 @@ void test_precompute_full_n()
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
     printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
+    free((void *)filters);
     free((void *)covered);
 }
