@@ -98,7 +98,7 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
         total_clean += (end - mid) * 100000;
     }
     total_clean /= 100000;
-    printf("Time to :\n\t- compute : %lds\n\t- clean   : %lds\n", total_compute, total_clean);
+    printf("Time to compute\t: %lds\nTime to clean\t: %lds\n", total_compute, total_clean);
 }
 
 void operations(int *filters, int nb_filters, uint32_t *expec_hash)
@@ -174,7 +174,6 @@ void precompute(Points **table, int table_id, int *table_size, int *filters, int
     initialize(*table, table_id, *table_size);
 
     generate(*table, table_id, table_size, filters, nb_filters, nb_hash);
-    printf("** ici\n");
     sort(*table, *table_size);
 }
 

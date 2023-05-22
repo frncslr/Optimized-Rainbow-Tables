@@ -322,9 +322,8 @@ void test_cover()
 void test_precompute_full()
 {
     printf("# Test precompute full:\n");
-    int table_id = 3;
+    int table_id = 0;
     int table_size = (int)ceil(m0);
-    int expec_size = (int)ceil(mt);
     int table_width = t;
     char table_name[30] = "tableTestPrecompFull";
     char extension[6] = "i.dat";
@@ -338,9 +337,13 @@ void test_precompute_full()
         exit(ERROR_ALLOC);
     }
 
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
     uint32_t nb_hash = 0;
-    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
 
     int coverage = 0;
     char *covered;
@@ -353,11 +356,13 @@ void test_precompute_full()
 
     export(table, table_size, table_name);
 
-    uint32_t expec_hash = (int)ceil(m0) * t;
-    uint32_t diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
+    int expec_size = (int)ceil(mt);
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
@@ -368,6 +373,7 @@ void test_precompute_full()
     printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
 
     free((void *)table);
+    free((void *)filters);
     free((void *)covered);
 }
 
@@ -394,6 +400,11 @@ void test_precompute_full_n()
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
+
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
     for (int table_id = 0; table_id < nb_tables; table_id++)
     {
@@ -404,7 +415,7 @@ void test_precompute_full_n()
             exit(ERROR_ALLOC);
         }
 
-        // precompute(&table, table_id, &table_size, table_width, &nb_hash);
+        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
@@ -416,10 +427,12 @@ void test_precompute_full_n()
         free((void *)table);
     }
 
-    uint32_t expec_hash = nb_tables * (int)ceil(m0) * t;
-    uint32_t diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    expec_hash *= 4;
+    int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int expec_size = nb_tables * (int)ceil(mt);
     int diff_size = total_size - expec_size;
