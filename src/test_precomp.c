@@ -69,6 +69,33 @@ void test_clean()
     free((void *)table);
 }
 
+void test_clean_n()
+{
+    printf("Test clean n :\n");
+    int table_size = 167772160;
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Initializing %d random endpoints\n", table_size);
+    srand(time(NULL));
+    for (Points *current = table, *last = table + table_size; current < last; current++)
+        current->end = rand() % N;
+
+    for (int i = 0; i < 16; i++)
+        printf("{%u : %u}\n", table[i].start, table[i].end);
+
+    printf("Cleaning %d points\n", table_size);
+    time_t start = time(NULL);
+    clean(&table, &table_size);
+    time_t end = time(NULL);
+    printf("Time to clean %d : %ld\n", table_size, end - start);
+    free((void *)table);
+}
+
 void test_generate()
 {
     printf("# Test generate :\n");
@@ -130,7 +157,7 @@ void test_operations()
 void test_generate_f()
 {
     printf("# Test generate f :\n");
-    int table_id = 3;
+    int table_id = 1;
     printf("Table id : %d\n", table_id);
     int table_size_init = (int)ceil(m0);
     int table_size = table_size_init;

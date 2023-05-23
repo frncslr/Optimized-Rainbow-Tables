@@ -14,9 +14,10 @@ int main(void)
   // test_initialize();
   // test_positions();
   // test_clean();
+  // test_clean_n();
   // test_generate();
   // test_operations();
-  // test_generate_f();
+  test_generate_f();
   // test_sort();
   // test_precompute();
   // test_rice();
@@ -35,6 +36,6 @@ int main(void)
   // test_attack_existing_n();
   // test_attack_random();
   // test_attack_random_n();
-  test_attack_random_n_m();
+  // test_attack_random_n_m();
   return 0;
 }

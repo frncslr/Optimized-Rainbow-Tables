@@ -9,9 +9,9 @@ mt = 2*alpha*N/(t+2)
 gamma = 2*N/m0
 
 nh = 1 # number of hasing nodes
-vh = 1 # number of hash reductions per second
+vh = 1864135 # number of hash reductions per second
 nf = 1 # number of filtrating nodes
-vf = 1 # number of filtrations per second
+vf = 16777216 # number of filtrations per second
 do = 0 # average overhead time per point
 dc = 0 # average nodes communication time
 
@@ -91,10 +91,10 @@ def check(filename):
     return nb_filters, filters
 
 if __name__ == "__main__": 
-    amax = 40
-    filters = positions(amax)
-    print(f"filters : {filters}")
-    export(filters, "configTestPositions.dat")
+    amax = 60
+    # filters = positions(amax)
+    # print(f"filters : {filters}")
+    # export(filters, "configTestPositions.dat")
     
     nb, f = check("configTestPositions.dat")
     print(nb)
