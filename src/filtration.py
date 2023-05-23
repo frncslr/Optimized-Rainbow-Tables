@@ -57,11 +57,11 @@ def cstr_ineq(a):
         list_cstr.append(NonlinearConstraint(f, 0, 1000))
     return list_cstr
 
-def positions(amax):
+def positions(amin, amax):
     nb_filters = 0
     time = N*t
     filters = []
-    for a in range(1, amax+1):
+    for a in range(amin, amax+1):
         x0 = [0]*(a+1)
         bnds = ((c0,c0),)+((1,ca),)*(a-1)+((ca,ca),)
         cstr = cstr_ineq(a)
@@ -91,9 +91,10 @@ def check(filename):
     return nb_filters, filters
 
 if __name__ == "__main__": 
-    amax = 60
-    # filters = positions(amax)
-    # print(f"filters : {filters}")
+    amin = 60
+    amax = 65
+    filters = positions(amin, amax)
+    print(f"filters : {filters}")
     # export(filters, "configTestPositions.dat")
     
     nb, f = check("configTestPositions.dat")
