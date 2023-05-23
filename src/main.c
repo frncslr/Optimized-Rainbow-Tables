@@ -9,6 +9,8 @@ int main(void)
   // test_reduction();
   // test_hash_reduction();
   // test_compute();
+  test_write_results();
+  test_read_results();
   // test_hashtable();
 
   // test_initialize();
@@ -32,6 +34,6 @@ int main(void)
   // test_attack_existing_n();
   // test_attack_random();
   // test_attack_random_n();
-  test_attack_random_n_m();
+  // test_attack_random_n_m();
   return 0;
 }

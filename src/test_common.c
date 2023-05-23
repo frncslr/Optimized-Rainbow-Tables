@@ -74,6 +74,22 @@ void test_compute()
     printf("Copy hash reduced \t: %u\n", copy);
 }
 
+void test_write_results()
+{
+    double res[3] = {3.4, 14.12, 52.0};
+    const char file_name[20] = "result.dat";
+    write_results(res, 3, file_name);
+}
+
+void test_read_results()
+{
+    double results[6];
+    const char file_name[20] = "result.dat";
+    read_results(results, 6, file_name);
+    for (int i = 0; i < 6; i++)
+        printf("Result %d : %lf\n", i, results[i]);
+}
+
 void test_hashtable()
 {
     printf("# Test hashtable :\n");

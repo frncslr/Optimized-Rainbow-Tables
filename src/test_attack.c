@@ -609,7 +609,7 @@ void test_attack_random_n()
 void test_attack_random_n_m()
 {
     printf("# Test precompute full n m:\n");
-    int n = 10000;
+    int n = 100000;
     int nb = 0;
 
     int nb_tables = 4;
@@ -711,6 +711,8 @@ void test_attack_random_n_m()
     printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
+
+    write_results(&avg_hash, 1, "avgOpe.dat");
 
     for (int table_id = 0; table_id < nb_tables; table_id++)
         free((void *)htables[table_id]);
