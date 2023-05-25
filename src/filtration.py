@@ -1,4 +1,5 @@
 from scipy.optimize import minimize, NonlinearConstraint
+from math import ceil
 
 N = 2**24
 t = 1000
@@ -9,9 +10,9 @@ mt = 2*alpha*N/(t+2)
 gamma = 2*N/m0
 
 nh = 1 # number of hasing nodes
-vh = 1864135 # number of hash reductions per second
+vh = 1580935 # number of hash reductions per second
 nf = 1 # number of filtrating nodes
-vf = 16777216 # number of filtrations per second
+vf = 16879286 # number of filtrations per second
 do = 0 # average overhead time per point
 dc = 0 # average nodes communication time
 
@@ -20,7 +21,7 @@ ca = t
 
 
 def mci(i):
-    return 2*N/(i+gamma)
+    return ceil(2*N/(i+gamma))
 
 def precompH(filters):
     result = 0;
@@ -91,12 +92,17 @@ def check(filename):
     return nb_filters, filters
 
 if __name__ == "__main__": 
-    amin = 60
-    amax = 65
-    filters = positions(amin, amax)
-    print(f"filters : {filters}")
+    amin = 30
+    amax = 37
+    # filters = positions(amin, amax)
+    # print(f"filters : {filters}")
+    # print(f"T : {precompT(filters)}")
     # export(filters, "configTestPositions.dat")
     
     nb, f = check("configTestPositions.dat")
     print(nb)
     print(f)
+    # print(f"T : {precompT(f)}")
+    print(f"T : {precompT([0,1000])}")
+    print(f"H : {precompH([0,1000])}")
+    print(f"F : {precompF([0,1000])}")
