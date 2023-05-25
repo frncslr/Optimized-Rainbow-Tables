@@ -3,10 +3,12 @@
 
 #include "common.h"
 
+void test_elapsed();
 void test_hash();
 void test_hash_n();
 void test_reduction();
 void test_hash_reduction();
+void test_hash_reduction_n();
 void test_compute();
 void test_hashtable();
 

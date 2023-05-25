@@ -1,5 +1,10 @@
 #include "../include/common.h"
 
+double elapsed(struct timeval *start, struct timeval *end)
+{
+    return end->tv_sec - start->tv_sec + (end->tv_usec - start->tv_usec)*1e-6;
+}
+
 void print_hash(unsigned char *hashed_value)
 {
     for (unsigned int i = 0; i < SHA256_DIGEST_LENGTH; i++)

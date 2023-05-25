@@ -23,9 +23,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include </usr/include/sys/time.h>
 #include <math.h>
 #include <openssl/sha.h>
 
+double elapsed(struct timeval *, struct timeval *);
 void print_hash(unsigned char *);
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);

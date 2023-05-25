@@ -1,5 +1,15 @@
 #include "../include/test_common.h"
 
+void test_elapsed()
+{
+    struct timeval t0, t1;
+    gettimeofday(&t0, 0);
+    for (uint64_t i = 0; i < 1e10; i++)
+        ;
+    gettimeofday(&t1, 0);
+    printf("Time difference : %lf\n", elapsed(&t0, &t1));
+}
+
 void test_hash()
 {
     printf("# Test hash :\n");
@@ -13,14 +23,23 @@ void test_hash()
 void test_hash_n()
 {
     printf("# Test hash n:\n");
-    uint32_t n = 1 << 24;
-    printf("Time to hash %d : ", n);
-    fflush(stdout);
-    time_t s = time(NULL);
-    for (uint32_t point = 0; point < n; point++)
-        hash(&point, buffer);
-    time_t e = time(NULL);
-    printf("%lds\n", e - s);
+    int nb_tests = 20;
+    uint32_t nb_hash = 1 << 24;
+
+    struct timeval start, end;
+    double difference = 0.0;
+
+    for (int i = 0; i < nb_tests; i++)
+    {
+        gettimeofday(&start, 0);
+        for (uint32_t point = 0; point < nb_hash; point++)
+            hash(&point, buffer);
+        gettimeofday(&end, 0);
+        difference += elapsed(&start, &end);
+    }
+    difference /= nb_tests;
+    printf("Time to hash %d\t: %lf\n", nb_hash, difference);
+    printf("Hash speed\t\t: %lf\n", nb_hash / difference);
     printf("\n");
 }
 
@@ -45,6 +64,32 @@ void test_hash_reduction()
     printf("Value  is : %u\n", point);
     hash_reduction(&point, 1, 0);
     printf("Reduce is : %d\n", point);
+    printf("\n");
+}
+
+void test_hash_reduction_n()
+{
+    printf("# Test hash reduction n:\n");
+    int nb_tests = 10;
+    uint32_t nb_hash = 1 << 24;
+
+    struct timeval start, end;
+    double difference = 0.0;
+
+    for (int i = 0; i < nb_tests; i++)
+    {
+        gettimeofday(&start, 0);
+        for (uint32_t point = 0, value; point < nb_hash; point++)
+        {
+            value = point;
+            hash_reduction(&value, 1, 0);
+        }
+        gettimeofday(&end, 0);
+        difference += elapsed(&start, &end);
+    }
+    difference /= nb_tests;
+    printf("Time to hash reduce %d\t: %lf\n", nb_hash, difference);
+    printf("Hash reduction speed\t\t: %lf\n", nb_hash / difference);
     printf("\n");
 }
 
