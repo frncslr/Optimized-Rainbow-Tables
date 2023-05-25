@@ -43,8 +43,7 @@ void init(Hashtable hashtable, int size)
 int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
 {
     Points *point;
-    int i;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
         point = hashtable + (end + i) % size;
         if (point->end == MAX)
@@ -62,10 +61,9 @@ int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
 Points *search(Hashtable hashtable, int size, uint32_t end)
 {
     Points *point;
-    int i, idx = end % size;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
-        point = hashtable + (idx + i) % size;
+        point = hashtable + (end + i) % size;
         if (point->end == end)
             return point;
     }
