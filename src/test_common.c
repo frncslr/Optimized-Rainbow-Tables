@@ -25,6 +25,7 @@ void test_hash_n()
     printf("# Test hash n:\n");
     int nb_tests = 20;
     uint32_t nb_hash = 1 << 24;
+    printf("Hashing %u numbers %d times\n", nb_hash, nb_tests);
 
     struct timeval start, end;
     double difference = 0.0;
@@ -37,9 +38,8 @@ void test_hash_n()
         gettimeofday(&end, 0);
         difference += elapsed(&start, &end);
     }
-    difference /= nb_tests;
-    printf("Time to hash %d\t: %lf\n", nb_hash, difference);
-    printf("Hash speed\t\t: %lf\n", nb_hash / difference);
+    printf("Time to hash\t: %lf\n", difference / nb_tests);
+    printf("Hash speed\t: %lf\n", nb_hash * nb_tests / difference);
     printf("\n");
 }
 
@@ -70,8 +70,9 @@ void test_hash_reduction()
 void test_hash_reduction_n()
 {
     printf("# Test hash reduction n:\n");
-    int nb_tests = 10;
+    int nb_tests = 20;
     uint32_t nb_hash = 1 << 24;
+    printf("Hashing %u numbers %d times\n", nb_hash, nb_tests);
 
     struct timeval start, end;
     double difference = 0.0;
@@ -87,9 +88,8 @@ void test_hash_reduction_n()
         gettimeofday(&end, 0);
         difference += elapsed(&start, &end);
     }
-    difference /= nb_tests;
-    printf("Time to hash reduce %d\t: %lf\n", nb_hash, difference);
-    printf("Hash reduction speed\t\t: %lf\n", nb_hash / difference);
+    printf("Time to hash\t: %lf\n", difference / nb_tests);
+    printf("Hash speed\t: %lf\n", nb_hash * nb_tests / difference);
     printf("\n");
 }
 
