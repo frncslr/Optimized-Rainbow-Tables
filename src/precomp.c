@@ -46,10 +46,9 @@ void positions(int **filters, int *nb_filters, const char *file_name)
     }
 }
 
-void clean(Points **table, int *table_size)
+void clean(Points **table, int *table_size, int htable_size)
 {
     Hashtable htable;
-    int htable_size = (int)ceil(LOAD_FACTOR * *table_size);
     if ((htable = (Points *)calloc(htable_size, sizeof(Points))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
@@ -85,20 +84,21 @@ void clean(Points **table, int *table_size)
 
 void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
 {
-    size_t start, mid, end, total_compute = 0, total_clean = 0;
+    struct timeval start, end;
+    double total_compute, total_clean;
     for (int col_start = 0, *col_end = filters, *last = filters + nb_filters; col_end < last; col_start = *(col_end++))
     {
-        start = time(NULL);
+         gettimeofday(&start, 0);
         for (Points *current = table, *last = table + *table_size; current < last; current++)
             compute(&(current->end), table_id, col_start, *col_end, nb_hash);
-        mid = time(NULL);
-        total_compute += mid - start;
-        clean(&table, table_size);
-        end = time(NULL);
-        total_clean += (end - mid) * 100000;
+        gettimeofday(&end, 0);
+        total_compute += elapsed(&start, &end);
+         gettimeofday(&start, 0);
+        clean(&table, table_size, hsize(*col_end));
+        gettimeofday(&end, 0);
+        total_clean += elapsed(&start, &end);
     }
-    total_clean /= 100000;
-    printf("Time to compute\t: %lds\nTime to clean\t: %lds\n", total_compute, total_clean);
+    printf("Time to compute\t: %fs\nTime to clean\t: %fs\n", total_compute, total_clean);
 }
 
 void operations(int *filters, int nb_filters, uint32_t *expec_hash)

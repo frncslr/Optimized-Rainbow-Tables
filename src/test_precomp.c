@@ -59,7 +59,7 @@ void test_clean()
     for (Points *current = table, *last = table + table_size; current < last; current++)
         printf("%u\t:\t%u\n", current->start, current->end);
 
-    clean(&table, &table_size);
+    clean(&table, &table_size, table_size);
 
     printf("Table after clean :\n");
     for (Points *current = table, *last = table + table_size; current < last; current++)
@@ -72,40 +72,48 @@ void test_clean()
 void test_clean_n()
 {
     printf("Test clean n :\n");
-    int table_size = 167772160;
+    int nb_tests = 20;
+    int init_size = 1 << 24, table_size;
+    printf("Cleaning %d points %d times\n", init_size, nb_tests);
     Points *table;
-    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
 
-    printf("Initializing %d random endpoints\n", table_size);
+    struct timeval start, end;
+    double difference = 0.0;
     srand(time(NULL));
-    for (Points *current = table, *last = table + table_size; current < last; current++)
-        current->end = rand() % N;
+    for (int i = 0; i < nb_tests; i++)
+    {
+        table_size = init_size;
+        if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+        {
+            fprintf(stderr, "Memory allocation problem\n");
+            exit(ERROR_ALLOC);
+        }
 
-    for (int i = 0; i < 16; i++)
-        printf("{%u : %u}\n", table[i].start, table[i].end);
-
-    printf("Cleaning %d points\n", table_size);
-    time_t start = time(NULL);
-    clean(&table, &table_size);
-    time_t end = time(NULL);
-    printf("Time to clean %d : %ld\n", table_size, end - start);
-    free((void *)table);
+        for (Points *current = table, *last = table + table_size; current < last; current++)
+            current->end = rand() % N;
+        gettimeofday(&start, 0);
+        clean(&table, &table_size, table_size);
+        gettimeofday(&end, 0);
+        difference += elapsed(&start, &end);
+        free((void *)table);
+    }
+    printf("Time to clean\t: %lf\n", difference / nb_tests);
+    printf("Clean speed\t: %lf\n", init_size * nb_tests / difference);
+    printf("\n");
 }
 
 void test_generate()
 {
     printf("# Test generate :\n");
-    int table_id = 3;
-    printf("Table id : %d\n", table_id);
-    int table_size_init = 1 << 10;
+    int table_id = 0;
+    printf("Table index : %d\n", table_id);
+    int table_size_init = (int)ceil(m0);
     int table_size = table_size_init;
+    printf("Table size  : %d\n", table_size);
     int table_width = t;
+
     int nb_filters = 1;
-    int filters = t;
+    int filters = table_width;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -114,21 +122,31 @@ void test_generate()
         exit(ERROR_ALLOC);
     }
 
-    time_t s = time(NULL);
+    struct timeval start, end;
+
+    gettimeofday(&start, 0);
     initialize(table, table_id, table_size);
-    time_t i = time(NULL);
-    printf("Time to init %d : %lds\n", table_size, i - s);
+    gettimeofday(&end, 0);
+    printf("Time init %d : %lf\n", table_size, elapsed(&start, &end));
 
     uint32_t nb_hash = 0;
+    gettimeofday(&start, 0);
     generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
-    time_t g = time(NULL);
-    printf("Time to gen %d : %lds\n", table_size, g - i);
+    gettimeofday(&end, 0);
+    printf("Time gen %d : %lf\n", table_size, elapsed(&start, &end));
 
-    printf("Hash reductions :\n\texpected\t: %d\n\texperimental\t: %u\n", table_size_init * table_width, nb_hash);
-    printf("Table (first 16):");
-    for (Points *current = table, *last = table + 16; current < last; current++)
-        printf("\n%u\t:\t%u", current->start, current->end);
-    printf("\n\n");
+    uint32_t expec_hash = 0;
+    operations(&filters, nb_filters, &expec_hash);
+    int diff_hash = nb_hash - expec_hash;
+    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+
+    int expec_size = (int)ceil(mt);
+    int diff_size = table_size - expec_size;
+    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+    printf("\n");
+
     free((void *)table);
 }
 
@@ -157,10 +175,10 @@ void test_operations()
 void test_generate_f()
 {
     printf("# Test generate f :\n");
-    int table_id = 1;
-    printf("Table id : %d\n", table_id);
-    int table_size_init = (int)ceil(m0);
-    int table_size = table_size_init;
+    int table_id = 0;
+    printf("Table index : %d\n", table_id);
+    int table_size = (int)ceil(m0);
+    printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
     char file_name[30] = "configTestPositions.dat";
     positions(&filters, &nb_filters, file_name);
@@ -171,15 +189,17 @@ void test_generate_f()
         exit(ERROR_ALLOC);
     }
 
-    time_t s = time(NULL);
+    struct timeval start, end;
+    gettimeofday(&start, 0);
     initialize(table, table_id, table_size);
-    time_t i = time(NULL);
-    printf("Time to initialize %d : %lds\n", table_size, i - s);
+    gettimeofday(&end, 0);
+    printf("Time to initialize\t: %lf\n", elapsed(&start, &end));
 
     uint32_t nb_hash = 0;
+    gettimeofday(&start, 0);
     generate(table, table_id, &table_size, filters, nb_filters, &nb_hash);
-    time_t g = time(NULL);
-    printf("Time to generate %d : %lds\n", table_size, g - i);
+    gettimeofday(&end, 0);
+    printf("Time to generate\t: %lf\n", elapsed(&start, &end));
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
