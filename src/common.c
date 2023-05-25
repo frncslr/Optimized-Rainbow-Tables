@@ -2,7 +2,7 @@
 
 double elapsed(struct timeval *start, struct timeval *end)
 {
-    return end->tv_sec - start->tv_sec + (end->tv_usec - start->tv_usec)*1e-6;
+    return end->tv_sec - start->tv_sec + (end->tv_usec - start->tv_usec) * 1e-6;
 }
 
 void print_hash(unsigned char *hashed_value)
@@ -32,6 +32,11 @@ void compute(uint32_t *point, int table_id, int col_start, int col_end, uint32_t
 {
     for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
         hash_reduction(point, table_id, col_id);
+}
+
+int hsize(int col_id)
+{
+    return (int)ceil(LOAD_FACTOR * ceil(mci(col_id)));
 }
 
 void init(Hashtable hashtable, int size)

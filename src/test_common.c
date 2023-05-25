@@ -123,6 +123,11 @@ void test_hashtable()
 {
     printf("# Test hashtable :\n");
 
+    printf("** mci(t) : %f \t mt : %f\n", mci(t), mt);
+
+    int col_id = t;
+    printf("Htable size for column %d : %d\n", col_id, hsize(col_id));
+
     Hashtable htable;
     int size = 10;
     if ((htable = (Points *)calloc(size, sizeof(Points))) == NULL)

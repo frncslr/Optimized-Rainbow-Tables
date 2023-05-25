@@ -47,6 +47,7 @@ typedef struct
 
 typedef Points *Hashtable;
 
+int hsize(int);
 void init(Hashtable, int);
 int insert(Hashtable, int, uint32_t, uint32_t);
 Points *search(Hashtable, int, uint32_t);
