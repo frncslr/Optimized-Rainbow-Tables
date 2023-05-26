@@ -9,7 +9,7 @@ int main(void)
   // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
-  test_hash_reduction_n();
+  // test_hash_reduction_n();
   // test_compute();
   // test_hashtable();
 
@@ -19,7 +19,7 @@ int main(void)
   // test_clean_n();
   // test_generate();
   // test_operations();
-  // test_generate_f();
+  test_generate_f();
   // test_sort();
   // test_precompute();
   // test_rice();

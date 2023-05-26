@@ -1,5 +1,5 @@
-from scipy.optimize import minimize, NonlinearConstraint
 from math import ceil
+from scipy.optimize import minimize, NonlinearConstraint
 
 N = 2**24
 t = 1000
@@ -11,6 +11,7 @@ gamma = 2*N/m0
 
 nh = 1 # number of hasing nodes
 vh = 1580935 # number of hash reductions per second
+# vh = 1
 nf = 1 # number of filtrating nodes
 vf = 16879286 # number of filtrations per second
 do = 0 # average overhead time per point
@@ -21,7 +22,7 @@ ca = t
 
 
 def mci(i):
-    return ceil(2*N/(i+gamma))
+    return 2*N/(i+gamma)
 
 def precompH(filters):
     result = 0;
@@ -75,14 +76,44 @@ def positions(amin, amax):
     print(f"H : {precompH(filters)}")
     print(f"F : {precompF(filters)}")
     filters[0] = nb_filters
-    return list(map(lambda x: int(x), filters))
+    return list(map(lambda x: round(x), filters))
+
+def cstr_ineq2(a):
+    list_cstr = []
+    for i in range(2,a+1):
+        def f(filters, i=i):
+            return filters[i]-filters[i-1]-1
+        list_cstr.append({'type':'eq', 'fun':f})
+    return list_cstr
+
+def positions2():
+    a = 3
+    x0 = [0]*(a+1)
+    bnds = ((0,0),)+((1,1000),)*(a-1)+((1000,1000),)
+    # cstr = [{'type':'ineq', 'fun': lambda filters: {filters[i]-filters[i-1]-1 for i in range(1,a+1)}}]
+    cstr = [{'type':'eq', 'fun': lambda x: max([x[i]-int(x[i]) for i in range(len(x))])}]
+    cstr += cstr_ineq2(a)
+    # cstr += [{'type':'ineq', 'fun': lambda filters: filters[i]-filters[i-1]-1.0001} for i in range(1,a+1)]
+    result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr)
+    print(result)
+    print(precompH(result.x))
+    print(operations(result.x[1:]))
+    
  
 def export(filters, filename):
     with open(filename, "wb") as file:
         for filter in filters:
             file.write(filter.to_bytes(4, "little"))
+
+def operations(filters):
+    total = 0
+    previous = 0
+    for current in filters:
+        total += mci(previous)*(current - previous)
+        previous = current
+    return ceil(total)
            
-def check(filename):
+def check_export(filename):
     filters = []
     with open(filename, "rb") as file:
         nb_filters = int.from_bytes(file.read(4), "little")
@@ -91,18 +122,33 @@ def check(filename):
         filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
     return nb_filters, filters
 
+def check_mci(filters):
+    for i in range(len(filters)):
+        print(f"Filter in position {i} : column = {filters[i]} & mci = {mci(filters[i])}")
+
 if __name__ == "__main__": 
-    amin = 30
-    amax = 37
-    # filters = positions(amin, amax)
-    # print(f"filters : {filters}")
-    # print(f"T : {precompT(filters)}")
+    
+    # positions2()
+    
+    
+    amin = 53
+    amax = 55
+    filters = positions(amin, amax)
+    print(f"filters : {filters}")
     # export(filters, "configTestPositions.dat")
     
-    nb, f = check("configTestPositions.dat")
-    print(nb)
-    print(f)
+    # nb, f = check_export("configTestPositions.dat")
+    # print(f"Exported {nb} filters : {f}")
+    # print(f"Theoretical operations : {operations(f)}")
+    # f = [0] + f
     # print(f"T : {precompT(f)}")
-    print(f"T : {precompT([0,1000])}")
-    print(f"H : {precompH([0,1000])}")
-    print(f"F : {precompF([0,1000])}")
+    # print(f"H : {precompH(f)}")
+    # print(f"F : {precompF(f)}")
+    
+    # print("1 filtre à t=1000 :")
+    # print(f"T : {precompT([0,1000])}")
+    # print(f"H : {precompH([0,1000])}")
+    # print(f"F : {precompF([0,1000])}")
+    
+    # print(m0,mt,mci(0),mci(t))
+    # print(mci(34))

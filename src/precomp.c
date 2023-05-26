@@ -88,23 +88,27 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
     double total_compute, total_clean;
     for (int col_start = 0, *col_end = filters, *last = filters + nb_filters; col_end < last; col_start = *(col_end++))
     {
-         gettimeofday(&start, 0);
         for (Points *current = table, *last = table + *table_size; current < last; current++)
+        {
+            gettimeofday(&start, 0);
             compute(&(current->end), table_id, col_start, *col_end, nb_hash);
-        gettimeofday(&end, 0);
-        total_compute += elapsed(&start, &end);
-         gettimeofday(&start, 0);
+            gettimeofday(&end, 0);
+            total_compute += elapsed(&start, &end);
+        }
+        gettimeofday(&start, 0);
         clean(&table, table_size, hsize(*col_end));
         gettimeofday(&end, 0);
         total_clean += elapsed(&start, &end);
     }
-    printf("Time to compute\t: %fs\nTime to clean\t: %fs\n", total_compute, total_clean);
+    printf("Time to compute\t\t: %fs\nTime to clean\t\t: %fs\n", total_compute, total_clean);
 }
 
 void operations(int *filters, int nb_filters, uint32_t *expec_hash)
 {
+    double total = 0.0;
     for (int previous = 0, *current = filters, *last = filters + nb_filters; current < last; previous = *(current++))
-        *expec_hash += (uint32_t)ceil(mci(previous)) * (*current - previous);
+        total += mci(previous) * (*current - previous);
+    *expec_hash += (uint32_t)ceil(total);
 }
 
 void swap(Points *a, Points *b)
