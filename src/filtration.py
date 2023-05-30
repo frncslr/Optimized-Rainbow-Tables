@@ -10,8 +10,7 @@ mt = 2*alpha*N/(t+2)
 gamma = 2*N/m0
 
 nh = 1 # number of hasing nodes
-vh = 1580935 # number of hash reductions per second
-# vh = 1
+vh = 1577142 # number of hash reductions per second
 nf = 1 # number of filtrating nodes
 vf = 16879286 # number of filtrations per second
 do = 0 # average overhead time per point
@@ -120,7 +119,13 @@ def check_export(filename):
         content = file.read(nb_filters*4)
     for i in range(nb_filters):
         filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
-    return nb_filters, filters
+    print(f"Content of {filename} :")
+    print(f"Filters : {nb_filters} = {filters}")
+    print(f"Hash : {operations(filters)}")
+    filters = [0] + filters
+    print(f"T : {precompT(filters)}")
+    print(f"H : {precompH(filters)}")
+    print(f"F : {precompF(filters)}")
 
 def check_mci(filters):
     for i in range(len(filters)):
@@ -128,13 +133,16 @@ def check_mci(filters):
 
 if __name__ == "__main__": 
     
+    check_export("configTestPositionsOK.dat")
+    check_export("configTestPositions.dat")
+    
     # positions2()
     
     
     amin = 53
     amax = 55
-    filters = positions(amin, amax)
-    print(f"filters : {filters}")
+    # filters = positions(amin, amax)
+    # print(f"filters : {filters}")
     # export(filters, "configTestPositions.dat")
     
     # nb, f = check_export("configTestPositions.dat")
