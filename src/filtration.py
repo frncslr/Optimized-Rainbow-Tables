@@ -143,7 +143,7 @@ if __name__ == "__main__":
     amax = 55
     # filters = positions(amin, amax)
     # print(f"filters : {filters}")
-    # export(filters, "configTestPositions.dat")
+    # export(filters, "config.dat")
     
     # nb, f = check_export("configTestPositions.dat")
     # print(f"Exported {nb} filters : {f}")
