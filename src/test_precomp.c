@@ -24,7 +24,7 @@ void test_positions()
 {
     printf("# Test positions :\n");
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "config.dat";
     positions(&filters, &nb_filters, file_name);
     for (int i = 0; i < nb_filters; i++)
         printf("position %d : %d\n", i, filters[i]);
@@ -180,7 +180,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "config.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -449,7 +449,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "config.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
