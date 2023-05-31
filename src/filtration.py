@@ -1,5 +1,6 @@
 from math import ceil
 from scipy.optimize import minimize, NonlinearConstraint
+from numpy import linspace
 
 N = 2**24
 t = 1000
@@ -86,18 +87,34 @@ def cstr_ineq2(a):
     return list_cstr
 
 def positions2():
-    a = 3
-    x0 = [0]*(a+1)
+    a = 37
+    x0 = linspace(0,1000,a+1, dtype=int)
     bnds = ((0,0),)+((1,1000),)*(a-1)+((1000,1000),)
-    # cstr = [{'type':'ineq', 'fun': lambda filters: {filters[i]-filters[i-1]-1 for i in range(1,a+1)}}]
-    cstr = [{'type':'eq', 'fun': lambda x: max([x[i]-int(x[i]) for i in range(len(x))])}]
-    cstr += cstr_ineq2(a)
-    # cstr += [{'type':'ineq', 'fun': lambda filters: filters[i]-filters[i-1]-1.0001} for i in range(1,a+1)]
-    result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr)
+    cstr = [{'type': 'eq', 'fun': lambda x: min([int(x[i]-x[i]) for i in range(len(x))])}]
+    cstr = [{'type': 'eq', 'fun': lambda f: (min([f[i]-f[i-1]-1 for i in range(1,len(f))])-1)}]
+    result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr, options={"maxiter": 10000})
     print(result)
     print(precompH(result.x))
     print(operations(result.x[1:]))
     
+def positions3(amin, amax):
+    nb_filters = 0
+    time = N*t
+    filters = []
+    for a in range(amin, amax+1):
+        x0 = linspace(0,1000,a+1, dtype=int)
+        bnds = ((0,0),)+((1,1000),)*(a-1)+((1000,1000),)
+        cstr = [{'type': 'eq', 'fun': lambda f: (min([f[i]-f[i-1]-1 for i in range(1,len(f))])-1)}]
+        result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr, options={"maxiter": 10000})
+        if result.fun < time:
+            nb_filters = a
+            time = result.fun
+            filters = result.x
+    print(f"T : {precompT(filters)}")
+    print(f"H : {precompH(filters)}")
+    print(f"F : {precompF(filters)}")
+    filters[0] = nb_filters
+    return list(map(lambda x: round(x), filters))
  
 def export(filters, filename):
     with open(filename, "wb") as file:
@@ -131,13 +148,22 @@ def check_mci(filters):
     for i in range(len(filters)):
         print(f"Filter in position {i} : column = {filters[i]} & mci = {mci(filters[i])}")
 
+def T (t , ell):
+    T = 0
+    Csum = 0
+    pf = 2.0/( t +1) # = m / N
+    for k in range (1 , t +1):
+        q = 1 - (t -k -1)*( t - k )/ float (( t )*( t +1))
+        C = k + (t - k +1)* q
+        for j in range ( ell ):
+            Csum += C
+            p = pf * (1 - pf )**( ell *( k -1)+ j )
+            T += p * Csum
+    return T
+
 if __name__ == "__main__": 
     
-    check_export("configTestPositionsOK.dat")
-    check_export("configTestPositions.dat")
-    
-    # positions2()
-    
+    # check_export("configTestPositions.dat")
     
     amin = 53
     amax = 55
@@ -145,18 +171,9 @@ if __name__ == "__main__":
     # print(f"filters : {filters}")
     # export(filters, "config.dat")
     
-    # nb, f = check_export("configTestPositions.dat")
-    # print(f"Exported {nb} filters : {f}")
-    # print(f"Theoretical operations : {operations(f)}")
-    # f = [0] + f
-    # print(f"T : {precompT(f)}")
-    # print(f"H : {precompH(f)}")
-    # print(f"F : {precompF(f)}")
     
-    # print("1 filtre à t=1000 :")
-    # print(f"T : {precompT([0,1000])}")
-    # print(f"H : {precompH([0,1000])}")
-    # print(f"F : {precompF([0,1000])}")
     
-    # print(m0,mt,mci(0),mci(t))
-    # print(mci(34))
+    # positions2()
+    filters = positions3(25, 40)
+    print(f"filters : {filters}")
+    export(filters, "config.dat")
