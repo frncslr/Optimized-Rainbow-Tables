@@ -16,14 +16,18 @@
 #define alpha (r / (r + 1))
 #define m0 (2 * r * N / (t + 2))
 #define mt (2 * alpha * N / (t + 2))
+#define GAMMA (2 * N / m0)
+#define mci(i) (2 * N / (i + GAMMA))
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include </usr/include/sys/time.h>
 #include <math.h>
 #include <openssl/sha.h>
 
+double elapsed(struct timeval *, struct timeval *);
 void print_hash(unsigned char *);
 void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);
@@ -45,6 +49,7 @@ typedef struct
 
 typedef Points *Hashtable;
 
+int hsize(int);
 void init(Hashtable, int);
 int insert(Hashtable, int, uint32_t, uint32_t);
 Points *search(Hashtable, int, uint32_t);

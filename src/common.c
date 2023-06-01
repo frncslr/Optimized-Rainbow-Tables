@@ -1,5 +1,10 @@
 #include "../include/common.h"
 
+double elapsed(struct timeval *start, struct timeval *end)
+{
+    return end->tv_sec - start->tv_sec + (end->tv_usec - start->tv_usec) * 1e-6;
+}
+
 void print_hash(unsigned char *hashed_value)
 {
     for (unsigned int i = 0; i < SHA256_DIGEST_LENGTH; i++)
@@ -71,6 +76,10 @@ void read_results(double *results, int count, const char *file_name)
         fprintf(stderr, "Closing file problem : %s", file_name);
         exit(ERROR_FCLOSE);
     }
+
+int hsize(int col_id)
+{
+    return (int)ceil(LOAD_FACTOR * ceil(mci(col_id)));
 }
 
 void init(Hashtable hashtable, int size)
@@ -82,8 +91,7 @@ void init(Hashtable hashtable, int size)
 int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
 {
     Points *point;
-    int i;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
         point = hashtable + (end + i) % size;
         if (point->end == MAX)
@@ -101,10 +109,9 @@ int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
 Points *search(Hashtable hashtable, int size, uint32_t end)
 {
     Points *point;
-    int i, idx = end % size;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
-        point = hashtable + (idx + i) % size;
+        point = hashtable + (end + i) % size;
         if (point->end == end)
             return point;
     }

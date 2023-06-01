@@ -8,15 +8,20 @@ void test_ceri()
     uint32_t previous = 4099;
     printf("Current endpoint\t: %u\n", end);
     printf("Previous endpoint\t: %u\n", previous);
-    printf("Uncompressed difference\t: %u\n", (end - previous - 1));
-    rice(&end, (end - previous - 1), k);
-    printf("Compressed difference\t: %u\n", end);
+    uint32_t difference = end - previous - 1;
+    printf("Uncompressed difference\t: %u\n", difference);
     char size = 0;
-    for (uint32_t bits = end; bits; bits >>= 1, size++)
+    for (uint32_t bits = difference; bits; bits >>= 1, size++)
+        ;
+    printf("Uncompressed bits size\t: %d\n", size);
+    rice(&difference, difference, k);
+    printf("Compressed difference\t: %u\n", difference);
+    size = 0;
+    for (uint32_t bits = difference; bits; bits >>= 1, size++)
         ;
     printf("Compressed bits size\t: %d\n", size);
-    ceri(&end, end, k, size);
-    printf("Decompressed difference\t: %u\n\n", end);
+    ceri(&difference, difference, k, size);
+    printf("Decompressed difference\t: %u\n\n", difference);
 }
 
 void test_import()
@@ -85,6 +90,7 @@ void test_import_m()
     char extension[6] = "i.dat";
     strcat(table_name, extension);
 
+    int tables_sizes[nb_tables];
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
     {
@@ -100,6 +106,8 @@ void test_import_m()
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
 
+        tables_sizes[table_id] = table_size;
+
         printf("Table %d (exported) :\n", table_id);
         for (int i = 0; i < table_size; i++)
             printf("%u\t:\t%u\n", table[i].start, table[i].end);
@@ -107,7 +115,6 @@ void test_import_m()
         printf("\n");
     }
 
-    int tables_sizes[] = {table_size, table_size, table_size, table_size};
     int htables_sizes[nb_tables];
     Hashtable *htables;
     if ((htables = (Hashtable *)calloc(nb_tables, sizeof(Hashtable))) == NULL)
@@ -174,7 +181,9 @@ void test_chain()
     }
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    int nb_filters = 1;
+    int filters = table_width;
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -221,7 +230,7 @@ void test_chain()
     }
     else
     {
-        printf("End point not found in dictionary\n\n");
+        printf("End point not found in hashtable\n\n");
     }
     free((void *)htable);
     free((void *)table);
@@ -256,9 +265,13 @@ void test_chain_rebuild()
     int table_size = 1;
     int table_width = 1000;
     Points table[1];
+
     initialize(table, table_id, table_size);
+
     uint32_t nb_hash = 0;
-    generate(table, table_id, table_size, table_width, &nb_hash);
+    int nb_filters = 1;
+    int filters = table_width;
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
     printf("Table : {%u : %u}\n", table->start, table->end);
     printf("id : %d\n size : %d\n width : %d\n", table_id, table_size, table_width);
 
@@ -313,7 +326,6 @@ void test_attack_existing()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    uint32_t nb_hash = 0;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -322,7 +334,10 @@ void test_attack_existing()
         exit(ERROR_ALLOC);
     }
 
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    uint32_t nb_hash = 0;
+    int nb_filters = 1;
+    int filters = table_width;
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -362,13 +377,12 @@ void test_attack_existing()
     if (result == point)
     {
         printf("Plain recovered \t\t: %u\n", (uint32_t)result);
-        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
     else
     {
         printf("Hash not recovered T_T\n");
-        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
+    printf("Number of hashes done \t\t: %u\n", nb_hash);
     printf("\n");
     free((void *)table);
     free((void *)htable);
@@ -378,11 +392,11 @@ void test_attack_existing_n()
 {
     printf("# Test attack existing n :\n");
 
-    int n = 100;
+    int n = 10000;
     int nb = 0;
 
     int nb_tables = 1;
-    int table_id = 0;
+    int table_id = 0; // DONT CHANGE IT
     printf("Table id : %d\n", table_id);
     int table_size = (int)ceil(m0);
     printf("Table size : %d\n", table_size);
@@ -400,8 +414,12 @@ void test_attack_existing_n()
         exit(ERROR_ALLOC);
     }
 
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -451,6 +469,7 @@ void test_attack_existing_n()
     printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
     printf("\n");
     free((void *)table);
+    free((void *)filters);
     free((void *)htable);
 }
 
@@ -467,7 +486,6 @@ void test_attack_random()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    uint32_t nb_hash = 0;
 
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -476,7 +494,12 @@ void test_attack_random()
         exit(ERROR_ALLOC);
     }
 
-    precompute(&table, table_id, &table_size, table_width, &nb_hash);
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+
+    uint32_t nb_hash = 0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -505,22 +528,22 @@ void test_attack_random()
     if (result == point)
     {
         printf("Point recovered : %u\n", (uint32_t)result);
-        printf("Number of hashes done \t\t: %u\n", nb_hash);
     }
     else
     {
         printf("Hash not recovered T_T\n");
     }
+    printf("Number of hashes done \t\t: %u\n", nb_hash);
     printf("\n");
     free((void *)table);
     free((void *)htable);
+    free((void *)filters);
 }
 
 void test_attack_random_n()
 {
     printf("# Test attack random n :\n");
-    int n = 1000;
-    int nb = 0;
+    int n = 10000;
 
     int nb_tables = 1;
     int table_id = 0;
@@ -530,7 +553,6 @@ void test_attack_random_n()
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(table_name, extension);
-    uint32_t nb_hash = 0;
     int coverage = 0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
@@ -548,14 +570,20 @@ void test_attack_random_n()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
 
-    // precompute(&table, table_id, &table_size, table_width, &nb_hash);
-    // export(table, table_size, table_name);
-    // cover(table, table_id, table_size, table_width, covered, &coverage);
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
 
-    uint32_t expec_hash = (int)ceil(m0) * t;
-    uint32_t diff_hash = expec_hash - nb_hash;
+    uint32_t nb_hash = 0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    export(table, table_size, table_name);
+    cover(table, table_id, table_size, table_width, covered, &coverage);
+
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int expec_size = (int)ceil(mt);
     int diff_size = table_size - expec_size;
@@ -585,6 +613,7 @@ void test_attack_random_n()
     uint32_t total_hash = 0;
     srand(time(NULL));
     printf("Launching %d random attacks\n", n);
+    int nb = 0;
     for (int i = 0; i < n; i++)
     {
         nb_hash = 0;
@@ -603,6 +632,7 @@ void test_attack_random_n()
 
     free((void *)table);
     free((void *)htable);
+    free((void *)filters);
     free((void *)covered);
 }
 
@@ -632,6 +662,11 @@ void test_attack_random_n_m()
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
+
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "configTestPositions.dat";
+    positions(&filters, &nb_filters, file_name);
+
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
     for (int table_id = 0; table_id < nb_tables; table_id++)
     {
@@ -642,7 +677,7 @@ void test_attack_random_n_m()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size, table_width, &nb_hash);
+        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
@@ -654,10 +689,12 @@ void test_attack_random_n_m()
         free((void *)table);
     }
 
-    uint32_t expec_hash = nb_tables * (int)ceil(m0) * t;
-    uint32_t diff_hash = expec_hash - nb_hash;
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    expec_hash *= nb_tables;
+    int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %u (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
 
     int expec_size = nb_tables * (int)ceil(mt);
     int diff_size = total_size - expec_size;
@@ -717,5 +754,6 @@ void test_attack_random_n_m()
     for (int table_id = 0; table_id < nb_tables; table_id++)
         free((void *)htables[table_id]);
     free((void *)htables);
+    free((void *)filters);
     free((void *)covered);
 }

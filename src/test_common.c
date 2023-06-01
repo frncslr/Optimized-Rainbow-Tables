@@ -1,5 +1,15 @@
 #include "../include/test_common.h"
 
+void test_elapsed()
+{
+    struct timeval t0, t1;
+    gettimeofday(&t0, 0);
+    for (uint64_t i = 0; i < 1e10; i++)
+        ;
+    gettimeofday(&t1, 0);
+    printf("Time difference : %lf\n", elapsed(&t0, &t1));
+}
+
 void test_hash()
 {
     printf("# Test hash :\n");
@@ -13,14 +23,23 @@ void test_hash()
 void test_hash_n()
 {
     printf("# Test hash n:\n");
-    uint32_t n = 1 << 24;
-    printf("Time to hash %d : ", n);
-    fflush(stdout);
-    time_t s = time(NULL);
-    for (uint32_t point = 0; point < n; point++)
-        hash(&point, buffer);
-    time_t e = time(NULL);
-    printf("%lds\n", e - s);
+    int nb_tests = 20;
+    uint32_t nb_hash = 1 << 24;
+    printf("Hashing %u numbers %d times\n", nb_hash, nb_tests);
+
+    struct timeval start, end;
+    double difference = 0.0;
+
+    for (int i = 0; i < nb_tests; i++)
+    {
+        gettimeofday(&start, 0);
+        for (uint32_t point = 0; point < nb_hash; point++)
+            hash(&point, buffer);
+        gettimeofday(&end, 0);
+        difference += elapsed(&start, &end);
+    }
+    printf("Time to hash\t: %lf\n", difference / nb_tests);
+    printf("Hash speed\t: %lf\n", nb_hash * nb_tests / difference);
     printf("\n");
 }
 
@@ -48,6 +67,32 @@ void test_hash_reduction()
     printf("\n");
 }
 
+void test_hash_reduction_n()
+{
+    printf("# Test hash reduction n:\n");
+    int nb_tests = 20;
+    uint32_t nb_hash = 1 << 24;
+    printf("Hashing %u numbers %d times\n", nb_hash, nb_tests);
+
+    struct timeval start, end;
+    double difference = 0.0;
+
+    for (int i = 0; i < nb_tests; i++)
+    {
+        gettimeofday(&start, 0);
+        for (uint32_t point = 0, value; point < nb_hash; point++)
+        {
+            value = point;
+            hash_reduction(&value, 1, 0);
+        }
+        gettimeofday(&end, 0);
+        difference += elapsed(&start, &end);
+    }
+    printf("Time to hash\t: %lf\n", difference / nb_tests);
+    printf("Hash speed\t: %lf\n", nb_hash * nb_tests / difference);
+    printf("\n");
+}
+
 void test_compute()
 {
     printf("# Test compute :\n");
@@ -71,7 +116,7 @@ void test_compute()
     hash_reduction(&copy, table_id, col_start);
     hash_reduction(&copy, table_id, col_start + 1);
     hash_reduction(&copy, table_id, col_start + 2);
-    printf("Copy hash reduced \t: %u\n", copy);
+    printf("Copy hash reduced \t: %u\n\n", copy);
 }
 
 void test_write_results()
@@ -95,6 +140,11 @@ void test_read_results()
 void test_hashtable()
 {
     printf("# Test hashtable :\n");
+
+    printf("** mci(t) : %f \t mt : %f\n", mci(t), mt);
+
+    int col_id = t;
+    printf("Htable size for column %d : %d\n", col_id, hsize(col_id));
 
     Hashtable htable;
     int size = 10;
