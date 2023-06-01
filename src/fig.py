@@ -1,6 +1,6 @@
 import numpy as np
-
 import matplotlib.pyplot as plt
+from struct import unpack
 
 def draw_operations():
     x = [0,1,2,3]
@@ -56,4 +56,31 @@ def draw_coverage():
     plt.show()
     fig.savefig(f'name', bbox_inches='tight',dpi=500)
     
-draw_coverage()
+# draw_coverage()
+
+def read_results(filename, count):
+    with open(filename, 'rb') as file:
+        return list(unpack('d' * count, file.read(8 * count)))
+
+# print(read_results("hSpeeds.dat", 21))
+
+def draw_hSpeeds():
+    count = 50
+    results = read_results("hSpeeds.dat", count+1)
+    average = results[-1]
+    y = results[:-1]
+    fig, ax = plt.subplots()
+    ax.plot(y,'o',color='red',label='Hash speeds')
+    ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
+    plt.xticks(np.arange(0, count, 1), fontsize=16)
+    plt.yticks(np.arange(1500000, 1600000, 10000), fontsize=16)
+    # plt.yticks(np.arange(1540000, 1570000, 5000), fontsize=16)
+
+    ax.set_title(f'Hash speed variation on {count} mesures')
+    plt.xlabel("Mesure number ",fontsize=16)
+    plt.ylabel("Hash speed (M/s)",fontsize=16)
+    plt.legend(loc="upper left")
+    plt.show()
+    # fig.savefig(f'hSpeeds', bbox_inches='tight',dpi=500)
+
+draw_hSpeeds()

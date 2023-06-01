@@ -76,6 +76,7 @@ void read_results(double *results, int count, const char *file_name)
         fprintf(stderr, "Closing file problem : %s", file_name);
         exit(ERROR_FCLOSE);
     }
+}
 
 int hsize(int col_id)
 {

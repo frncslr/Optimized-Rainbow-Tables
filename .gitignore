@@ -4,3 +4,4 @@ src/*.d
 src/*.o
 *.dat
 venv
+*.png
