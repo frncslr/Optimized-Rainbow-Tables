@@ -10,6 +10,8 @@ void test_reduction();
 void test_hash_reduction();
 void test_hash_reduction_n();
 void test_compute();
+void test_write_results();
+void test_read_results();
 void test_hashtable();
 
 #endif

@@ -33,6 +33,8 @@ void hash(uint32_t *, unsigned char *);
 void reduction(uint32_t *, unsigned char *, int, int);
 void hash_reduction(uint32_t *, int, int);
 void compute(uint32_t *, int, int, int, uint32_t *);
+void write_results(double *, int, const char *);
+void read_results(double *, int, const char *);
 
 static unsigned char buffer[SHA256_DIGEST_LENGTH];
 

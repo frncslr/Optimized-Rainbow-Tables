@@ -11,6 +11,8 @@ int main(void)
   // test_hash_reduction();
   // test_hash_reduction_n();
   // test_compute();
+  // test_write_results();
+  // test_read_results();
   // test_hashtable();
 
   // test_initialize();
