@@ -24,7 +24,7 @@ void test_positions()
 {
     printf("# Test positions :\n");
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
+    char file_name[30] = "configCV-36.dat";
     positions(&filters, &nb_filters, file_name);
     for (int i = 0; i < nb_filters; i++)
         printf("position %d : %d\n", i, filters[i]);
@@ -72,17 +72,19 @@ void test_clean()
 void test_clean_n()
 {
     printf("Test clean n :\n");
-    int nb_tests = 20;
-    int init_size = 1 << 24, table_size;
-    printf("Cleaning %d points %d times\n", init_size, nb_tests);
-    Points *table;
+    int nb_tests = 50;
+    int nb_elem = 1 << 24, table_size;
+    printf("Cleaning %d points %d times\n", nb_elem, nb_tests);
 
+    Points *table;
     struct timeval start, end;
-    double difference = 0.0;
+    double speed, local_time, total_time = 0.0;
+    const char file_name[20] = "cSpeeds.dat";
+
     srand(time(NULL));
     for (int i = 0; i < nb_tests; i++)
     {
-        table_size = init_size;
+        table_size = nb_elem;
         if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
         {
             fprintf(stderr, "Memory allocation problem\n");
@@ -94,11 +96,15 @@ void test_clean_n()
         gettimeofday(&start, 0);
         clean(&table, &table_size, table_size);
         gettimeofday(&end, 0);
-        difference += elapsed(&start, &end);
-        free((void *)table);
+        local_time = elapsed(&start, &end);
+        speed = nb_elem / local_time;
+        write_results(&speed, 1, file_name);
+        total_time += local_time;
     }
-    printf("Time to clean\t: %lf\n", difference / nb_tests);
-    printf("Clean speed\t: %lf\n", init_size * nb_tests / difference);
+    local_time = total_time / nb_tests;
+    printf("Time to hash\t: %lf\n", local_time);
+    speed = nb_elem / local_time;
+    printf("Clean speed\t: %lf\n", speed);
     printf("\n");
 }
 
@@ -180,7 +186,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
+    char file_name[30] = "configCV-36.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -449,7 +455,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
+    char file_name[30] = "configDLA.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
@@ -476,6 +482,7 @@ void test_precompute_full_n()
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
+    printf("** %u\n", expec_hash);
     expec_hash *= 4;
     int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;

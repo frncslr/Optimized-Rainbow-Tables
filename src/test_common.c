@@ -47,7 +47,6 @@ void test_hash_n()
     printf("Time to hash\t: %lf\n", time);
     speed = nb_hash / time;
     printf("Hash speed\t: %lf\n", speed);
-    write_results(&speed, 1, file_name);
     printf("\n");
 }
 
