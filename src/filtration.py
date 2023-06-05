@@ -12,6 +12,8 @@ gamma = 2*N/m0
 
 nh = 1 # number of hasing nodes
 vh = 1577142 # number of hash reductions per second
+# vh = 1555509
+# vh = 1562115
 nf = 1 # number of filtrating nodes
 vf = 16879286 # number of filtrations per second
 do = 0 # average overhead time per point
@@ -22,7 +24,7 @@ ca = t
 
 
 def mci(i):
-    return 2*N/(i+gamma)
+    return ceil(2*N/(i+gamma))
 
 def precompH(filters):
     result = 0;
@@ -110,16 +112,22 @@ def positions3(amin, amax):
             nb_filters = a
             time = result.fun
             filters = result.x
-    print(f"T : {precompT(filters)}")
-    print(f"H : {precompH(filters)}")
-    print(f"F : {precompF(filters)}")
     filters[0] = nb_filters
     return list(map(lambda x: round(x), filters))
  
-def export(filters, filename):
+def export_filters(filters, filename):
     with open(filename, "wb") as file:
         for filter in filters:
             file.write(filter.to_bytes(4, "little"))
+
+def import_filters(filename):
+    with open(filename, "rb") as file:
+        nb_filters = int.from_bytes(file.read(4), "little")
+        filters = [nb_filters]
+        content = file.read(nb_filters*4)
+    for i in range(nb_filters):
+        filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
+    return filters
 
 def operations(filters):
     total = 0
@@ -128,42 +136,18 @@ def operations(filters):
         total += mci(previous)*(current - previous)
         previous = current
     return ceil(total)
-           
-def check_export(filename):
-    filters = []
-    with open(filename, "rb") as file:
-        nb_filters = int.from_bytes(file.read(4), "little")
-        content = file.read(nb_filters*4)
-    for i in range(nb_filters):
-        filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
-    print(f"Content of {filename} :")
-    print(f"Filters : {nb_filters} = {filters}")
-    print(f"Hash : {operations(filters)}")
-    filters = [0] + filters
+    
+def characteristics(filters): 
+    print(f"Filters : {filters[0]} = {filters[1:]}")
+    print(f"Hash : {operations(filters[1:])}")
+    filters[0] = 0
     print(f"T : {precompT(filters)}")
     print(f"H : {precompH(filters)}")
     print(f"F : {precompF(filters)}")
 
-def check_mci(filters):
-    for i in range(len(filters)):
-        print(f"Filter in position {i} : column = {filters[i]} & mci = {mci(filters[i])}")
-
-def T (t , ell):
-    T = 0
-    Csum = 0
-    pf = 2.0/( t +1) # = m / N
-    for k in range (1 , t +1):
-        q = 1 - (t -k -1)*( t - k )/ float (( t )*( t +1))
-        C = k + (t - k +1)* q
-        for j in range ( ell ):
-            Csum += C
-            p = pf * (1 - pf )**( ell *( k -1)+ j )
-            T += p * Csum
-    return T
-
 if __name__ == "__main__": 
     
-    # check_export("configTestPositions.dat")
+    # check_export("config-36.dat")
     
     amin = 53
     amax = 55
@@ -171,9 +155,10 @@ if __name__ == "__main__":
     # print(f"filters : {filters}")
     # export(filters, "config.dat")
     
-    
-    
     # positions2()
-    filters = positions3(25, 40)
-    print(f"filters : {filters}")
-    export(filters, "config.dat")
+    
+    filters = positions3(37, 37)
+    characteristics(filters)
+    # export_filters(filters, f"configCV-{filters[0]}.dat")
+    
+    characteristics(import_filters(f"configDLA.dat"))
