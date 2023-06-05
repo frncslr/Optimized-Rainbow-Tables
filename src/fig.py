@@ -65,16 +65,14 @@ def read_results(filename, count):
 # print(read_results("hSpeeds.dat", 21))
 
 def draw_hSpeeds():
-    count = 50
-    results = read_results("hSpeeds.dat", count+1)
-    average = results[-1]
-    y = results[:-1]
+    count = 100
+    y = read_results("hSpeeds.dat", count)
+    average = sum(y) / count
     fig, ax = plt.subplots()
     ax.plot(y,'o',color='red',label='Hash speeds')
     ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
-    plt.xticks(np.arange(0, count, 1), fontsize=16)
+    # plt.xticks(np.arange(1, count+1, 1), fontsize=16)
     plt.yticks(np.arange(1500000, 1600000, 10000), fontsize=16)
-    # plt.yticks(np.arange(1540000, 1570000, 5000), fontsize=16)
 
     ax.set_title(f'Hash speed variation on {count} mesures')
     plt.xlabel("Mesure number ",fontsize=16)
@@ -83,4 +81,24 @@ def draw_hSpeeds():
     plt.show()
     # fig.savefig(f'hSpeeds', bbox_inches='tight',dpi=500)
 
-draw_hSpeeds()
+# draw_hSpeeds()
+
+def draw_cSpeeds():
+    count = 100
+    y = read_results("cSpeeds.dat", count)
+    average = sum(y) / count
+    fig, ax = plt.subplots()
+    ax.plot(y,'o',color='red',label='Hash speeds')
+    ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
+    # plt.xticks(np.arange(1, count+1, 1), fontsize=16)
+    plt.yticks(np.arange(15000000, 18000000, 500000), fontsize=16)
+
+    ax.set_title(f'Hash speed variation on {count} mesures')
+    plt.xlabel("Mesure number ",fontsize=16)
+    plt.ylabel("Hash speed (M/s)",fontsize=16)
+    plt.legend(loc="upper left")
+    
+    plt.show()
+    fig.savefig(f'cSpeeds', bbox_inches='tight',dpi=500)
+    
+draw_cSpeeds()
