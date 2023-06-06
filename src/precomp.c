@@ -105,8 +105,10 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
 
 void operations(int *filters, int nb_filters, uint32_t *expec_hash)
 {
+    double total = 0.0;
     for (int previous = 0, *current = filters, *last = filters + nb_filters; current < last; previous = *(current++))
-        *expec_hash += (uint32_t)ceil(mci(previous)) * (*current - previous);
+        total += mci(previous) * (*current - previous);
+    *expec_hash = (uint32_t)ceil(total);
 }
 
 void swap(Points *a, Points *b)
