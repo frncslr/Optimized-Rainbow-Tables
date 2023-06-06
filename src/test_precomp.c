@@ -169,7 +169,7 @@ void test_operations()
     operations(filters, nb_filters, &expec_hash);
     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
 
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "opti.dat";
     positions(&filters, &nb_filters, file_name);
     expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
@@ -186,7 +186,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configCV-36.dat";
+    char file_name[30] = "opti.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -455,7 +455,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configDLA.dat";
+    char file_name[30] = "opti.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
@@ -482,7 +482,6 @@ void test_precompute_full_n()
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
-    printf("** %u\n", expec_hash);
     expec_hash *= 4;
     int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
