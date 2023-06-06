@@ -10,21 +10,25 @@ m0 = 2*r*N/(t+2)
 mt = 2*alpha*N/(t+2)
 gamma = 2*N/m0
 
-nh = 1 # number of hasing nodes
-vh = 1577142 # number of hash reductions per second
-# vh = 1555509
-# vh = 1562115
-nf = 1 # number of filtrating nodes
-vf = 16879286 # number of filtrations per second
-do = 0 # average overhead time per point
-dc = 0 # average nodes communication time
+# number of hasing nodes
+nh = 1
+# number of hash reductions per second
+vh = 1556599
+# number of filtrating nodes
+nf = 1
+# number of filtrations per second
+vf = 16879286
+# average overhead time per point
+do = 0
+# average nodes communication time
+dc = 0
 
 c0 = 0
 ca = t
 
 
 def mci(i):
-    return ceil(2*N/(i+gamma))
+    return 2*N/(i+gamma)
 
 def precompH(filters):
     result = 0;
@@ -121,6 +125,7 @@ def export_filters(filters, filename):
             file.write(filter.to_bytes(4, "little"))
 
 def import_filters(filename):
+    print(f"Importing {filename} filters")
     with open(filename, "rb") as file:
         nb_filters = int.from_bytes(file.read(4), "little")
         filters = [nb_filters]
@@ -140,10 +145,30 @@ def operations(filters):
 def characteristics(filters): 
     print(f"Filters : {filters[0]} = {filters[1:]}")
     print(f"Hash : {operations(filters[1:])}")
-    filters[0] = 0
-    print(f"T : {precompT(filters)}")
-    print(f"H : {precompH(filters)}")
-    print(f"F : {precompF(filters)}")
+    print(f"T : {precompT([0]+filters[1:])}")
+    print(f"H : {precompH([0]+filters[1:])}")
+    print(f"F : {precompF([0]+filters[1:])}")
+
+def ci(i, a):
+    return round(gamma * ((t+gamma-1) / gamma) ** (i/a) - gamma + 1)
+
+def c(a):
+    filters = []
+    for i in range(1,a+1):
+        filters.append(ci(i, a))
+    return filters
+
+def P(a):
+    return 2*N*a * (((t+gamma-1) / gamma) ** (1/a) - 1)
+
+def optimized(amin, amax):
+    hash = m0 * t
+    for a in range(amin, amax+1):
+        result = P(a)
+        if result < hash:
+            hash = result
+            nb_filters = a
+    return [nb_filters] + c(a)
 
 if __name__ == "__main__": 
     
@@ -157,8 +182,19 @@ if __name__ == "__main__":
     
     # positions2()
     
-    filters = positions3(37, 37)
-    characteristics(filters)
-    # export_filters(filters, f"configCV-{filters[0]}.dat")
+    # filters = positions3(36, 36)
+    # characteristics(filters)
+    # export_filters(filters, f"configVANILLA-{filters[0]}.dat")
     
-    characteristics(import_filters(f"configDLA.dat"))
+    # characteristics(import_filters(f"configDLA.dat"))
+    
+    # characteristics(import_filters(f"config.dat"))
+    # characteristics(import_filters(f"config-36.dat"))
+    # characteristics(import_filters(f"configCV-36.dat"))
+    
+    # f = optimized(36,36)
+    # print(f)
+    # characteristics(f)
+    # # export_filters(f, "opti.dat")
+    # print(import_filters("opti.dat"))
+    characteristics(import_filters("opti.dat"))

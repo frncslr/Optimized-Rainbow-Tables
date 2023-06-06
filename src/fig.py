@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from struct import unpack
+from filtration import import_filters
 
 def draw_operations():
     x = [0,1,2,3]
@@ -65,7 +66,7 @@ def read_results(filename, count):
 # print(read_results("hSpeeds.dat", 21))
 
 def draw_hSpeeds():
-    count = 100
+    count = 200
     y = read_results("hSpeeds.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
@@ -81,24 +82,55 @@ def draw_hSpeeds():
     plt.show()
     # fig.savefig(f'hSpeeds', bbox_inches='tight',dpi=500)
 
-# draw_hSpeeds()
+draw_hSpeeds()
 
 def draw_cSpeeds():
     count = 100
     y = read_results("cSpeeds.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
-    ax.plot(y,'o',color='red',label='Hash speeds')
+    ax.plot(y,'o',color='red',label='Clean speeds')
     ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
     # plt.xticks(np.arange(1, count+1, 1), fontsize=16)
     plt.yticks(np.arange(15000000, 18000000, 500000), fontsize=16)
 
-    ax.set_title(f'Hash speed variation on {count} mesures')
+    ax.set_title(f'Clean speed variation on {count} mesures')
     plt.xlabel("Mesure number ",fontsize=16)
-    plt.ylabel("Hash speed (M/s)",fontsize=16)
+    plt.ylabel("Clean speed (M/s)",fontsize=16)
     plt.legend(loc="upper left")
     
     plt.show()
     fig.savefig(f'cSpeeds', bbox_inches='tight',dpi=500)
     
-draw_cSpeeds()
+# draw_cSpeeds()
+
+def draw_filters():
+    filters = import_filters("opti.dat")
+    nb_filters = filters[0]
+    y = filters[1:]
+    fig, ax = plt.subplots()
+    ax.plot(y,'-',color='red',label='Optimized positions')
+    
+    filters = import_filters("configCEILED-36.dat")
+    nb_filters = filters[0]
+    y = filters[1:]
+    ax.plot(y,'+',color='blue',label='Ceiled filters positions')
+    
+    filters = import_filters("configVANILLA-36.dat")
+    nb_filters = filters[0]
+    y = filters[1:]
+    ax.plot(y,'x',color='green',label='Vanilla filters positions')
+    
+    # ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
+    plt.xticks(np.arange(0, nb_filters+1, 5), fontsize=16)
+    plt.yticks(np.arange(0, 1000, 200), fontsize=16)
+
+    ax.set_title(f'Positions of the {nb_filters} filters')
+    plt.xlabel("",fontsize=16)
+    plt.ylabel("",fontsize=16)
+    plt.legend(loc="upper left")
+    
+    plt.show()
+    fig.savefig(f'cSpeeds', bbox_inches='tight',dpi=500)
+    
+# draw_filters()
