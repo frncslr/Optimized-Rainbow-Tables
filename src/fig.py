@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from struct import unpack
-from filtration import import_filters
+from filtration import importf
 
 def draw_operations():
     x = [0,1,2,3]
@@ -82,7 +82,7 @@ def draw_hSpeeds():
     plt.show()
     # fig.savefig(f'hSpeeds', bbox_inches='tight',dpi=500)
 
-draw_hSpeeds()
+# draw_hSpeeds()
 
 def draw_cSpeeds():
     count = 100
@@ -105,25 +105,19 @@ def draw_cSpeeds():
 # draw_cSpeeds()
 
 def draw_filters():
-    filters = import_filters("opti.dat")
+    filters = importf("./configs/config_opti.dat")
     nb_filters = filters[0]
     y = filters[1:]
     fig, ax = plt.subplots()
     ax.plot(y,'-',color='red',label='Optimized positions')
     
-    filters = import_filters("configCEILED-36.dat")
+    filters = importf("./configs/config_mini.dat")
     nb_filters = filters[0]
     y = filters[1:]
-    ax.plot(y,'+',color='blue',label='Ceiled filters positions')
-    
-    filters = import_filters("configVANILLA-36.dat")
-    nb_filters = filters[0]
-    y = filters[1:]
-    ax.plot(y,'x',color='green',label='Vanilla filters positions')
-    
-    # ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
+    ax.plot(y,'+',color='blue',label='Minimized positions')
+
     plt.xticks(np.arange(0, nb_filters+1, 5), fontsize=16)
-    plt.yticks(np.arange(0, 1000, 200), fontsize=16)
+    plt.yticks(np.arange(0, 1200, 200), fontsize=16)
 
     ax.set_title(f'Positions of the {nb_filters} filters')
     plt.xlabel("",fontsize=16)
@@ -131,6 +125,6 @@ def draw_filters():
     plt.legend(loc="upper left")
     
     plt.show()
-    fig.savefig(f'cSpeeds', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./configs/configs', bbox_inches='tight',dpi=500)
     
-# draw_filters()
+draw_filters()
