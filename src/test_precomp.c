@@ -24,8 +24,15 @@ void test_positions()
 {
     printf("# Test positions :\n");
     int nb_filters, *filters = NULL;
-    char file_name[30] = "configCV-36.dat";
-    positions(&filters, &nb_filters, file_name);
+    char config_mini[30] = "./configs/config_mini.dat";
+    positions(&filters, &nb_filters, config_mini);
+    printf("Filters in %s :\n", config_mini);
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    char config_opti[30] = "./configs/config_opti.dat";
+    positions(&filters, &nb_filters, config_opti);
+    printf("Filters in %s :\n", config_opti);
     for (int i = 0; i < nb_filters; i++)
         printf("position %d : %d\n", i, filters[i]);
     printf("\n");
@@ -186,7 +193,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "opti.dat";
+    char file_name[30] = "./configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -455,7 +462,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "opti.dat";
+    char file_name[30] = "./configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
