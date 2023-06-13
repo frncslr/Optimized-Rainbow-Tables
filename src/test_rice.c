@@ -50,9 +50,9 @@ void test_exportCDE()
     printf("First export :\n");
     uint32_t eps1[7] = {1, 7, 17, 31, 32, 52, 54};
     exportCDE(eps1, 7);
-    printf("\nSecond export :\n");
-    uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};
-    exportCDE(eps2, 8);
+    // printf("\nSecond export :\n");
+    // uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};
+    // exportCDE(eps2, 8);
 }
 
 void test_rice()

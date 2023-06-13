@@ -5,9 +5,9 @@
 
 int main(void)
 {
-  test_initBitStream();
-  test_writeBit();
-  test_encode();
+  // test_initBitStream();
+  // test_writeBit();
+  // test_encode();
   test_exportCDE();
 
   // test_elapsed();
