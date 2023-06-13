@@ -4,7 +4,6 @@
 #include "attack.h"
 #include "precomp.h"
 
-void test_ceri();
 void test_import();
 void test_import_m();
 void test_chain();

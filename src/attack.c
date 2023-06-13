@@ -1,9 +1,5 @@
 #include "../include/attack.h"
 
-void ceri(uint32_t *end, uint32_t value, char k, int nb_bits)
-{
-    *end = ((nb_bits - k - 1) << k) | (value & ((1 << k) - 1));
-}
 
 void import(Hashtable htable, int htable_size, int table_size, const char *table_name)
 {

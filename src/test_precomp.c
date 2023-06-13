@@ -304,17 +304,6 @@ void test_precompute()
     free((void *)table);
 }
 
-void test_rice()
-{
-    printf("# Test rice :\n");
-    uint32_t previous = 4099;
-    printf("Previous endpoint : %u\n", previous);
-    uint32_t end = 4115;
-    printf("Current endpoint (uncompressed): %u\n", end);
-    rice(&end, (end - previous - 1), 3);
-    printf("Current endpoint (compressed): %u\n\n", end);
-}
-
 void test_export()
 {
     printf("# Test export :\n");

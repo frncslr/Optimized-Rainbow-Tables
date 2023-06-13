@@ -12,7 +12,6 @@ void test_operations();
 void test_generate_f();
 void test_sort();
 void test_precompute();
-void test_rice();
 void test_export();
 void test_cover();
 void test_precompute_full();

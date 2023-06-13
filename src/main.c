@@ -1,12 +1,18 @@
 #include "../include/test_common.h"
 #include "../include/test_precomp.h"
 #include "../include/test_attack.h"
+#include "../include/test_rice.h"
 
 int main(void)
 {
+  test_initBitStream();
+  test_writeBit();
+  test_encode();
+  test_exportCDE();
+
   // test_elapsed();
   // test_hash();
-  test_hash_n();
+  // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
   // test_hash_reduction_n();

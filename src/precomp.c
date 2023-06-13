@@ -181,11 +181,6 @@ void precompute(Points **table, int table_id, int *table_size, int *filters, int
     sort(*table, *table_size);
 }
 
-void rice(uint32_t *end, uint32_t value, char k)
-{
-    *end = ((1 << (value >> k)) - 1) << (k + 1) | (value & ((1 << k) - 1));
-}
-
 void export(Points *table, int table_size, const char *file_name)
 {
     FILE *file;

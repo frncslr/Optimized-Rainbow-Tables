@@ -1,29 +1,5 @@
 #include "../include/test_attack.h"
 
-void test_ceri()
-{
-    printf("# Test ceri :\n");
-    int k = 3;
-    uint32_t end = 4115;
-    uint32_t previous = 4099;
-    printf("Current endpoint\t: %u\n", end);
-    printf("Previous endpoint\t: %u\n", previous);
-    uint32_t difference = end - previous - 1;
-    printf("Uncompressed difference\t: %u\n", difference);
-    char size = 0;
-    for (uint32_t bits = difference; bits; bits >>= 1, size++)
-        ;
-    printf("Uncompressed bits size\t: %d\n", size);
-    rice(&difference, difference, k);
-    printf("Compressed difference\t: %u\n", difference);
-    size = 0;
-    for (uint32_t bits = difference; bits; bits >>= 1, size++)
-        ;
-    printf("Compressed bits size\t: %d\n", size);
-    ceri(&difference, difference, k, size);
-    printf("Decompressed difference\t: %u\n\n", difference);
-}
-
 void test_import()
 {
     printf("# Test import :\n");
