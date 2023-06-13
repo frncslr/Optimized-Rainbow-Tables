@@ -77,11 +77,18 @@ void flushStream(BitStream *stream)
     }
 }
 
-void exportCDE(Points *table, int nb, const char *epFile_name, const char *idxFile_name)
+void exportCDE(Points *table, int nb, const char *spFile_name, const char *epFile_name, const char *idxFile_name)
 {
     BitStream epStream, idxStream;
     initBitStream(&epStream, epFile_name);
     initBitStream(&idxStream, idxFile_name);
+
+    FILE *spFile;
+    if ((spFile = fopen(spFile_name, "wb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", spFile_name);
+        exit(ERROR_FOPEN);
+    }
 
     uint32_t difference;
     int j = 0, jj, l = 6, n = 60, first = 1;
@@ -107,11 +114,22 @@ void exportCDE(Points *table, int nb, const char *epFile_name, const char *idxFi
             difference = table[i].end - table[i - 1].end - 1;
         }
         encode(&epStream, difference);
+
+        if ((fwrite(&(table[i].start), sizeof(uint32_t), 1, spFile)) != 1)
+        {
+            fprintf(stderr, "Writing file problem : %s\n", spFile_name);
+            exit(ERROR_FWRITE);
+        }
     }
     flushStream(&epStream);
     flushStream(&idxStream);
     closeBitStream(&epStream);
     closeBitStream(&idxStream);
+    if (fclose(spFile))
+    {
+        fprintf(stderr, "Closing file problem : %s", spFile_name);
+        exit(ERROR_FCLOSE);
+    }
 }
 
 void rice(uint32_t *end, uint32_t value)

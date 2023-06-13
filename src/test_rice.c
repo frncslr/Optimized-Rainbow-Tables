@@ -70,10 +70,10 @@ void test_exportCDE()
     // for (int i = 0; i < table_size; i++)
     //     printf("%d : {%u : %u}\n", i, table[i].start, table[i].end);
     
-    printf("First export :\n");
-    char table_name[40] = "tables/cde/epTestExportCDE2.dat";
-    char index_name[40] = "tables/cde/idxTestExportCDE2.dat";
-    exportCDE(table, table_size, table_name, index_name);
+    char spFile_name[40] = "tables/cde/spTestExportCDE.dat";
+    char epFile_name[40] = "tables/cde/epTestExportCDE.dat";
+    char idxFile_name[40] = "tables/cde/idxTestExportCDE.dat";
+    exportCDE(table, table_size, spFile_name, epFile_name, idxFile_name);
 
     // printf("\nSecond export :\n");
     // uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};

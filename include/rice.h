@@ -9,7 +9,6 @@
 #define k 3
 #define R 6
 
-
 typedef struct
 {
     uint8_t BitBuffer;
@@ -24,12 +23,11 @@ void initBitStream(BitStream *, const char *);
 void closeBitStream(BitStream *);
 void writeBit(BitStream *, uint8_t);
 void encode(BitStream *, uint32_t);
-void writeIdx(BitStream *,uint64_t, int, int, int);
+void writeIdx(BitStream *, uint64_t, int, int, int);
 void flushStream(BitStream *);
-void exportCDE(Points *, int, const char *, const char *);
+void exportCDE(Points *, int, const char *, const char *, const char *);
 
 void rice(uint32_t *, uint32_t);
 void ceri(uint32_t *, uint32_t, int);
-
 
 #endif
