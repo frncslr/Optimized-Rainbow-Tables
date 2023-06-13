@@ -28,7 +28,6 @@ void writeBit(BitStream *stream, uint8_t b)
     stream->BitBuffer = (stream->BitBuffer << 1) | (b & 1);
     if (stream->BitCount == stream->BitLimit)
     {
-        printf("Buffer filled : %d\n", stream->BitBuffer);
         if ((fwrite(&(stream->BitBuffer), sizeof(stream->BitBuffer), 1, stream->file)) != 1)
         {
             fprintf(stderr, "Writing file problem : %s\n", stream->file_name);
@@ -92,17 +91,13 @@ void exportCDE(Points *table, int nb, const char *epFile_name, const char *idxFi
     int nbSize = 4;
     for (int i = 0; i < nb; i++)
     {
-        printf("ep\t: %u\n", table[i].end);
         if ((jj = (int)floor(table[i].end * l / n)) > j)
         {
             j = jj;
             first = 1;
         }
-        printf("first\t: %d\nj\t: %d\n", first, j);
         if (first)
         {
-            printf("total\t: %lu & i : %d\n", epStream.BitTotal, i);
-            printf("IDX written\n");
             writeIdx(&idxStream, epStream.BitTotal, addrSize, i, nbSize);
             difference = table[i].end - (j * n / l);
             first = 0;
@@ -111,9 +106,7 @@ void exportCDE(Points *table, int nb, const char *epFile_name, const char *idxFi
         {
             difference = table[i].end - table[i - 1].end - 1;
         }
-        printf("diff\t: %u\n", difference);
         encode(&epStream, difference);
-        printf("\n");
     }
     flushStream(&epStream);
     flushStream(&idxStream);
