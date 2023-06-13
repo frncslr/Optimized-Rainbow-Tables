@@ -3,17 +3,23 @@
 void test_initBitStream()
 {
     printf("# Test initBitStream :\n");
+    char table_name[40] = "tables/cde/testInitBitStream.dat";
     BitStream stream;
-    initBitStream(&stream);
+    initBitStream(&stream, table_name);
     printf("Buffer\t: %d\n", stream.BitBuffer);
     printf("Count\t: %d\n", stream.BitCount);
-    printf("Limit\t: %d\n\n", stream.BitLimit);
+    printf("Limit\t: %d\n", stream.BitLimit);
+    printf("Name : %s\n", stream.file_name);
+    closeBitStream(&stream);
+    printf("\n");
 }
+
 void test_writeBit()
 {
     printf("# Test writeBit :\n");
+    char table_name[30] = "tables/cde/testWriteBit.dat";
     BitStream stream;
-    initBitStream(&stream);
+    initBitStream(&stream, table_name);
 
     writeBit(&stream, 0);
     writeBit(&stream, 1);
@@ -23,14 +29,17 @@ void test_writeBit()
     writeBit(&stream, 0);
     writeBit(&stream, 1);
     writeBit(&stream, 1);
+    flushStream(&stream);
+    closeBitStream(&stream);
     printf("\n");
 }
 
 void test_encode()
 {
     printf("# Test encode :\n");
+    char table_name[30] = "tables/cde/testEncode.dat";
     BitStream stream;
-    initBitStream(&stream);
+    initBitStream(&stream, table_name);
 
     uint32_t differences[7], initial[7] = {1, 7, 17, 31, 32, 52, 54};
     differences[0] = initial[0];
@@ -41,15 +50,31 @@ void test_encode()
 
     for (int i = 0; i < 7; i++)
         encode(&stream, differences[i]);
+
+    flushStream(&stream);
+    closeBitStream(&stream);
     printf("\n");
 }
 
 void test_exportCDE()
 {
     printf("# Test exportCDE :\n");
+    int table_size = 7;
+    Points table[7] = {{0, 1},
+                       {1, 7},
+                       {2, 17},
+                       {3, 31},
+                       {4, 32},
+                       {5, 52},
+                       {6, 54}};
+    // for (int i = 0; i < table_size; i++)
+    //     printf("%d : {%u : %u}\n", i, table[i].start, table[i].end);
+    
     printf("First export :\n");
-    uint32_t eps1[7] = {1, 7, 17, 31, 32, 52, 54};
-    exportCDE(eps1, 7);
+    char table_name[40] = "tables/cde/epTestExportCDE2.dat";
+    char index_name[40] = "tables/cde/idxTestExportCDE2.dat";
+    exportCDE(table, table_size, table_name, index_name);
+
     // printf("\nSecond export :\n");
     // uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};
     // exportCDE(eps2, 8);

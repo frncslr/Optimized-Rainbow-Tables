@@ -1,11 +1,26 @@
 #include "../include/rice.h"
 
-void initBitStream(BitStream *stream)
+void initBitStream(BitStream *stream, const char *file_name)
 {
     stream->BitBuffer = 0;
     stream->BitCount = 0;
     stream->BitLimit = 7;
     stream->BitTotal = 0;
+    stream->file_name = file_name;
+    if ((stream->file = fopen(stream->file_name, "wb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", stream->file_name);
+        exit(ERROR_FOPEN);
+    }
+}
+
+void closeBitStream(BitStream *stream)
+{
+    if (fclose(stream->file))
+    {
+        fprintf(stderr, "Closing file problem : %s", stream->file_name);
+        exit(ERROR_FCLOSE);
+    }
 }
 
 void writeBit(BitStream *stream, uint8_t b)
@@ -14,6 +29,11 @@ void writeBit(BitStream *stream, uint8_t b)
     if (stream->BitCount == stream->BitLimit)
     {
         printf("Buffer filled : %d\n", stream->BitBuffer);
+        if ((fwrite(&(stream->BitBuffer), sizeof(stream->BitBuffer), 1, stream->file)) != 1)
+        {
+            fprintf(stderr, "Writing file problem : %s\n", stream->file_name);
+            exit(ERROR_FWRITE);
+        }
         stream->BitBuffer = 0;
         stream->BitCount = 0;
     }
@@ -58,11 +78,11 @@ void flushStream(BitStream *stream)
     }
 }
 
-void exportCDE(uint32_t *eps, int nb)
+void exportCDE(Points *table, int nb, const char *epFile_name, const char *idxFile_name)
 {
     BitStream epStream, idxStream;
-    initBitStream(&epStream);
-    initBitStream(&idxStream);
+    initBitStream(&epStream, epFile_name);
+    initBitStream(&idxStream, idxFile_name);
 
     uint32_t difference;
     int j = 0, jj, l = 6, n = 60, first = 1;
@@ -72,8 +92,8 @@ void exportCDE(uint32_t *eps, int nb)
     int nbSize = 4;
     for (int i = 0; i < nb; i++)
     {
-        printf("ep\t: %u\n", eps[i]);
-        if ((jj = (int)floor(eps[i] * l / n)) > j)
+        printf("ep\t: %u\n", table[i].end);
+        if ((jj = (int)floor(table[i].end * l / n)) > j)
         {
             j = jj;
             first = 1;
@@ -84,12 +104,12 @@ void exportCDE(uint32_t *eps, int nb)
             printf("total\t: %lu & i : %d\n", epStream.BitTotal, i);
             printf("IDX written\n");
             writeIdx(&idxStream, epStream.BitTotal, addrSize, i, nbSize);
-            difference = eps[i] - (j * n / l);
+            difference = table[i].end - (j * n / l);
             first = 0;
         }
         else
         {
-            difference = eps[i] - eps[i - 1] - 1;
+            difference = table[i].end - table[i - 1].end - 1;
         }
         printf("diff\t: %u\n", difference);
         encode(&epStream, difference);
@@ -97,6 +117,8 @@ void exportCDE(uint32_t *eps, int nb)
     }
     flushStream(&epStream);
     flushStream(&idxStream);
+    closeBitStream(&epStream);
+    closeBitStream(&idxStream);
 }
 
 void rice(uint32_t *end, uint32_t value)
