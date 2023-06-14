@@ -29,7 +29,7 @@ void test_hash_n()
 
     struct timeval start, end;
     double speed, time, total_time = 0.0;
-    const char file_name[20] = "hSpeeds.dat";
+    const char file_name[40] = "./data/results/hSpeeds.dat";
 
     for (int i = 0; i < nb_tests; i++)
     {

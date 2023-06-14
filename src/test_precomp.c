@@ -86,7 +86,7 @@ void test_clean_n()
     Points *table;
     struct timeval start, end;
     double speed, local_time, total_time = 0.0;
-    const char file_name[20] = "cSpeeds.dat";
+    const char file_name[40] = "./data/results/cSpeeds.dat";
 
     srand(time(NULL));
     for (int i = 0; i < nb_tests; i++)

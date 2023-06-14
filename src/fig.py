@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from struct import unpack
 from filtration import importf
 
-def draw_operations():
+def draw_hCount():
     x = [0,1,2,3]
     y = [669750000]*4
     expected = 669750000
@@ -19,11 +19,11 @@ def draw_operations():
     plt.xlabel("Table index ",fontsize=16)
     plt.ylabel("Hash operations",fontsize=16)
     plt.show()
-    fig.savefig(f'name', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/hCount', bbox_inches='tight',dpi=500)
 
-# draw_operations()
+# draw_hCount()
 
-def draw_endpoints():
+def draw_epCount():
     x = [0,1,2,3]
     y = [31921,31882,31965,31927]
     expected = 31893
@@ -37,9 +37,9 @@ def draw_endpoints():
     plt.xlabel("Table index ",fontsize=16)
     plt.ylabel("Unique endpoints",fontsize=16)
     plt.show()
-    fig.savefig(f'name', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/epCount', bbox_inches='tight',dpi=500)
     
-# draw_endpoints()
+# draw_epCount()
 
 def draw_coverage():
     x = [0,1,2,3]
@@ -55,7 +55,7 @@ def draw_coverage():
     plt.xlabel("Table index ",fontsize=16)
     plt.ylabel("Theoretical coverage (%)",fontsize=16)
     plt.show()
-    fig.savefig(f'name', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/coverage', bbox_inches='tight',dpi=500)
     
 # draw_coverage()
 
@@ -63,11 +63,9 @@ def read_results(filename, count):
     with open(filename, 'rb') as file:
         return list(unpack('d' * count, file.read(8 * count)))
 
-# print(read_results("hSpeeds.dat", 21))
-
 def draw_hSpeeds():
-    count = 200
-    y = read_results("hSpeeds.dat", count)
+    count = 300
+    y = read_results("./data/results/hSpeeds.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
     ax.plot(y,'o',color='red',label='Hash speeds')
@@ -80,13 +78,13 @@ def draw_hSpeeds():
     plt.ylabel("Hash speed (M/s)",fontsize=16)
     plt.legend(loc="upper left")
     plt.show()
-    # fig.savefig(f'hSpeeds', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/hSpeeds', bbox_inches='tight',dpi=500)
 
-# draw_hSpeeds()
+draw_hSpeeds()
 
 def draw_cSpeeds():
-    count = 100
-    y = read_results("cSpeeds.dat", count)
+    count = 300
+    y = read_results("./data/results/cSpeeds.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
     ax.plot(y,'o',color='red',label='Clean speeds')
@@ -100,31 +98,31 @@ def draw_cSpeeds():
     plt.legend(loc="upper left")
     
     plt.show()
-    fig.savefig(f'cSpeeds', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/cSpeeds', bbox_inches='tight',dpi=500)
     
-# draw_cSpeeds()
+draw_cSpeeds()
 
-def draw_filters():
-    filters = importf("./configs/config_opti.dat")
+def draw_fConfig():
+    filters = importf("./data/configs/config_opti.dat")
     nb_filters = filters[0]
     y = filters[1:]
     fig, ax = plt.subplots()
     ax.plot(y,'-',color='red',label='Optimized positions')
     
-    filters = importf("./configs/config_mini.dat")
+    filters = importf("./data/configs/config_mini.dat")
     nb_filters = filters[0]
     y = filters[1:]
-    ax.plot(y,'+',color='blue',label='Minimized positions')
+    ax.plot(y,'o',color='blue',label='Minimized positions')
 
     plt.xticks(np.arange(0, nb_filters+1, 5), fontsize=16)
     plt.yticks(np.arange(0, 1200, 200), fontsize=16)
 
     ax.set_title(f'Positions of the {nb_filters} filters')
-    plt.xlabel("",fontsize=16)
-    plt.ylabel("",fontsize=16)
+    plt.xlabel("Filter index",fontsize=16)
+    plt.ylabel("Filter column",fontsize=16)
     plt.legend(loc="upper left")
     
     plt.show()
-    fig.savefig(f'./configs/configs', bbox_inches='tight',dpi=500)
+    fig.savefig(f'./data/plots/fConfig', bbox_inches='tight',dpi=500)
     
-draw_filters()
+# draw_fConfig()
