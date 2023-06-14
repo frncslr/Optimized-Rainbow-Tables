@@ -5,6 +5,7 @@
 
 int main(void)
 {
+  test_variables();
   // test_initBitStream();
   // test_writeBit();
   // test_encode();

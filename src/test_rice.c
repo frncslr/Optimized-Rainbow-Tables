@@ -1,15 +1,40 @@
 #include "../include/test_rice.h"
 
+void test_variables()
+{
+    printf("# Test variables :\n");
+    int n = 1 << 24;
+    n = 60;
+    // n = 1 << 20;
+    int m = 31921;
+    m = 7;
+    // m = 1 << 16;
+    int L = 1 << 8;
+    L = 6;
+    // L = 1 << 8;
+    int kopt = Kopt(n, m);
+    printf("kopt : %d\n", kopt);
+    double ropt = Ropt(kopt, n, m);
+    printf("ropt : %f\n", ropt);
+    int addrSize = addrBits(m, ropt);
+    printf("addrSize : %d\n", addrSize);
+    int chainSize = chainBits(m);
+    printf("chainSize : %d\n", chainSize);
+    int mem = memory(m, ropt, L);
+    printf("memory : %d\n", mem);
+    printf("\n");
+}
+
 void test_initBitStream()
 {
     printf("# Test initBitStream :\n");
-    char table_name[40] = "tables/cde/testInitBitStream.dat";
+    char table_name[40] = "data/tables/cde/testInitBitStream.dat";
     BitStream stream;
     initBitStream(&stream, table_name);
     printf("Buffer\t: %d\n", stream.BitBuffer);
     printf("Count\t: %d\n", stream.BitCount);
     printf("Limit\t: %d\n", stream.BitLimit);
-    printf("Name : %s\n", stream.file_name);
+    printf("Name\t: %s\n", stream.file_name);
     closeBitStream(&stream);
     printf("\n");
 }
@@ -17,7 +42,7 @@ void test_initBitStream()
 void test_writeBit()
 {
     printf("# Test writeBit :\n");
-    char table_name[30] = "tables/cde/testWriteBit.dat";
+    char table_name[40] = "data/tables/cde/testWriteBit.dat";
     BitStream stream;
     initBitStream(&stream, table_name);
 
@@ -31,13 +56,15 @@ void test_writeBit()
     writeBit(&stream, 1);
     flushStream(&stream);
     closeBitStream(&stream);
+
+    printf("Hexdump on %s should display the following values : 4b (for 75)\n", table_name);
     printf("\n");
 }
 
 void test_encode()
 {
     printf("# Test encode :\n");
-    char table_name[30] = "tables/cde/testEncode.dat";
+    char table_name[40] = "data/tables/cde/testEncode.dat";
     BitStream stream;
     initBitStream(&stream, table_name);
 
@@ -49,10 +76,12 @@ void test_encode()
     }
 
     for (int i = 0; i < 7; i++)
-        encode(&stream, differences[i]);
+        encode(&stream, differences[i], 3);
 
     flushStream(&stream);
     closeBitStream(&stream);
+
+    printf("Hexdump on %s should display the following values : 8d15 3143\n", table_name);
     printf("\n");
 }
 
@@ -69,11 +98,11 @@ void test_exportCDE()
                        {6, 54}};
     // for (int i = 0; i < table_size; i++)
     //     printf("%d : {%u : %u}\n", i, table[i].start, table[i].end);
-    
-    char spFile_name[40] = "tables/cde/spTestExportCDE.dat";
-    char epFile_name[40] = "tables/cde/epTestExportCDE.dat";
-    char idxFile_name[40] = "tables/cde/idxTestExportCDE.dat";
-    exportCDE(table, table_size, spFile_name, epFile_name, idxFile_name);
+
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE.dat";
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE.dat";
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE.dat";
+    exportCDE(table, table_size, 60, 6, spFile_name, epFile_name, idxFile_name);
 
     // printf("\nSecond export :\n");
     // uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};

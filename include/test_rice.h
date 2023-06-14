@@ -3,6 +3,7 @@
 
 #include "./rice.h"
 
+void test_variables();
 void test_initBitStream();
 void test_writeBit();
 void test_encode();
