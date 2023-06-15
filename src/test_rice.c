@@ -88,25 +88,36 @@ void test_encode()
 void test_exportCDE()
 {
     printf("# Test exportCDE :\n");
-    int table_size = 7;
-    Points table[7] = {{0, 1},
+    int space_size = 60, nb_block = 6;
+    Points table[8] = {{0, 1},
                        {1, 7},
                        {2, 17},
                        {3, 31},
                        {4, 32},
                        {5, 52},
-                       {6, 54}};
-    // for (int i = 0; i < table_size; i++)
-    //     printf("%d : {%u : %u}\n", i, table[i].start, table[i].end);
+                       {6, 54},
+                       {7, 59}};
 
-    char spFile_name[40] = "data/tables/cde/spTestExportCDE.dat";
-    char epFile_name[40] = "data/tables/cde/epTestExportCDE.dat";
-    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE.dat";
-    exportCDE(table, table_size, 60, 6, spFile_name, epFile_name, idxFile_name);
+    int table_size1 = 7;
+    printf("First export of %d pairs :\n", table_size1);
+    char spFile_name1[40] = "data/tables/cde/spTestExportCDE1.dat";
+    char epFile_name1[40] = "data/tables/cde/epTestExportCDE1.dat";
+    char idxFile_name1[40] = "data/tables/cde/idxTestExportCDE1.dat";
+    exportCDE(table, table_size1, space_size, nb_block, spFile_name1, epFile_name1, idxFile_name1);
+    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name1, table_size1 - 1);
+    printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name1);
+    printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name1);
 
-    // printf("\nSecond export :\n");
-    // uint32_t eps2[8] = {1, 7, 17, 31, 32, 52, 54, 59};
-    // exportCDE(eps2, 8);
+    int table_size2 = 8;
+    printf("\nSecond export of %d pairs :\n", table_size2);
+    char spFile_name2[40] = "data/tables/cde/spTestExportCDE2.dat";
+    char epFile_name2[40] = "data/tables/cde/epTestExportCDE2.dat";
+    char idxFile_name2[40] = "data/tables/cde/idxTestExportCDE2.dat";
+    exportCDE(table, table_size2, space_size, nb_block, spFile_name2, epFile_name2, idxFile_name2);
+    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name2, table_size2 - 1);
+    printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name2);
+    printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name1);
+
 }
 
 void test_rice()
