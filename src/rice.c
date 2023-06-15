@@ -20,9 +20,9 @@ int chainBits(int m)
     return (int)ceil(log2(m));
 }
 
-int memory(int m, double R, int L)
+int memory(int m, double R, int l)
 {
-    return (int)ceil((m * R + L * (ceil(log2(m * R)) + ceil(log2(m)))) / 8);
+    return (int)ceil((m * R + l * (ceil(log2(m * R)) + ceil(log2(m)))) / 8);
 }
 
 void initBitStream(BitStream *stream, const char *file_name)
@@ -119,13 +119,6 @@ void exportCDE(Points *table, int table_size, int space_size, int nb_block, cons
     double ropt = Ropt(kopt, space_size, table_size);
     int addrSize = addrBits(table_size, ropt);
     int chainSize = chainBits(table_size);
-
-    printf("kopt : %d\n", kopt);
-    printf("ropt : %f\n", ropt);
-    printf("addrSize : %d\n", addrSize);
-    printf("chainSize : %d\n", chainSize);
-    int mem = memory(table_size, ropt, nb_block);
-    printf("memory : %d\n", mem);
 
     uint32_t difference;
     int j = 0, jj, first = 1;

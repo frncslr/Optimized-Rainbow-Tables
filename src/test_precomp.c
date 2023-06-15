@@ -496,3 +496,80 @@ void test_precompute_full_n()
     free((void *)filters);
     free((void *)covered);
 }
+
+void test_precompute_cde()
+{
+    printf("# Test precompute_cde :\n");
+    int table_id = 0;
+    int table_size = (int)ceil(m0);
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    Points *table;
+    if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    int nb_filters, *filters = NULL;
+    char file_name[30] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, file_name);
+
+    printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
+    uint32_t nb_hash = 0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, table_size, table_width, covered, &coverage);
+
+    exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    int diff_hash = nb_hash - expec_hash;
+    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
+
+    int expec_size = (int)ceil(mt);
+    int diff_size = table_size - expec_size;
+    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
+
+    double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
+    double coverage_perc = (double)coverage * 100 / N;
+    double diff_coverage_perc = coverage_perc - expec_coverage_perc;
+    printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
+
+    int kopt = Kopt(space_size, table_size);
+    double ropt = Ropt(kopt, space_size, table_size);
+    int addrSize = addrBits(table_size, ropt);
+    int chainSize = chainBits(table_size);
+    int mem = memory(table_size, ropt, nb_block);
+
+    printf("Variables :\n");
+    printf("kopt : %d\n", kopt);
+    printf("ropt : %f\n", ropt);
+    printf("addrSize : %d\n", addrSize);
+    printf("chainSize : %d\n", chainSize);
+    printf("memory : %d\n", mem);
+
+    free((void *)table);
+    free((void *)filters);
+    free((void *)covered);
+}

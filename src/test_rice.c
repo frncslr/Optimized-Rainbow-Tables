@@ -9,8 +9,8 @@ void test_variables()
     int m = 31921;
     m = 7;
     // m = 1 << 16;
-    int L = 1 << 8;
-    L = 6;
+    int l = 1 << 8;
+    l = 6;
     // L = 1 << 8;
     int kopt = Kopt(n, m);
     printf("kopt : %d\n", kopt);
@@ -20,7 +20,7 @@ void test_variables()
     printf("addrSize : %d\n", addrSize);
     int chainSize = chainBits(m);
     printf("chainSize : %d\n", chainSize);
-    int mem = memory(m, ropt, L);
+    int mem = memory(m, ropt, l);
     printf("memory : %d\n", mem);
     printf("\n");
 }
@@ -117,7 +117,6 @@ void test_exportCDE()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name2, table_size2 - 1);
     printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name2);
     printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name1);
-
 }
 
 void test_rice()

@@ -23,7 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include </usr/include/sys/time.h>
+#include <sys/time.h>
 #include <math.h>
 #include <openssl/sha.h>
 

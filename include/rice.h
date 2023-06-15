@@ -7,6 +7,7 @@
 #include "common.h"
 
 #define PHI ((1 + sqrt(5)) / 2.0)
+#define L (1 << 5)
 #define kk 3
 
 int Kopt(int, int);

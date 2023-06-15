@@ -2,6 +2,7 @@
 #define PRECOMP_H
 
 #include "common.h"
+#include "rice.h"
 
 void initialize(Points *, int, int);
 void positions(int **, int *, const char *);

@@ -16,5 +16,6 @@ void test_export();
 void test_cover();
 void test_precompute_full();
 void test_precompute_full_n();
+void test_precompute_cde();
 
 #endif
