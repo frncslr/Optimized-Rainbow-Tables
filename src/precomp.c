@@ -225,3 +225,114 @@ void cover(Points *table, int table_id, int table_size, int table_width, char *c
         }
     }
 }
+
+void hashStats(uint32_t nb_hash, int *filters, int nb_filters)
+{
+    uint32_t expec_hash = 0;
+    operations(filters, nb_filters, &expec_hash);
+    int diff_hash = nb_hash - expec_hash;
+    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    printf("Hash operations :\n");
+    printf("\texpected\t: %u\n", expec_hash);
+    printf("\texperimental\t: %u\n", nb_hash);
+    printf("\tdifference\t: %d (%3.2lf%%)\n", diff_hash, diff_hash_perc);
+}
+
+void epStats(int table_size, int expec_size)
+{
+    int diff_size = table_size - expec_size;
+    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    printf("Unique endpoints :\n");
+    printf("\texpected\t: %d\n", expec_size);
+    printf("\texperimental\t: %d\n", table_size);
+    printf("\tdifference\t: %d (%3.2lf%%)\n", diff_size, diff_size_perc);
+}
+
+void coverStats(int coverage, int space_size)
+{
+    double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
+    double coverage_perc = (double)coverage * 100 / space_size;
+    double diff_coverage_perc = coverage_perc - expec_coverage_perc;
+    printf("Coverage of the table :\n");
+    printf("\texpected\t: %3.2lf%%\n", expec_coverage_perc);
+    printf("\texperimental\t: %3.2lf%%\n", coverage_perc);
+    printf("\tdifference\t: %3.2lf%%\n", diff_coverage_perc);
+}
+
+void cdeStats(int table_size, int space_size, int nb_block, const char *spFile_name,const char *epFile_name,const char *idxFile_name)
+{
+    int kopt = Kopt(space_size, table_size);
+    double ropt = Ropt(kopt, space_size, table_size);
+    int addrSize = addrBits(table_size, ropt);
+    int chainSize = chainBits(table_size);
+
+    printf("Delta encoding variables :\n");
+    printf("\tk optimal\t: %d\n", kopt);
+    printf("\tR optimal\t: %f\n", ropt);
+    printf("\taddr size\t: %d\n", addrSize);
+    printf("\tchain size\t: %d\n", chainSize);
+
+    int ep_memory, expec_ep_memory, diff_ep_memory;
+    double diff_ep_memory_perc;
+    int sp_memory, expec_sp_memory, diff_sp_memory;
+    double diff_sp_memory_perc;
+    int cde_total_memory, std_total_memory, diff_total_memory;
+    double diff_total_memory_perc;
+
+    expec_ep_memory = memory(table_size, ropt, nb_block);
+    expec_sp_memory = table_size * 4;
+    std_total_memory = table_size * 4 * 2;
+
+    FILE *file;
+    uint32_t file_size;
+    struct stat stat;
+
+    if ((file = fopen(spFile_name, "rb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", spFile_name);
+        exit(ERROR_FOPEN);
+    }
+    fstat(fileno(file), &stat);
+    sp_memory = (int)stat.st_size;
+    fclose(file);
+    diff_sp_memory = sp_memory - expec_sp_memory;
+    diff_sp_memory_perc = diff_sp_memory * 100.0 / expec_sp_memory;
+
+    if ((file = fopen(epFile_name, "rb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", epFile_name);
+        exit(ERROR_FOPEN);
+    }
+    fstat(fileno(file), &stat);
+    ep_memory = (int)stat.st_size;
+    fclose(file);
+    if ((file = fopen(idxFile_name, "rb")) == (FILE *)NULL)
+    {
+        fprintf(stderr, "Opening file problem : %s\n", idxFile_name);
+        exit(ERROR_FOPEN);
+    }
+    fstat(fileno(file), &stat);
+    ep_memory += (int)stat.st_size;
+    fclose(file);
+
+    cde_total_memory = sp_memory + ep_memory;
+    diff_ep_memory = ep_memory - expec_ep_memory;
+    diff_ep_memory_perc = diff_ep_memory * 100.0 / expec_ep_memory;
+
+    diff_total_memory = cde_total_memory - std_total_memory;
+    diff_total_memory_perc = diff_total_memory * 100.0 / std_total_memory;
+    
+    printf("Delta encoding memory :\n");
+    printf("\tstartpoints memory :\n");
+    printf("\t\texpected\t: %d\n", expec_sp_memory);
+    printf("\t\texperimental\t: %d\n", sp_memory);
+    printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_sp_memory, diff_sp_memory_perc);
+    printf("\tendpoints memory :\n");
+    printf("\t\texpected\t: %d\n", expec_ep_memory);
+    printf("\t\texperimental\t: %d\n", ep_memory);
+    printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_ep_memory, diff_ep_memory_perc);
+    printf("\ttotal memory :\n");
+    printf("\t\tstandard\t: %d\n", std_total_memory);
+    printf("\t\tencoding\t: %d\n", cde_total_memory);
+    printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_total_memory, diff_total_memory_perc);
+}

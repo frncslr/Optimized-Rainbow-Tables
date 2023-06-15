@@ -26,6 +26,7 @@
 #include <sys/time.h>
 #include <math.h>
 #include <openssl/sha.h>
+#include <sys/stat.h>
 
 double elapsed(struct timeval *, struct timeval *);
 void print_hash(unsigned char *);
