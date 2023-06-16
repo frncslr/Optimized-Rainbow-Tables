@@ -284,7 +284,6 @@ void cdeStats(int table_size, int space_size, int nb_block, const char *spFile_n
     std_total_memory = table_size * 4 * 2;
 
     FILE *file;
-    uint32_t file_size;
     struct stat stat;
 
     if ((file = fopen(spFile_name, "rb")) == (FILE *)NULL)

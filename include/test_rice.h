@@ -9,6 +9,11 @@ void test_writeBit();
 void test_encode();
 void test_exportCDE();
 
+void test_readBit();
+void test_importSP();
+void test_importIdx();
+void test_getIdx();
+
 void test_rice();
 void test_ceri();
 

@@ -10,6 +10,10 @@ int main(void)
   // test_writeBit();
   // test_encode();
   // test_exportCDE();
+  // test_readBit();
+  test_importSP();
+  // test_importIdx();
+  // test_getIdx();
 
   // test_elapsed();
   // test_hash();
@@ -36,7 +40,7 @@ int main(void)
   // test_cover();
   // test_precompute_full();
   // test_precompute_full_n();
-  test_precompute_cde();
+  // test_precompute_cde();
 
   // test_ceri();
   // test_import();
