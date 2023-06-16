@@ -9,9 +9,11 @@ int main(void)
   // test_initBitStream();
   // test_writeBit();
   // test_encode();
-  // test_exportCDE();
+  // test_exportCDE1();
+  // test_exportCDE2();
+  // test_exportCDE3();
   // test_readBit();
-  test_importSP();
+  // test_importSP();
   // test_importIdx();
   // test_getIdx();
 
@@ -40,7 +42,7 @@ int main(void)
   // test_cover();
   // test_precompute_full();
   // test_precompute_full_n();
-  // test_precompute_cde();
+  test_precompute_cde();
 
   // test_ceri();
   // test_import();

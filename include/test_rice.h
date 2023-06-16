@@ -7,7 +7,9 @@ void test_variables();
 void test_initBitStream();
 void test_writeBit();
 void test_encode();
-void test_exportCDE();
+void test_exportCDE1();
+void test_exportCDE2();
+void test_exportCDE3();
 
 void test_readBit();
 void test_importSP();

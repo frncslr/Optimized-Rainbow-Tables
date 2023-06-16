@@ -20,6 +20,5 @@ void cover(Points *, int, int, int, char *, int *);
 void hashStats(uint32_t, int *, int);
 void epStats(int, int);
 void coverStats(int, int);
-void cdeStats(int, int, int, const char *, const char *, const char *);
 
 #endif

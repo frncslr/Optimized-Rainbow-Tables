@@ -85,10 +85,38 @@ void test_encode()
     printf("\n");
 }
 
-void test_exportCDE()
+void test_exportCDE1()
 {
-    printf("# Test exportCDE :\n");
-    int space_size = 60, nb_block = 6;
+    printf("# Test exportCDE 1 :\n");
+    int space_size = 60;
+    int nb_block = 6;
+    int table_size = 7;
+    Points table[7] = {{0, 1},
+                       {1, 7},
+                       {2, 17},
+                       {3, 31},
+                       {4, 32},
+                       {5, 52},
+                       {6, 54}};
+
+    printf("export of %d pairs :\n", table_size);
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE1.dat";
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE1.dat";
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE1.dat";
+    exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
+    printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name);
+    printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name);
+    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+
+}
+
+void test_exportCDE2()
+{
+    printf("# Test exportCDE 2 :\n");
+    int space_size = 60;
+    int nb_block = 6;
+    int table_size = 8;
     Points table[8] = {{0, 1},
                        {1, 7},
                        {2, 17},
@@ -98,25 +126,43 @@ void test_exportCDE()
                        {6, 54},
                        {7, 59}};
 
-    int table_size1 = 7;
-    printf("First export of %d pairs :\n", table_size1);
-    char spFile_name1[40] = "data/tables/cde/spTestExportCDE1.dat";
-    char epFile_name1[40] = "data/tables/cde/epTestExportCDE1.dat";
-    char idxFile_name1[40] = "data/tables/cde/idxTestExportCDE1.dat";
-    exportCDE(table, table_size1, space_size, nb_block, spFile_name1, epFile_name1, idxFile_name1);
-    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name1, table_size1 - 1);
-    printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name1);
-    printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name1);
+    printf("Export of %d pairs :\n", table_size);
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE2.dat";
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE2.dat";
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE2.dat";
+    exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
+    printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name);
+    printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name);
+    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 
-    int table_size2 = 8;
-    printf("\nSecond export of %d pairs :\n", table_size2);
-    char spFile_name2[40] = "data/tables/cde/spTestExportCDE2.dat";
-    char epFile_name2[40] = "data/tables/cde/epTestExportCDE2.dat";
-    char idxFile_name2[40] = "data/tables/cde/idxTestExportCDE2.dat";
-    exportCDE(table, table_size2, space_size, nb_block, spFile_name2, epFile_name2, idxFile_name2);
-    printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name2, table_size2 - 1);
-    printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name2);
-    printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name1);
+}
+
+void test_exportCDE3()
+{
+    printf("# Test exportCDE 3 :\n");
+    int space_size = 60;
+    int nb_block = 6;
+    int table_size = 12;
+    Points table[12] = {{0, 1},
+                        {1, 7},
+                        {2, 17},
+                        {3, 18},
+                        {4, 21},
+                        {5, 23},
+                        {6, 26},
+                        {7, 32},
+                        {8, 42},
+                        {9, 45},
+                        {10, 54},
+                        {11, 59}};
+
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE3.dat";
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
+    exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+
 }
 
 void test_readBit()
@@ -149,25 +195,9 @@ void test_importIdx()
     int space_size = 60;
     int nb_block = 6;
     int table_size = 12;
-    Points table[12] = {{0, 1},
-                        {1, 7},
-                        {2, 17},
-                        {3, 18},
-                        {4, 21},
-                        {5, 23},
-                        {6, 26},
-                        {7, 32},
-                        {8, 42},
-                        {9, 45},
-                        {10, 54},
-                        {11, 59}};
-
-    char spFile_name[40] = "data/tables/cde/spTestImportIdx.dat";
-    char epFile_name[40] = "data/tables/cde/epTestImportIdx.dat";
-    char idxFile_name[40] = "data/tables/cde/idxTestImportIdx.dat";
-    exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
     Index idxTable[nb_block];
+
     importIdx(idxFile_name, nb_block, table_size, space_size, idxTable);
 
     for (int i = 0; i < nb_block; i++)
