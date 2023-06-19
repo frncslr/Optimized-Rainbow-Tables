@@ -35,6 +35,7 @@ void test_initBitStream()
     printf("Count\t: %d\n", stream.BitCount);
     printf("Limit\t: %d\n", stream.BitLimit);
     printf("Name\t: %s\n", stream.file_name);
+    printf("EoF\t: %d\n", stream.eof);
     closeBitStream(&stream);
     printf("\n");
 }
@@ -108,7 +109,6 @@ void test_exportCDE1()
     printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name);
     printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name);
     cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-
 }
 
 void test_exportCDE2()
@@ -135,7 +135,6 @@ void test_exportCDE2()
     printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name);
     printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name);
     cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-
 }
 
 void test_exportCDE3()
@@ -162,7 +161,6 @@ void test_exportCDE3()
     char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
     cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-
 }
 
 void test_readBit()
@@ -171,14 +169,20 @@ void test_readBit()
     char table_name[40] = "data/tables/cde/testWriteBit.dat";
     BitStream stream;
     initBitStream(&stream, table_name, 0);
-    for (int i = 0; i < 8; i++)
-        printf("Bit %d : %d\n", i, readBit(&stream));
+    char eof = 0;
+    for (int i = 0; i < 9; i++)
+    {
+        printf("Bit %d\t: %d\n", i, readBit(&stream));
+        printf("Eof\t: %d\n", stream.eof);
+    }
+
     closeBitStream(&stream);
 }
 
 void test_importSP()
 {
-    char spFile_name[40] = "data/tables/cde/spTestImportIdx.dat";
+    printf("# Test importSP :\n");
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE3.dat";
     uint32_t *spTable = NULL;
     int table_size;
 
@@ -186,6 +190,7 @@ void test_importSP()
     printf("Startpoints imported (%d) :\n", table_size);
     for (int i = 0; i < table_size; i++)
         printf("SP %d : %u\n", i, spTable[i]);
+    printf("\n");
     free((void *)spTable);
 }
 
@@ -202,19 +207,79 @@ void test_importIdx()
 
     for (int i = 0; i < nb_block; i++)
         printf("Index %d : {%u : %u}\n", i, idxTable[i].address, idxTable[i].chain_id);
+    printf("\n");
 }
 
-void test_getIdx()
+void test_decode()
 {
-    char *idxTable = NULL;
-    uint32_t endpoint = 59;
-    int table_size = 8;
+    printf("# Test decode :\n");
+    int space_size = 60;
+    int table_size = 12;
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
+
+    BitStream stream;
+    initBitStream(&stream, epFile_name, 0);
+
+    uint32_t diff;
+    int kopt = Kopt(space_size, table_size), nbBits = 0;
+    for (int i = 0; i < table_size && !stream.eof; i++)
+    {
+        diff = decode(&stream, kopt, &nbBits);
+        if (!stream.eof)
+            printf("Diff %d\t: %u\n", i, diff);
+    }
+    printf("\n");
+    closeBitStream(&stream);
+}
+
+void test_setStream()
+{
+    printf("# Test setStream :\n");
+    int space_size = 60;
+    int table_size = 12;
+    int kopt = Kopt(space_size, table_size);
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
+
+    BitStream stream;
+    initBitStream(&stream, epFile_name, 0);
+    setStream(&stream, 32);
+
+    int nbBits = 0;
+    for (int i = 0; i < table_size && !stream.eof; i++)
+    {
+        uint32_t diff = decode(&stream, kopt, &nbBits);
+        if (!stream.eof)
+            printf("Diff %d\t: %u\n", i, diff);
+    }
+    printf("\n");
+    closeBitStream(&stream);
+}
+
+void test_searchCDE()
+{
+    printf("# Test searchCDE :\n");
     int space_size = 60;
     int nb_block = 6;
-    uint32_t addr, chain;
-    getIdx(idxTable, endpoint, table_size, space_size, nb_block, &addr, &chain);
-    printf("%u\n", addr);
-    printf("%u\n", chain);
+    int table_size;
+    char spFile_name[40] = "data/tables/cde/spTestExportCDE3.dat";
+    char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
+    char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+
+    Index idxTable[nb_block];
+    importIdx(idxFile_name, nb_block, table_size, space_size, idxTable);
+
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    uint16_t ep = 26;
+    uint32_t *sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block);
+    if (sp != NULL)
+        printf("Found : {%u : %u}\n", *sp, ep);
+    printf("\n");
+    closeBitStream(&epStream);
 }
 
 void test_rice()

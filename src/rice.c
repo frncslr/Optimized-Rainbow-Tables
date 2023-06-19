@@ -48,6 +48,7 @@ void initBitStream(BitStream *stream, const char *file_name, char mode)
             exit(ERROR_FOPEN);
         }
     }
+    stream->eof = 0;
 }
 
 void closeBitStream(BitStream *stream)
@@ -109,7 +110,7 @@ void flushStream(BitStream *stream)
 {
     while (stream->BitCount)
     {
-        writeBit(stream, 0);
+        writeBit(stream, 1);
     }
 }
 
@@ -137,9 +138,8 @@ void exportCDE(Points *table, int table_size, int space_size, int nb_block, cons
     {
         if ((jj = (int)floor(table[i].end * nb_block / space_size)) > j)
         {
-            for (j++; j != jj; j++)
+            for (; j != jj; j++)
                 writeIdx(&idxStream, epStream.BitTotal, addrSize, i, chainSize);
-            writeIdx(&idxStream, epStream.BitTotal, addrSize, i, chainSize);
             difference = table[i].end - (j * space_size / nb_block);
         }
         else
@@ -172,8 +172,8 @@ int readBit(BitStream *stream)
     {
         if ((fread(&(stream->BitBuffer), sizeof(stream->BitBuffer), 1, stream->file)) != 1)
         {
-            fprintf(stderr, "Reading file problem : %s\n", stream->file_name);
-            exit(ERROR_FWRITE);
+            stream->eof = 1;
+            return 0;
         }
         stream->BitCount = stream->BitLimit + 1;
     }
@@ -207,7 +207,7 @@ void importSP(const char *spFile_name, uint32_t **spTable, int *table_size)
     if ((fread(*spTable, sizeof(uint32_t), *table_size, file)) != (size_t)*table_size)
     {
         fprintf(stderr, "Reading file problem : %s\n", spFile_name);
-        exit(ERROR_FWRITE);
+        exit(ERROR_FREAD);
     }
 
     fclose(file);
@@ -227,22 +227,50 @@ void importIdx(const char *idxFile_name, int nb_block, int table_size, int space
     {
         idxTable[block_id].address = 0;
         idxTable[block_id].chain_id = 0;
-        for (int i = 0; i < addrSize; i++)
+        for (int i = 0; i < addrSize && !stream.eof; i++)
         {
             idxTable[block_id].address <<= 1;
             idxTable[block_id].address |= readBit(&stream);
         }
-        for (int i = 0; i < chainSize; i++)
+        for (int i = 0; i < chainSize && !stream.eof; i++)
         {
             idxTable[block_id].chain_id <<= 1;
             idxTable[block_id].chain_id |= readBit(&stream);
+        }
+        if (stream.eof)
+        {
+            fprintf(stderr, "Reading file problem : %s\n", stream.file_name);
+            exit(ERROR_FREAD);
         }
     }
 
     closeBitStream(&stream);
 }
 
-void getIdx(char *idxTable, uint32_t endpoint, int table_size, int space_size, int nb_block, uint32_t *addr, uint32_t *chain)
+uint32_t decode(BitStream *stream, int k, int *nbBits)
+{
+    uint32_t x = 0;
+    while (readBit(stream))
+        x++;
+    *nbBits += k + x + 1;
+    x <<= k;
+    for (k--; k >= 0 && !stream->eof; k--)
+        x = x | (readBit(stream) << k);
+    return x;
+}
+
+void setStream(BitStream *stream, uint32_t bit_address)
+{
+    long byte_address = bit_address / 8;
+    fseek(stream->file, byte_address, SEEK_SET);
+    stream->BitCount = 0;
+    for (byte_address *= 8; byte_address < bit_address; byte_address++)
+    {
+        readBit(stream);
+    }
+}
+
+uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, Index *idxTable, int table_size, int space_size, int nb_block)
 {
     int kopt = Kopt(space_size, table_size);
     double ropt = Ropt(kopt, space_size, table_size);
@@ -251,22 +279,31 @@ void getIdx(char *idxTable, uint32_t endpoint, int table_size, int space_size, i
     int block_size = addrSize + chainSize;
 
     int block_id = (int)floor(endpoint * nb_block / space_size);
-    int block_start = (block_id - 1) * block_size / 8;
-    int block_offset = (block_id - 1) * block_size - block_start * 8;
+    uint32_t bit_address = idxTable[block_id].address;
+    uint32_t chain_id = idxTable[block_id].chain_id;
 
-    printf("id : %d\n", block_id);
-    printf("start : %d\n", block_start);
-    printf("offset : %d\n", block_offset);
+    int nbBits = 0, nbBitsMax;
+    if (block_id + 1 == nb_block)
+    {
+        struct stat stat;
+        fstat(fileno(epStream->file), &stat);
+        nbBitsMax = (int)stat.st_size * 8;
+    }
+    else
+    {
+        nbBitsMax = idxTable[block_id + 1].address - bit_address;
+    }
 
-    if (idxTable == NULL)
-        printf("NULL\n");
-    *addr = 0;
-
-    // for (int i = 0; i < addrSize; i++)
-    // {
-    //     *addr = ((*addr) << 1) | readBit(idxTable);
-    // }
-    *chain = 0;
+    setStream(epStream, bit_address);
+    uint32_t value = block_id * space_size / nb_block + decode(epStream, kopt, &nbBits);
+    while (!epStream->eof && nbBits < nbBitsMax && value < endpoint)
+    {
+        value += decode(epStream, kopt, &nbBits) + 1;
+        chain_id++;
+    }
+    if (value == endpoint)
+        return spTable + chain_id;
+    return NULL;
 }
 
 void cdeStats(int table_size, int space_size, int nb_block, const char *spFile_name, const char *epFile_name, const char *idxFile_name)

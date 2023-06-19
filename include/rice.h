@@ -24,6 +24,7 @@ typedef struct bitstream
     uint64_t BitTotal;
     FILE *file;
     const char *file_name;
+    char eof;
 } BitStream;
 
 void initBitStream(BitStream *, const char *, char);
@@ -43,7 +44,9 @@ typedef struct index
 int readBit(BitStream *);
 void importSP(const char *, uint32_t **, int *);
 void importIdx(const char *, int, int, int, Index *);
-void getIdx(char *, uint32_t, int, int, int, uint32_t *, uint32_t *);
+uint32_t decode(BitStream *, int, int *);
+void setStream(BitStream *, uint32_t);
+uint32_t *searchCDE(uint32_t, uint32_t *, BitStream *, Index *, int, int, int);
 
 void cdeStats(int, int, int, const char *, const char *, const char *);
 

@@ -14,7 +14,9 @@ void test_exportCDE3();
 void test_readBit();
 void test_importSP();
 void test_importIdx();
-void test_getIdx();
+void test_decode();
+void test_setStream();
+void test_searchCDE();
 
 void test_rice();
 void test_ceri();
