@@ -17,6 +17,7 @@ void test_importIdx();
 void test_decode();
 void test_setStream();
 void test_searchCDE();
+void test_searchPrecompCDE();
 
 void test_rice();
 void test_ceri();

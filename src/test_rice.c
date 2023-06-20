@@ -201,13 +201,14 @@ void test_importIdx()
     int nb_block = 6;
     int table_size = 12;
     char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
-    Index idxTable[nb_block];
+    Index *idxTable = NULL;
 
-    importIdx(idxFile_name, nb_block, table_size, space_size, idxTable);
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
 
     for (int i = 0; i < nb_block; i++)
         printf("Index %d : {%u : %u}\n", i, idxTable[i].address, idxTable[i].chain_id);
     printf("\n");
+    free((void *)idxTable);
 }
 
 void test_decode()
@@ -268,18 +269,66 @@ void test_searchCDE()
     uint32_t *spTable = NULL;
     importSP(spFile_name, &spTable, &table_size);
 
-    Index idxTable[nb_block];
-    importIdx(idxFile_name, nb_block, table_size, space_size, idxTable);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
 
     BitStream epStream;
     initBitStream(&epStream, epFile_name, 0);
 
-    uint16_t ep = 26;
-    uint32_t *sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block);
-    if (sp != NULL)
-        printf("Found : {%u : %u}\n", *sp, ep);
+    for (uint32_t ep = 0, *sp = NULL; ep < (uint32_t)space_size; ep++)
+    {
+        sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block);
+        if (sp != NULL)
+            printf("Found : {%u : %u}\n", *sp, ep);
+    }
     printf("\n");
     closeBitStream(&epStream);
+    free((void *)spTable);
+    free((void *)idxTable);
+}
+
+void test_searchPrecompCDE()
+{
+    printf("# Test searchPrecompCDE :\n");
+
+    int table_id = 3;
+    int table_size;
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    int nb_found = 0;
+    for (uint32_t ep = 0; ep < (uint32_t)space_size; ep++)
+    {
+        if (searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block) != NULL)
+        {
+            nb_found++;
+            if (!(nb_found % 1000))
+                printf("nb found : %d/%u\n", nb_found, ep);
+        }
+    }
+    printf("Found : %d/%d\n", nb_found, space_size);
+    printf("\n");
+    closeBitStream(&epStream);
+    free((void *)spTable);
+    free((void *)idxTable);
 }
 
 void test_rice()
