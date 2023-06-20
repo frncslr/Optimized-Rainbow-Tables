@@ -213,8 +213,14 @@ void importSP(const char *spFile_name, uint32_t **spTable, int *table_size)
     fclose(file);
 }
 
-void importIdx(const char *idxFile_name, int nb_block, int table_size, int space_size, Index *idxTable)
+void importIdx(const char *idxFile_name, int nb_block, int table_size, int space_size, Index **idxTable)
 {
+    if ((*idxTable = (Index *)calloc(nb_block, sizeof(Index))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
     BitStream stream;
     initBitStream(&stream, idxFile_name, 0);
 
@@ -225,17 +231,17 @@ void importIdx(const char *idxFile_name, int nb_block, int table_size, int space
 
     for (int block_id = 0; block_id < nb_block; block_id++)
     {
-        idxTable[block_id].address = 0;
-        idxTable[block_id].chain_id = 0;
+        (*idxTable)[block_id].address = 0;
+        (*idxTable)[block_id].chain_id = 0;
         for (int i = 0; i < addrSize && !stream.eof; i++)
         {
-            idxTable[block_id].address <<= 1;
-            idxTable[block_id].address |= readBit(&stream);
+            (*idxTable)[block_id].address <<= 1;
+            (*idxTable)[block_id].address |= readBit(&stream);
         }
         for (int i = 0; i < chainSize && !stream.eof; i++)
         {
-            idxTable[block_id].chain_id <<= 1;
-            idxTable[block_id].chain_id |= readBit(&stream);
+            (*idxTable)[block_id].chain_id <<= 1;
+            (*idxTable)[block_id].chain_id |= readBit(&stream);
         }
         if (stream.eof)
         {

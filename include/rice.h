@@ -1,9 +1,7 @@
 #ifndef RICE_H
 #define RICE_H
 
-// #include <stdio.h>
-// #include <stdint.h>
-// #include <math.h>
+
 #include "common.h"
 
 #define PHI ((1 + sqrt(5)) / 2.0)
@@ -43,7 +41,7 @@ typedef struct index
 
 int readBit(BitStream *);
 void importSP(const char *, uint32_t **, int *);
-void importIdx(const char *, int, int, int, Index *);
+void importIdx(const char *, int, int, int, Index **);
 uint32_t decode(BitStream *, int, int *);
 void setStream(BitStream *, uint32_t);
 uint32_t *searchCDE(uint32_t, uint32_t *, BitStream *, Index *, int, int, int);
