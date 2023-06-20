@@ -733,3 +733,65 @@ void test_attack_random_n_m()
     free((void *)filters);
     free((void *)covered);
 }
+
+void test_attackCDE_existing_n()
+{
+    printf("# Test attackCDE existing n :\n");
+
+    int n = 200;
+    int nb = 0;
+
+    int nb_tables = 1;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int table_size;
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result, sp, nb_hash;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        sp = spTable[rand() % table_size];
+        // sp = 157124;
+        plain = sp;
+        col_id = rand() % table_width;
+        // col_id = 107;
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, &nb_hash);
+        hash(&plain, cipher);
+        nb_hash = 0;
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        else
+        {
+            printf("Not recovered %d : sp : %u & col : %d T_T\n", i, sp, col_id);
+        }
+    }
+    printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("\n");
+    closeBitStream(&epStream);
+    free((void *)spTable);
+    free((void *)idxTable);
+}

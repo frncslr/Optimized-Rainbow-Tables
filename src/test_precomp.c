@@ -500,7 +500,7 @@ void test_precompute_full_n()
 void test_precompute_cde()
 {
     printf("# Test precompute_cde :\n");
-    int table_id = 3;
+    int table_id = 0;
     int table_size = (int)ceil(m0);
     int expec_size = (int)ceil(mt);
     int table_width = t;

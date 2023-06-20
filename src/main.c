@@ -17,7 +17,8 @@ int main(void)
   // test_importIdx();
   // test_decode();
   // test_setStream();
-  test_searchCDE();
+  // test_searchCDE();
+  // test_searchPrecompCDE();
 
   // test_elapsed();
   // test_hash();
@@ -57,5 +58,7 @@ int main(void)
   // test_attack_random();
   // test_attack_random_n();
   // test_attack_random_n_m();
+  test_attackCDE_existing_n();
+
   return 0;
 }
