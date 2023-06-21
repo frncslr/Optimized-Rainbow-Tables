@@ -85,7 +85,7 @@ void clean(Points **table, int *table_size, int htable_size)
 void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
 {
     struct timeval start, end;
-    double total_compute, total_clean;
+    double total_compute = 0.0, total_clean = 0.0;
     for (int col_start = 0, *col_end = filters, *last = filters + nb_filters; col_end < last; col_start = *(col_end++))
     {
         for (Points *current = table, *last = table + *table_size; current < last; current++)
@@ -107,7 +107,7 @@ void operations(int *filters, int nb_filters, uint32_t *expec_hash)
 {
     double total = 0.0;
     for (int previous = 0, *current = filters, *last = filters + nb_filters; current < last; previous = *(current++))
-        total += mci(previous) * (*current - previous);
+        total += ceil(mci(previous)) * (*current - previous);
     *expec_hash = (uint32_t)ceil(total);
 }
 

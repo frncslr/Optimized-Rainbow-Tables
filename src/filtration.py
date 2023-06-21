@@ -64,7 +64,8 @@ vh = 1556599
 # number of filtrating nodes
 nf = 1
 # number of filtrations per second
-vf = 16879286
+# vf = 16879286
+vf = 22000576
 # average overhead time per point
 do = 0
 # average nodes communication time
@@ -137,5 +138,5 @@ if __name__ == "__main__":
     print(f"f : {f_opti}")
 
     # Export of configurations    
-    exportf(f, a_mini+1, "./configs/config_mini.dat")
-    exportf(f_opti, a_opti, "./configs/config_opti.dat")
+    exportf(f, a_mini+1, "./data/configs/config_mini.dat")
+    exportf(f_opti, a_opti, "./data/configs/config_opti.dat")
