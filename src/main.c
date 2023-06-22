@@ -58,7 +58,8 @@ int main(void)
   // test_attack_random();
   // test_attack_random_n();
   // test_attack_random_n_m();
-  test_attackCDE_existing_n();
+  // test_attackCDE_existing_n();
+  test_attackCDE_random_n();
 
   return 0;
 }

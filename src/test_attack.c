@@ -793,3 +793,59 @@ void test_attackCDE_existing_n()
     free((void *)idxTable);
     closeBitStream(&epStream);
 }
+
+void test_attackCDE_random_n()
+{
+    printf("# Test attackCDE random n :\n");
+
+    int n = 1000;
+    int nb = 0;
+
+    int nb_tables = 1;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int table_size;
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result, sp;
+    uint32_t nb_hash, total_hash = 0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\n: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("\n");
+    free((void *)spTable);
+    free((void *)idxTable);
+    closeBitStream(&epStream);
+}
