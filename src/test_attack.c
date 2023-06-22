@@ -227,7 +227,7 @@ void test_rebuild()
     printf("Random column\t: %d\n", col_id);
     for (int col = 0; col < col_id; col++)
         hash_reduction(&copy, table_id, col);
-    printf("Copy hashred \t: %u\n", copy);
+    printf("Copy hashed \t: %u\n", copy);
     uint32_t nb_hash = 0;
     rebuild(&point, table_id, col_id, &nb_hash);
     printf("Point rebuilt\t: %u\n", point);
@@ -738,7 +738,7 @@ void test_attackCDE_existing_n()
 {
     printf("# Test attackCDE existing n :\n");
 
-    int n = 200;
+    int n = 10000;
     int nb = 0;
 
     int nb_tables = 1;
@@ -771,10 +771,8 @@ void test_attackCDE_existing_n()
     for (int i = 0; i < n; i++)
     {
         sp = spTable[rand() % table_size];
-        // sp = 157124;
         plain = sp;
         col_id = rand() % table_width;
-        // col_id = 107;
         nb_hash = 0;
         compute(&plain, table_id, 0, col_id, &nb_hash);
         hash(&plain, cipher);
@@ -791,7 +789,7 @@ void test_attackCDE_existing_n()
     }
     printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
     printf("\n");
-    closeBitStream(&epStream);
     free((void *)spTable);
     free((void *)idxTable);
+    closeBitStream(&epStream);
 }

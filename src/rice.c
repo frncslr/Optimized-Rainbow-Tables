@@ -267,6 +267,7 @@ uint32_t decode(BitStream *stream, int k, int *nbBits)
 
 void setStream(BitStream *stream, uint32_t bit_address)
 {
+    stream->eof = 0;
     long byte_address = bit_address / 8;
     fseek(stream->file, byte_address, SEEK_SET);
     stream->BitCount = 0;
@@ -293,7 +294,7 @@ uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, I
     {
         struct stat stat;
         fstat(fileno(epStream->file), &stat);
-        nbBitsMax = (int)stat.st_size * 8;
+        nbBitsMax = (int)stat.st_size * 8 - bit_address;
     }
     else
     {

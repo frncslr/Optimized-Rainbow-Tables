@@ -291,7 +291,9 @@ void test_searchPrecompCDE()
 {
     printf("# Test searchPrecompCDE :\n");
 
-    int table_id = 3;
+    uint32_t nb_test = (uint32_t)N;
+
+    int table_id = 0;
     int table_size;
     int table_width = t;
     int space_size = N;
@@ -315,16 +317,16 @@ void test_searchPrecompCDE()
     initBitStream(&epStream, epFile_name, 0);
 
     int nb_found = 0;
-    for (uint32_t ep = 0; ep < (uint32_t)space_size; ep++)
+    for (uint32_t ep = 0, *sp; ep < nb_test; ep++)
     {
-        if (searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block) != NULL)
+        if ((sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block)) != NULL)
         {
             nb_found++;
             if (!(nb_found % 1000))
                 printf("nb found : %d/%u\n", nb_found, ep);
         }
     }
-    printf("Found : %d/%d\n", nb_found, space_size);
+    printf("Found : %d/%d\n", nb_found, nb_test);
     printf("\n");
     closeBitStream(&epStream);
     free((void *)spTable);
