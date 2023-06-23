@@ -849,3 +849,87 @@ void test_attackCDE_random_n()
     free((void *)idxTable);
     closeBitStream(&epStream);
 }
+
+void test_attackCDE_random_n_ell()
+{
+    printf("# Test attackCDE random n ell:\n");
+
+    int n = 10000;
+    int nb = 0;
+
+    int nb_tables = 4;
+    int table_size[nb_tables];
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t **spTable = NULL;
+    if ((spTable = (uint32_t **)calloc(nb_tables, sizeof(uint32_t *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    BitStream *epStream = NULL;
+    if ((epStream = (BitStream *)calloc(nb_tables, sizeof(BitStream))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    Index **idxTable = NULL;
+    if ((idxTable = (Index **)calloc(nb_tables, sizeof(Index *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+    {
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        importSP(spFile_name, &spTable[table_id], &table_size[table_id]);
+        importIdx(idxFile_name, nb_block, table_size[table_id], space_size, &idxTable[table_id]);
+        initBitStream(&epStream[table_id], epFile_name, 0);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result;
+    uint32_t nb_hash, total_hash = 0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, spTable, epStream, idxTable, table_size, nb_tables, table_width, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\n: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("\n");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+    {
+        free((void *)spTable[table_id]);
+        closeBitStream(&epStream[table_id]);
+        free((void *)idxTable[table_id]);
+    }
+    free((void *)spTable);
+    free((void *)epStream);
+    free((void *)idxTable);
+}

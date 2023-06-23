@@ -46,7 +46,7 @@ int main(void)
   // test_precompute_full();
   // test_precompute_full_n();
   // test_precompute_cde();
-  test_precompute_cde_ell();
+  // test_precompute_cde_ell();
 
   // test_ceri();
   // test_import();
@@ -61,6 +61,7 @@ int main(void)
   // test_attack_random_n_m();
   // test_attackCDE_existing_n();
   // test_attackCDE_random_n();
+  test_attackCDE_random_n_ell();
 
   return 0;
 }

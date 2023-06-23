@@ -558,7 +558,7 @@ void test_precompute_cde()
 
 void test_precompute_cde_ell()
 {
-    printf("# Test precompute_cde :\n");
+    printf("# Test precompute CDE ell:\n");
     int nb_tables = 4;
     int init_size = (int)ceil(m0);
     int expec_size = (int)ceil(mt);

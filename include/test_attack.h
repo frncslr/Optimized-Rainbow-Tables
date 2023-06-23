@@ -16,7 +16,7 @@ void test_attack_random_n();
 void test_attack_random_n_m();
 void test_attackCDE_existing_n();
 void test_attackCDE_random_n();
-void test_attackCDE_random_n_m();
+void test_attackCDE_random_n_ell();
 
 
 #endif
