@@ -89,6 +89,7 @@ void test_encode()
 void test_exportCDE1()
 {
     printf("# Test exportCDE 1 :\n");
+    int nb_tables = 1;
     int space_size = 60;
     int nb_block = 6;
     int table_size = 7;
@@ -108,12 +109,13 @@ void test_exportCDE1()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
     printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name);
     printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name);
-    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_exportCDE2()
 {
     printf("# Test exportCDE 2 :\n");
+    int nb_tables = 1;
     int space_size = 60;
     int nb_block = 6;
     int table_size = 8;
@@ -134,12 +136,13 @@ void test_exportCDE2()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
     printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name);
     printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name);
-    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_exportCDE3()
 {
     printf("# Test exportCDE 3 :\n");
+    int nb_tables = 1;
     int space_size = 60;
     int nb_block = 6;
     int table_size = 12;
@@ -160,7 +163,7 @@ void test_exportCDE3()
     char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
     char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_readBit()

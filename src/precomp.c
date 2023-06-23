@@ -226,36 +226,37 @@ void cover(Points *table, int table_id, int table_size, int table_width, char *c
     }
 }
 
-void hashStats(uint32_t nb_hash, int *filters, int nb_filters)
+void hashStats(uint32_t nb_hash, int *filters, int nb_filters, int nb_tables)
 {
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
+    expec_hash *= nb_tables;
     int diff_hash = nb_hash - expec_hash;
     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
     printf("Hash operations :\n");
     printf("\texpected\t: %u\n", expec_hash);
     printf("\texperimental\t: %u\n", nb_hash);
-    printf("\tdifference\t: %d (%3.2lf%%)\n", diff_hash, diff_hash_perc);
+    printf("\tdifference\t: %d (%3.2lf%%)\n\n", diff_hash, diff_hash_perc);
 }
 
-void epStats(int table_size, int expec_size)
+void epStats(int table_size, int expec_size, int nb_tables)
 {
+    expec_size *= nb_tables;
     int diff_size = table_size - expec_size;
     double diff_size_perc = (double)diff_size * 100 / expec_size;
     printf("Unique endpoints :\n");
     printf("\texpected\t: %d\n", expec_size);
     printf("\texperimental\t: %d\n", table_size);
-    printf("\tdifference\t: %d (%3.2lf%%)\n", diff_size, diff_size_perc);
+    printf("\tdifference\t: %d (%3.2lf%%)\n\n", diff_size, diff_size_perc);
 }
 
-void coverStats(int coverage, int space_size)
+void coverStats(int coverage, int space_size, int nb_tables, int table_width, int expec_size)
 {
-    double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
+    double expec_coverage_perc = (1 - pow(1 - (1 - pow(1.0 - expec_size / space_size, (double)table_width)), (double)nb_tables)) * 100;
     double coverage_perc = (double)coverage * 100 / space_size;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
     printf("Coverage of the table :\n");
     printf("\texpected\t: %3.2lf%%\n", expec_coverage_perc);
     printf("\texperimental\t: %3.2lf%%\n", coverage_perc);
-    printf("\tdifference\t: %3.2lf%%\n", diff_coverage_perc);
+    printf("\tdifference\t: %3.2lf%%\n\n", diff_coverage_perc);
 }
-

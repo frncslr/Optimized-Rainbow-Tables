@@ -500,6 +500,7 @@ void test_precompute_full_n()
 void test_precompute_cde()
 {
     printf("# Test precompute_cde :\n");
+    int nb_tables = 1;
     int table_id = 0;
     int table_size = (int)ceil(m0);
     int expec_size = (int)ceil(mt);
@@ -533,7 +534,7 @@ void test_precompute_cde()
 
     printf("Exporting table in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-    
+
     int coverage = 0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
@@ -545,12 +546,83 @@ void test_precompute_cde()
     cover(table, table_id, table_size, table_width, covered, &coverage);
     printf("\n");
 
-    hashStats(nb_hash, filters, nb_filters);
-    epStats(table_size, expec_size);
-    coverStats(coverage, space_size);
-    cdeStats(table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    hashStats(nb_hash, filters, nb_filters, nb_tables);
+    epStats(table_size, expec_size, nb_tables);
+    coverStats(coverage, space_size, nb_tables, table_width, expec_size);
+    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 
     free((void *)table);
+    free((void *)filters);
+    free((void *)covered);
+}
+
+void test_precompute_cde_ell()
+{
+    printf("# Test precompute_cde :\n");
+    int nb_tables = 4;
+    int init_size = (int)ceil(m0);
+    int expec_size = (int)ceil(mt);
+    int table_width = t;
+    int space_size = N;
+    int nb_block = L;
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    Points *table;
+    int table_size[nb_tables], total_size = 0;
+    uint32_t nb_hash = 0;
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    int nb_filters, *filters = NULL;
+    char config_name[30] = "data/configs/config_mini.dat";
+    printf("Importing filters from %s\n", config_name);
+    positions(&filters, &nb_filters, config_name);
+
+    printf("Precomputing %d tables of initially %d rows and filtering with %d filters\n", nb_tables, init_size, nb_filters);
+    printf("Checking the coverage of the tables after their export with CDE in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+    {
+        table_size[table_id] = init_size;
+        if ((table = (Points *)calloc(table_size[table_id], sizeof(Points))) == NULL)
+        {
+            fprintf(stderr, "Memory allocation problem\n");
+            exit(ERROR_ALLOC);
+        }
+
+        precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash);
+
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        exportCDE(table, table_size[table_id], space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+
+        cover(table, table_id, table_size[table_id], table_width, covered, &coverage);
+
+        total_size += table_size[table_id];
+
+        free((void *)table);
+    }
+
+    hashStats(nb_hash, filters, nb_filters, nb_tables);
+    epStats(total_size, expec_size, nb_tables);
+    coverStats(coverage, space_size, nb_tables, table_width, expec_size);
+    cdeStats(nb_tables, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    printf("\n");
     free((void *)filters);
     free((void *)covered);
 }

@@ -1,7 +1,6 @@
 #ifndef RICE_H
 #define RICE_H
 
-
 #include "common.h"
 
 #define PHI ((1 + sqrt(5)) / 2.0)
@@ -46,7 +45,7 @@ uint32_t decode(BitStream *, int, int *);
 void setStream(BitStream *, uint32_t);
 uint32_t *searchCDE(uint32_t, uint32_t *, BitStream *, Index *, int, int, int);
 
-void cdeStats(int, int, int, const char *, const char *, const char *);
+void cdeStats(int, int *, int, int, char *, char *, char *);
 
 void rice(uint32_t *, uint32_t);
 void ceri(uint32_t *, uint32_t, int);

@@ -313,69 +313,100 @@ uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, I
     return NULL;
 }
 
-void cdeStats(int table_size, int space_size, int nb_block, const char *spFile_name, const char *epFile_name, const char *idxFile_name)
+void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char *spFile_name, char *epFile_name, char *idxFile_name)
 {
-    int kopt = Kopt(space_size, table_size);
-    double ropt = Ropt(kopt, space_size, table_size);
-    int addrSize = addrBits(table_size, ropt);
-    int chainSize = chainBits(table_size);
+    int kopt[nb_tables];
+    double ropt[nb_tables];
+    int addrSize[nb_tables];
+    int chainSize[nb_tables];
 
-    printf("Delta encoding variables :\n");
-    printf("\tk optimal\t: %d\n", kopt);
-    printf("\tR optimal\t: %f\n", ropt);
-    printf("\taddr size\t: %d\n", addrSize);
-    printf("\tchain size\t: %d\n", chainSize);
+    int expec_sp_memory = 0;
+    int sp_memory = 0;
+    int diff_sp_memory = 0;
+    double diff_sp_memory_perc = 0.0;
 
-    int ep_memory, expec_ep_memory, diff_ep_memory;
-    double diff_ep_memory_perc;
-    int sp_memory, expec_sp_memory, diff_sp_memory;
-    double diff_sp_memory_perc;
-    int cde_total_memory, std_total_memory, diff_total_memory;
-    double diff_total_memory_perc;
+    int expec_ep_memory = 0;
+    int ep_memory = 0;
+    int diff_ep_memory = 0;
+    double diff_ep_memory_perc = 0.0;
 
-    expec_ep_memory = memory(table_size, ropt, nb_block);
-    expec_sp_memory = table_size * 4;
-    std_total_memory = table_size * 4 * 2;
+    int std_total_memory = 0;
+    int cde_total_memory = 0;
+    int diff_total_memory = 0;
+    double diff_total_memory_perc = 0.0;
 
     FILE *file;
     struct stat stat;
-
-    if ((file = fopen(spFile_name, "rb")) == (FILE *)NULL)
+    int spName_length = strlen((const char *)spFile_name) - 5;
+    int epName_length = strlen((const char *)epFile_name) - 5;
+    int idxName_length = strlen((const char *)idxFile_name) - 5;
+    for (int table_id = 0; table_id < nb_tables; table_id++)
     {
-        fprintf(stderr, "Opening file problem : %s\n", spFile_name);
-        exit(ERROR_FOPEN);
+        kopt[table_id] = Kopt(space_size, table_size[table_id]);
+        ropt[table_id] = Ropt(kopt[table_id], space_size, table_size[table_id]);
+        addrSize[table_id] = addrBits(table_size[table_id], ropt[table_id]);
+        chainSize[table_id] = chainBits(table_size[table_id]);
+
+        expec_sp_memory += table_size[table_id] * 4;
+        expec_ep_memory += memory(table_size[table_id], ropt[table_id], nb_block);
+        std_total_memory += table_size[table_id] * 4 * 2;
+
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        if ((file = fopen(spFile_name, "rb")) == (FILE *)NULL)
+        {
+            fprintf(stderr, "Opening file problem : %s\n", spFile_name);
+            exit(ERROR_FOPEN);
+        }
+        fstat(fileno(file), &stat);
+        sp_memory += (int)stat.st_size;
+        fclose(file);
+
+        if ((file = fopen(epFile_name, "rb")) == (FILE *)NULL)
+        {
+            fprintf(stderr, "Opening file problem : %s\n", epFile_name);
+            exit(ERROR_FOPEN);
+        }
+        fstat(fileno(file), &stat);
+        ep_memory += (int)stat.st_size;
+        fclose(file);
+
+        if ((file = fopen(idxFile_name, "rb")) == (FILE *)NULL)
+        {
+            fprintf(stderr, "Opening file problem : %s\n", idxFile_name);
+            exit(ERROR_FOPEN);
+        }
+        fstat(fileno(file), &stat);
+        ep_memory += (int)stat.st_size;
+        fclose(file);
     }
-    fstat(fileno(file), &stat);
-    sp_memory = (int)stat.st_size;
-    fclose(file);
+
     diff_sp_memory = sp_memory - expec_sp_memory;
-    diff_sp_memory_perc = diff_sp_memory * 100.0 / expec_sp_memory;
+    diff_sp_memory_perc += diff_sp_memory * 100.0 / expec_sp_memory;
 
-    if ((file = fopen(epFile_name, "rb")) == (FILE *)NULL)
-    {
-        fprintf(stderr, "Opening file problem : %s\n", epFile_name);
-        exit(ERROR_FOPEN);
-    }
-    fstat(fileno(file), &stat);
-    ep_memory = (int)stat.st_size;
-    fclose(file);
-    if ((file = fopen(idxFile_name, "rb")) == (FILE *)NULL)
-    {
-        fprintf(stderr, "Opening file problem : %s\n", idxFile_name);
-        exit(ERROR_FOPEN);
-    }
-    fstat(fileno(file), &stat);
-    ep_memory += (int)stat.st_size;
-    fclose(file);
-
-    cde_total_memory = sp_memory + ep_memory;
     diff_ep_memory = ep_memory - expec_ep_memory;
     diff_ep_memory_perc = diff_ep_memory * 100.0 / expec_ep_memory;
+    cde_total_memory = (sp_memory + ep_memory);
 
     diff_total_memory = cde_total_memory - std_total_memory;
     diff_total_memory_perc = diff_total_memory * 100.0 / std_total_memory;
 
-    printf("Delta encoding memory :\n");
+    printf("Delta encoding variables :");
+    printf("\n\tk optimal\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %d", kopt[table_id]);
+    printf("\n\tR optimal\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %3.3f", ropt[table_id]);
+    printf("\n\taddr size\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %d", addrSize[table_id]);
+    printf("\n\tchain size\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %d", chainSize[table_id]);
+
+    printf("\n\nDelta encoding memory :\n");
     printf("\tstartpoints memory :\n");
     printf("\t\texpected\t: %d\n", expec_sp_memory);
     printf("\t\texperimental\t: %d\n", sp_memory);
