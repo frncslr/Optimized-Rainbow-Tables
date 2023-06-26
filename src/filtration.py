@@ -137,5 +137,5 @@ if __name__ == "__main__":
     print(f"f : {f_opti}")
 
     # Export of configurations    
-    exportf(f, a_mini+1, "./configs/config_mini.dat")
-    exportf(f_opti, a_opti, "./configs/config_opti.dat")
+    exportf(f, a_mini+1, "data/configs/config_mini.dat")
+    exportf(f_opti, a_opti, "data/configs/config_opti.dat")

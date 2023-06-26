@@ -252,8 +252,8 @@ void epStats(int table_size, int expec_size, int nb_tables)
 
 void coverStats(int coverage, int space_size, int nb_tables, int table_width, int expec_size)
 {
-    double expec_coverage_perc = (1 - pow(1 - (1 - pow(1.0 - expec_size / space_size, (double)table_width)), (double)nb_tables)) * 100;
-    double coverage_perc = (double)coverage * 100 / space_size;
+    double expec_coverage_perc = (1.0 - pow(1.0 - (1.0 - pow(1.0 - (double)expec_size / space_size, (double)table_width)), (double)nb_tables)) * 100.0;
+    double coverage_perc = coverage * 100.0 / space_size;
     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
     printf("Coverage of the table :\n");
     printf("\texpected\t: %3.2lf%%\n", expec_coverage_perc);
