@@ -20,6 +20,11 @@ int chainBits(int m)
     return (int)ceil(log2(m));
 }
 
+int Lblocks(int m)
+{
+    return m >> 8;
+}
+
 int memory(int m, double R, int l)
 {
     return (int)ceil((m * R + l * (ceil(log2(m * R)) + ceil(log2(m)))) / 8);
@@ -313,7 +318,7 @@ uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, I
     return NULL;
 }
 
-void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char *spFile_name, char *epFile_name, char *idxFile_name)
+void cdeStats(int nb_tables, int *table_size, int space_size, int *nb_block, char *spFile_name, char *epFile_name, char *idxFile_name)
 {
     int kopt[nb_tables];
     double ropt[nb_tables];
@@ -352,7 +357,7 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
 
         expec_sp_memory += table_size[table_id] * 4;
         expec_std_ep_memory += table_size[table_id] * 4;
-        expec_cde_ep_memory += memory(table_size[table_id], ropt[table_id], nb_block);
+        expec_cde_ep_memory += memory(table_size[table_id], ropt[table_id], nb_block[table_id]);
         std_total_memory += table_size[table_id] * 4 * 2;
 
         spFile_name[spName_length] = table_id + '0';
@@ -405,12 +410,15 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
     printf("\n\tR optimal\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %3.3f", ropt[table_id]);
-    printf("\n\taddr size\t:");
+    printf("\n\taddress size\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %d", addrSize[table_id]);
-    printf("\n\tchain size\t:");
+    printf("\n\tchain id size\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %d", chainSize[table_id]);
+    printf("\n\tL blocks\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %d", nb_block[table_id]);
 
     printf("\n\nDelta encoding memory :\n");
     printf("\tstartpoints memory :\n");

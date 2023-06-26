@@ -4,13 +4,13 @@
 #include "common.h"
 
 #define PHI ((1 + sqrt(5)) / 2.0)
-#define L (1 << 5)
 #define kk 3
 
 int Kopt(int, int);
 double Ropt(int, int, int);
 int addrBits(int, double);
 int chainBits(int);
+int Lblocks(int);
 int memory(int, double, int);
 
 typedef struct bitstream
@@ -45,7 +45,7 @@ uint32_t decode(BitStream *, int, int *);
 void setStream(BitStream *, uint32_t);
 uint32_t *searchCDE(uint32_t, uint32_t *, BitStream *, Index *, int, int, int);
 
-void cdeStats(int, int *, int, int, char *, char *, char *);
+void cdeStats(int, int *, int, int *, char *, char *, char *);
 
 void rice(uint32_t *, uint32_t);
 void ceri(uint32_t *, uint32_t, int);

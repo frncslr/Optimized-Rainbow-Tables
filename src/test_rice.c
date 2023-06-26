@@ -109,7 +109,7 @@ void test_exportCDE1()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
     printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name);
     printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name);
-    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, &nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_exportCDE2()
@@ -136,7 +136,7 @@ void test_exportCDE2()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, table_size - 1);
     printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name);
     printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name);
-    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, &nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_exportCDE3()
@@ -163,7 +163,7 @@ void test_exportCDE3()
     char epFile_name[40] = "data/tables/cde/epTestExportCDE3.dat";
     char idxFile_name[40] = "data/tables/cde/idxTestExportCDE3.dat";
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, &nb_block, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_readBit()
@@ -300,7 +300,6 @@ void test_searchPrecompCDE()
     int table_size;
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
@@ -312,6 +311,7 @@ void test_searchPrecompCDE()
 
     uint32_t *spTable = NULL;
     importSP(spFile_name, &spTable, &table_size);
+    int nb_block = Lblocks(table_size);
 
     Index *idxTable = NULL;
     importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
