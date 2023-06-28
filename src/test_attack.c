@@ -157,9 +157,11 @@ void test_chain()
     }
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -245,9 +247,11 @@ void test_chain_rebuild()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     printf("Table : {%u : %u}\n", table->start, table->end);
     printf("id : %d\n size : %d\n width : %d\n", table_id, table_size, table_width);
 
@@ -311,9 +315,11 @@ void test_attack_existing()
     }
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -395,7 +401,9 @@ void test_attack_existing_n()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -475,7 +483,9 @@ void test_attack_random()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -551,7 +561,9 @@ void test_attack_random_n()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
     cover(table, table_id, table_size, table_width, covered, &coverage);
 
@@ -630,6 +642,8 @@ void test_attack_random_n_m()
     int table_size;
     int total_size = 0;
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
 
     int coverage = 0;
     char *covered;
@@ -653,7 +667,7 @@ void test_attack_random_n_m()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);

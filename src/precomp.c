@@ -82,10 +82,9 @@ void clean(Points **table, int *table_size, int htable_size)
     free((void *)htable);
 }
 
-void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
+void generate(Points *table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash, double *computeTime, double *cleanTime)
 {
     struct timeval start, end;
-    double total_compute, total_clean;
     for (int col_start = 0, *col_end = filters, *last = filters + nb_filters; col_end < last; col_start = *(col_end++))
     {
         for (Points *current = table, *last = table + *table_size; current < last; current++)
@@ -93,14 +92,13 @@ void generate(Points *table, int table_id, int *table_size, int *filters, int nb
             gettimeofday(&start, 0);
             compute(&(current->end), table_id, col_start, *col_end, nb_hash);
             gettimeofday(&end, 0);
-            total_compute += elapsed(&start, &end);
+            *computeTime += elapsed(&start, &end);
         }
         gettimeofday(&start, 0);
         clean(&table, table_size, hsize(*col_end));
         gettimeofday(&end, 0);
-        total_clean += elapsed(&start, &end);
+        *cleanTime += elapsed(&start, &end);
     }
-    printf("Time to compute\t\t: %fs\nTime to clean\t\t: %fs\n", total_compute, total_clean);
 }
 
 void operations(int *filters, int nb_filters, uint32_t *expec_hash)
@@ -173,11 +171,10 @@ void sort(Points *table, int table_size)
     quicksort(table, 0, table_size - 1);
 }
 
-void precompute(Points **table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash)
+void precompute(Points **table, int table_id, int *table_size, int *filters, int nb_filters, uint32_t *nb_hash, double *computeTime, double *cleanTime)
 {
     initialize(*table, table_id, *table_size);
-
-    generate(*table, table_id, table_size, filters, nb_filters, nb_hash);
+    generate(*table, table_id, table_size, filters, nb_filters, nb_hash, computeTime, cleanTime);
     sort(*table, *table_size);
 }
 

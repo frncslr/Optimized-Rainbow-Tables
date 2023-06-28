@@ -143,10 +143,15 @@ void test_generate()
     printf("Time init %d : %lf\n", table_size, elapsed(&start, &end));
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     gettimeofday(&start, 0);
-    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     gettimeofday(&end, 0);
     printf("Time gen %d : %lf\n", table_size, elapsed(&start, &end));
+    printf("Time to compute\t: %f seconds\n", computeTime);
+    printf("Time to clean\t: %f seconds\n", cleanTime);
+    printf("Time to generate\t: %f seconds\n", computeTime + cleanTime);
 
     uint32_t expec_hash = 0;
     operations(&filters, nb_filters, &expec_hash);
@@ -193,7 +198,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "./configs/config_mini.dat";
+    char file_name[40] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -209,10 +214,12 @@ void test_generate_f()
     printf("Time to initialize\t: %lf\n", elapsed(&start, &end));
 
     uint32_t nb_hash = 0;
-    gettimeofday(&start, 0);
-    generate(table, table_id, &table_size, filters, nb_filters, &nb_hash);
-    gettimeofday(&end, 0);
-    printf("Time to generate\t: %lf\n", elapsed(&start, &end));
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    generate(table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f seconds\n", computeTime);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime);
+    printf("Time to generate\t: %f seconds\n", computeTime + cleanTime);
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
@@ -248,7 +255,9 @@ void test_sort()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
-    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     printf("Table before sort (first 16):");
     for (Points *current = table, *last = table + 16; current < last; current++)
         printf("\n%u\t:\t%u", current->start, current->end);
@@ -287,7 +296,9 @@ void test_precompute()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
@@ -346,9 +357,11 @@ void test_cover()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = t;
-    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
     printf("Table %d of %d rows initialized :\n", table_id, table_size);
     for (Points *current = table, *last = table + table_size; current < last; current++)
@@ -392,7 +405,9 @@ void test_precompute_full()
 
     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
     int coverage = 0;
     char *covered;
@@ -441,6 +456,8 @@ void test_precompute_full_n()
     int table_size;
     int total_size = 0;
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
 
     int coverage = 0;
     char *covered;
@@ -451,7 +468,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "./configs/config_mini.dat";
+    char file_name[40] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
@@ -464,7 +481,7 @@ void test_precompute_full_n()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
@@ -475,6 +492,10 @@ void test_precompute_full_n()
 
         free((void *)table);
     }
+
+    printf("Time to compute\t\t: %f seconds\n", computeTime / 4);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime / 4);
+    printf("Time to generate\t: %f seconds\n", (computeTime + cleanTime) / 4);
 
     uint32_t expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
@@ -530,7 +551,9 @@ void test_precompute_cde()
 
     printf("Precomputing table %d of initially %d rows, filtering with %d filters\n", table_id, table_size, nb_filters);
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
     printf("Exporting table in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
@@ -579,6 +602,8 @@ void test_precompute_cde_ell()
     Points *table;
     int table_size[nb_tables], total_size = 0;
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
 
     int coverage = 0;
     char *covered;
@@ -604,7 +629,7 @@ void test_precompute_cde_ell()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash);
+        precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
         spFile_name[spName_length] = table_id + '0';
         epFile_name[epName_length] = table_id + '0';
