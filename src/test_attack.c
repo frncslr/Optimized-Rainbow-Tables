@@ -760,7 +760,6 @@ void test_attackCDE_existing_n()
     int table_size;
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
@@ -772,6 +771,7 @@ void test_attackCDE_existing_n()
 
     uint32_t *spTable = NULL;
     importSP(spFile_name, &spTable, &table_size);
+    int nb_block = Lblocks(table_size);
     Index *idxTable = NULL;
     importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
     BitStream epStream;
@@ -820,7 +820,6 @@ void test_attackCDE_random_n()
     int table_size;
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
@@ -832,6 +831,7 @@ void test_attackCDE_random_n()
 
     uint32_t *spTable = NULL;
     importSP(spFile_name, &spTable, &table_size);
+    int nb_block = Lblocks(table_size);
     Index *idxTable = NULL;
     importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
     BitStream epStream;
@@ -875,7 +875,7 @@ void test_attackCDE_random_n_ell()
     int table_size[nb_tables];
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
+    int nb_block;
     char spFile_name[40] = "data/tables/cde/spCDE";
     char epFile_name[40] = "data/tables/cde/epCDE";
     char idxFile_name[40] = "data/tables/cde/idxCDE";
@@ -911,6 +911,7 @@ void test_attackCDE_random_n_ell()
         epFile_name[epName_length] = table_id + '0';
         idxFile_name[idxName_length] = table_id + '0';
         importSP(spFile_name, &spTable[table_id], &table_size[table_id]);
+        nb_block = Lblocks(table_size[table_id]);
         importIdx(idxFile_name, nb_block, table_size[table_id], space_size, &idxTable[table_id]);
         initBitStream(&epStream[table_id], epFile_name, 0);
     }
@@ -933,7 +934,7 @@ void test_attackCDE_random_n_ell()
         }
         total_hash += nb_hash;
     }
-    printf("Plains recovered\n: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n", avg_hash);
     printf("\n");

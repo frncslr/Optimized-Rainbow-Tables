@@ -80,7 +80,7 @@ void attackCDE(unsigned char *cipher, uint32_t **spTables, BitStream *epStreams,
         for (int table_id = 0; table_id < nb_tables; table_id++)
         {
             chain(&endpoint, cipher, table_id, table_width, col_id, nb_hash);
-            if ((found = searchCDE(endpoint, spTables[table_id], &(epStreams[table_id]), idxTables[table_id], tables_sizes[table_id], N, L)) != NULL)
+            if ((found = searchCDE(endpoint, spTables[table_id], &(epStreams[table_id]), idxTables[table_id], tables_sizes[table_id], N, Lblocks(tables_sizes[table_id]))) != NULL)
             {
                 candidate = *found;
                 rebuild(&candidate, table_id, col_id, nb_hash);

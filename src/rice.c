@@ -20,6 +20,11 @@ int chainBits(int m)
     return (int)ceil(log2(m));
 }
 
+int Lblocks(int m)
+{
+    return m >> 8;
+}
+
 int memory(int m, double R, int l)
 {
     return (int)ceil((m * R + l * (ceil(log2(m * R)) + ceil(log2(m)))) / 8);
@@ -313,7 +318,7 @@ uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, I
     return NULL;
 }
 
-void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char *spFile_name, char *epFile_name, char *idxFile_name)
+void cdeStats(int nb_tables, int *table_size, int space_size, int *nb_block, char *spFile_name, char *epFile_name, char *idxFile_name)
 {
     int kopt[nb_tables];
     double ropt[nb_tables];
@@ -325,9 +330,12 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
     int diff_sp_memory = 0;
     double diff_sp_memory_perc = 0.0;
 
-    int expec_ep_memory = 0;
-    int ep_memory = 0;
+    int expec_std_ep_memory = 0;
+    int expec_cde_ep_memory = 0;
+    int cde_ep_memory = 0;
+    int diff_cde_ep_memory = 0;
     int diff_ep_memory = 0;
+    double diff_cde_ep_memory_perc = 0.0;
     double diff_ep_memory_perc = 0.0;
 
     int std_total_memory = 0;
@@ -348,7 +356,8 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
         chainSize[table_id] = chainBits(table_size[table_id]);
 
         expec_sp_memory += table_size[table_id] * 4;
-        expec_ep_memory += memory(table_size[table_id], ropt[table_id], nb_block);
+        expec_std_ep_memory += table_size[table_id] * 4;
+        expec_cde_ep_memory += memory(table_size[table_id], ropt[table_id], nb_block[table_id]);
         std_total_memory += table_size[table_id] * 4 * 2;
 
         spFile_name[spName_length] = table_id + '0';
@@ -369,7 +378,7 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
             exit(ERROR_FOPEN);
         }
         fstat(fileno(file), &stat);
-        ep_memory += (int)stat.st_size;
+        cde_ep_memory += (int)stat.st_size;
         fclose(file);
 
         if ((file = fopen(idxFile_name, "rb")) == (FILE *)NULL)
@@ -378,16 +387,18 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
             exit(ERROR_FOPEN);
         }
         fstat(fileno(file), &stat);
-        ep_memory += (int)stat.st_size;
+        cde_ep_memory += (int)stat.st_size;
         fclose(file);
     }
 
     diff_sp_memory = sp_memory - expec_sp_memory;
     diff_sp_memory_perc += diff_sp_memory * 100.0 / expec_sp_memory;
 
-    diff_ep_memory = ep_memory - expec_ep_memory;
-    diff_ep_memory_perc = diff_ep_memory * 100.0 / expec_ep_memory;
-    cde_total_memory = (sp_memory + ep_memory);
+    diff_ep_memory = cde_ep_memory - expec_std_ep_memory;
+    diff_ep_memory_perc = diff_ep_memory * 100.0 / expec_std_ep_memory;
+    diff_cde_ep_memory = cde_ep_memory - expec_cde_ep_memory;
+    diff_cde_ep_memory_perc = diff_cde_ep_memory * 100.0 / expec_cde_ep_memory;
+    cde_total_memory = (sp_memory + cde_ep_memory);
 
     diff_total_memory = cde_total_memory - std_total_memory;
     diff_total_memory_perc = diff_total_memory * 100.0 / std_total_memory;
@@ -399,12 +410,15 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
     printf("\n\tR optimal\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %3.3f", ropt[table_id]);
-    printf("\n\taddr size\t:");
+    printf("\n\taddress size\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %d", addrSize[table_id]);
-    printf("\n\tchain size\t:");
+    printf("\n\tchain id size\t:");
     for (int table_id = 0; table_id < nb_tables; table_id++)
         printf(" %d", chainSize[table_id]);
+    printf("\n\tL blocks\t:");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+        printf(" %d", nb_block[table_id]);
 
     printf("\n\nDelta encoding memory :\n");
     printf("\tstartpoints memory :\n");
@@ -412,9 +426,12 @@ void cdeStats(int nb_tables, int *table_size, int space_size, int nb_block, char
     printf("\t\texperimental\t: %d\n", sp_memory);
     printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_sp_memory, diff_sp_memory_perc);
     printf("\tendpoints memory :\n");
-    printf("\t\texpected\t: %d\n", expec_ep_memory);
-    printf("\t\texperimental\t: %d\n", ep_memory);
-    printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_ep_memory, diff_ep_memory_perc);
+    printf("\t\texpected\t: %d\n", expec_cde_ep_memory);
+    printf("\t\texperimental\t: %d\n", cde_ep_memory);
+    printf("\t\tdifference\t: %d (%3.3lf%%)\n", diff_cde_ep_memory, diff_cde_ep_memory_perc);
+    printf("\t\tstandard\t: %d\n", expec_std_ep_memory);
+    printf("\t\tencoding\t: %d\n", cde_ep_memory);
+    printf("\t\tdifference\t: %d (%3.3f%%)\n", diff_ep_memory, diff_ep_memory_perc);
     printf("\ttotal memory :\n");
     printf("\t\tstandard\t: %d\n", std_total_memory);
     printf("\t\tencoding\t: %d\n", cde_total_memory);

@@ -527,7 +527,7 @@ void test_precompute_cde()
     int expec_size = (int)ceil(mt);
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
+    int nb_block;
     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
@@ -555,6 +555,7 @@ void test_precompute_cde()
     double cleanTime = 0.0;
     precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
+    nb_block = Lblocks(table_size);
     printf("Exporting table in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
 
@@ -572,7 +573,7 @@ void test_precompute_cde()
     hashStats(nb_hash, filters, nb_filters, nb_tables);
     epStats(table_size, expec_size, nb_tables);
     coverStats(coverage, space_size, nb_tables, table_width, expec_size);
-    cdeStats(nb_tables, &table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+    cdeStats(nb_tables, &table_size, space_size, &nb_block, spFile_name, epFile_name, idxFile_name);
 
     free((void *)table);
     free((void *)filters);
@@ -587,7 +588,7 @@ void test_precompute_cde_ell()
     int expec_size = (int)ceil(mt);
     int table_width = t;
     int space_size = N;
-    int nb_block = L;
+    int nb_block[nb_tables];
     char spFile_name[40] = "data/tables/cde/spCDE";
     char epFile_name[40] = "data/tables/cde/epCDE";
     char idxFile_name[40] = "data/tables/cde/idxCDE";
@@ -630,11 +631,12 @@ void test_precompute_cde_ell()
         }
 
         precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
+        nb_block[table_id] = Lblocks(table_size[table_id]);
 
         spFile_name[spName_length] = table_id + '0';
         epFile_name[epName_length] = table_id + '0';
         idxFile_name[idxName_length] = table_id + '0';
-        exportCDE(table, table_size[table_id], space_size, nb_block, spFile_name, epFile_name, idxFile_name);
+        exportCDE(table, table_size[table_id], space_size, nb_block[table_id], spFile_name, epFile_name, idxFile_name);
 
         cover(table, table_id, table_size[table_id], table_width, covered, &coverage);
 
