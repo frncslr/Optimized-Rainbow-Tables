@@ -22,7 +22,7 @@ int main(void)
 
   // test_elapsed();
   // test_hash();
-  test_hash_n();
+  // test_hash_n();
   // test_reduction();
   // test_hash_reduction();
   // test_hash_reduction_n();
@@ -46,7 +46,7 @@ int main(void)
   // test_precompute_full();
   // test_precompute_full_n();
   // test_precompute_cde();
-  // test_precompute_cde_ell();
+  test_precompute_cde_ell();
 
   // test_ceri();
   // test_import();

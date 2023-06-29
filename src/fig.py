@@ -100,7 +100,7 @@ def draw_cSpeeds():
     plt.show()
     fig.savefig(f'./data/plots/cSpeeds', bbox_inches='tight',dpi=500)
     
-draw_cSpeeds()
+# draw_cSpeeds()
 
 def draw_fConfig():
     filters = importf("./data/configs/config_opti.dat")
