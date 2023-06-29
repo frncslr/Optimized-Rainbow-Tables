@@ -24,13 +24,13 @@ void test_positions()
 {
     printf("# Test positions :\n");
     int nb_filters, *filters = NULL;
-    char config_mini[30] = "./configs/config_mini.dat";
+    char config_mini[40] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, config_mini);
     printf("Filters in %s :\n", config_mini);
     for (int i = 0; i < nb_filters; i++)
         printf("position %d : %d\n", i, filters[i]);
     printf("\n");
-    char config_opti[30] = "./configs/config_opti.dat";
+    char config_opti[30] = "data/configs/config_opti.dat";
     positions(&filters, &nb_filters, config_opti);
     printf("Filters in %s :\n", config_opti);
     for (int i = 0; i < nb_filters; i++)
