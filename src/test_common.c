@@ -23,13 +23,13 @@ void test_hash()
 void test_hash_n()
 {
     printf("# Test hash n:\n");
-    int nb_tests = 50;
+    int nb_tests = 500;
     uint32_t nb_hash = 1 << 24;
     printf("Hashing %u numbers %d times\n", nb_hash, nb_tests);
 
     struct timeval start, end;
     double speed, time, total_time = 0.0;
-    const char file_name[40] = "./data/results/hSpeeds.dat";
+    const char file_name[40] = "data/results/hSpeeds.dat";
 
     for (int i = 0; i < nb_tests; i++)
     {
