@@ -72,15 +72,17 @@ void attack(unsigned char *cipher, Hashtable *htables, int *htables_sizes, int n
     }
 }
 
-void attackCDE(unsigned char *cipher, uint32_t **spTables, BitStream *epStreams, Index **idxTables, int *tables_sizes, int nb_tables, int table_width, uint32_t *result, uint32_t *nb_hash)
+void attackCDE(unsigned char *cipher, uint32_t **spTables, BitStream *epStreams, Index **idxTables, int *tables_sizes, int nb_tables, int table_width, uint32_t *result, uint32_t *nb_hash, double *avgDec)
 {
-    uint32_t *found, candidate, endpoint;
+    uint32_t *found, candidate, endpoint, nbDec = 0;
+    double nbSearch = 0.0;
     for (int col_id = table_width - 1; col_id >= 0; col_id--)
     {
         for (int table_id = 0; table_id < nb_tables; table_id++)
         {
             chain(&endpoint, cipher, table_id, table_width, col_id, nb_hash);
-            if ((found = searchCDE(endpoint, spTables[table_id], &(epStreams[table_id]), idxTables[table_id], tables_sizes[table_id], N, Lblocks(tables_sizes[table_id]))) != NULL)
+            nbSearch++;
+            if ((found = searchCDE(endpoint, spTables[table_id], &(epStreams[table_id]), idxTables[table_id], tables_sizes[table_id], N, Lblocks(tables_sizes[table_id]), &nbDec)) != NULL)
             {
                 candidate = *found;
                 rebuild(&candidate, table_id, col_id, nb_hash);
@@ -89,9 +91,11 @@ void attackCDE(unsigned char *cipher, uint32_t **spTables, BitStream *epStreams,
                 if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
                 {
                     *result = candidate;
+                    *avgDec = nbDec / nbSearch;
                     return;
                 }
             }
         }
     }
+    *avgDec = nbDec / nbSearch;
 }

@@ -752,7 +752,7 @@ void test_attackCDE_existing_n()
 {
     printf("# Test attackCDE existing n :\n");
 
-    int n = 10000;
+    int n = 4000;
     int nb = 0;
 
     int nb_tables = 1;
@@ -779,6 +779,7 @@ void test_attackCDE_existing_n()
 
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
     uint32_t plain, result, sp, nb_hash;
+    double avgDec, total_avgDec = 0.0;
     int col_id;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
@@ -791,7 +792,9 @@ void test_attackCDE_existing_n()
         compute(&plain, table_id, 0, col_id, &nb_hash);
         hash(&plain, cipher);
         nb_hash = 0;
-        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash);
+        avgDec = 0.0;
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
+        total_avgDec += avgDec;
         if (result == plain)
         {
             nb++;
@@ -802,6 +805,7 @@ void test_attackCDE_existing_n()
         }
     }
     printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Avg decodings : %f\n", total_avgDec / n);
     printf("\n");
     free((void *)spTable);
     free((void *)idxTable);
@@ -840,24 +844,28 @@ void test_attackCDE_random_n()
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
     uint32_t plain, result, sp;
     uint32_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
     int col_id;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
     for (int i = 0; i < n; i++)
     {
         nb_hash = 0;
+        avgDec = 0.0;
         plain = rand() % N;
         hash(&plain, cipher);
-        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash);
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
         if (result == plain)
         {
             nb++;
         }
+        total_avgDec += avgDec;
         total_hash += nb_hash;
     }
-    printf("Plains recovered\n: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings\t: %f\n", total_avgDec / n);
     printf("\n");
     free((void *)spTable);
     free((void *)idxTable);
@@ -868,7 +876,7 @@ void test_attackCDE_random_n_ell()
 {
     printf("# Test attackCDE random n ell:\n");
 
-    int n = 10000;
+    int n = 1000;
     int nb = 0;
 
     int nb_tables = 4;
@@ -919,24 +927,28 @@ void test_attackCDE_random_n_ell()
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
     uint32_t plain, result;
     uint32_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
     int col_id;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
     for (int i = 0; i < n; i++)
     {
         nb_hash = 0;
+        avgDec = 0;
         plain = rand() % N;
         hash(&plain, cipher);
-        attackCDE(cipher, spTable, epStream, idxTable, table_size, nb_tables, table_width, &result, &nb_hash);
+        attackCDE(cipher, spTable, epStream, idxTable, table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
         if (result == plain)
         {
             nb++;
         }
         total_hash += nb_hash;
+        total_avgDec +=avgDec;
     }
     printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings \t %f\n", total_avgDec / n);
     printf("\n");
     for (int table_id = 0; table_id < nb_tables; table_id++)
     {

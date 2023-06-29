@@ -258,8 +258,9 @@ void importIdx(const char *idxFile_name, int nb_block, int table_size, int space
     closeBitStream(&stream);
 }
 
-uint32_t decode(BitStream *stream, int k, int *nbBits)
+uint32_t decode(BitStream *stream, int k, int *nbBits, uint32_t *nbDec)
 {
+    *nbDec += 1;
     uint32_t x = 0;
     while (readBit(stream))
         x++;
@@ -282,7 +283,7 @@ void setStream(BitStream *stream, uint32_t bit_address)
     }
 }
 
-uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, Index *idxTable, int table_size, int space_size, int nb_block)
+uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, Index *idxTable, int table_size, int space_size, int nb_block, uint32_t *nbDec)
 {
     int kopt = Kopt(space_size, table_size);
     double ropt = Ropt(kopt, space_size, table_size);
@@ -307,10 +308,10 @@ uint32_t *searchCDE(uint32_t endpoint, uint32_t *spTable, BitStream *epStream, I
     }
 
     setStream(epStream, bit_address);
-    uint32_t value = block_id * space_size / nb_block + decode(epStream, kopt, &nbBits);
+    uint32_t value = block_id * space_size / nb_block + decode(epStream, kopt, &nbBits, nbDec);
     while (!epStream->eof && nbBits < nbBitsMax && value < endpoint)
     {
-        value += decode(epStream, kopt, &nbBits) + 1;
+        value += decode(epStream, kopt, &nbBits, nbDec) + 1;
         chain_id++;
     }
     if (value == endpoint)

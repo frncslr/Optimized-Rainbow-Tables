@@ -224,11 +224,11 @@ void test_decode()
     BitStream stream;
     initBitStream(&stream, epFile_name, 0);
 
-    uint32_t diff;
+    uint32_t diff, nbDec = 0;
     int kopt = Kopt(space_size, table_size), nbBits = 0;
     for (int i = 0; i < table_size && !stream.eof; i++)
     {
-        diff = decode(&stream, kopt, &nbBits);
+        diff = decode(&stream, kopt, &nbBits, &nbDec);
         if (!stream.eof)
             printf("Diff %d\t: %u\n", i, diff);
     }
@@ -249,9 +249,10 @@ void test_setStream()
     setStream(&stream, 32);
 
     int nbBits = 0;
+    uint32_t diff, nbDec = 0;
     for (int i = 0; i < table_size && !stream.eof; i++)
     {
-        uint32_t diff = decode(&stream, kopt, &nbBits);
+        diff = decode(&stream, kopt, &nbBits, &nbDec);
         if (!stream.eof)
             printf("Diff %d\t: %u\n", i, diff);
     }
@@ -278,9 +279,10 @@ void test_searchCDE()
     BitStream epStream;
     initBitStream(&epStream, epFile_name, 0);
 
+    uint32_t nbDec = 0;
     for (uint32_t ep = 0, *sp = NULL; ep < (uint32_t)space_size; ep++)
     {
-        sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block);
+        sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block, &nbDec);
         if (sp != NULL)
             printf("Found : {%u : %u}\n", *sp, ep);
     }
@@ -312,6 +314,8 @@ void test_searchPrecompCDE()
     uint32_t *spTable = NULL;
     importSP(spFile_name, &spTable, &table_size);
     int nb_block = Lblocks(table_size);
+    printf("** size : %d\n", table_size);
+    printf("** L : %d\n", nb_block);
 
     Index *idxTable = NULL;
     importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
@@ -320,16 +324,18 @@ void test_searchPrecompCDE()
     initBitStream(&epStream, epFile_name, 0);
 
     int nb_found = 0;
+    uint32_t nbDec = 0;
     for (uint32_t ep = 0, *sp; ep < nb_test; ep++)
     {
-        if ((sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block)) != NULL)
+        if ((sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block, &nbDec)) != NULL)
         {
             nb_found++;
             if (!(nb_found % 1000))
                 printf("nb found : %d/%u\n", nb_found, ep);
         }
     }
-    printf("Found : %d/%d\n", nb_found, nb_test);
+    printf("Final amount found\t: %d/%d\n", nb_found, nb_test);
+    printf("Average decodings\t: %f\n", (double)nbDec / nb_test);
     printf("\n");
     closeBitStream(&epStream);
     free((void *)spTable);
