@@ -4,3 +4,6 @@ src/*.d
 src/*.o
 *.dat
 venv
+__pycache__
+*.png
+*.pyc

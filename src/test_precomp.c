@@ -24,8 +24,15 @@ void test_positions()
 {
     printf("# Test positions :\n");
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
-    positions(&filters, &nb_filters, file_name);
+    char config_mini[30] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, config_mini);
+    printf("Filters in %s :\n", config_mini);
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    char config_opti[30] = "data/configs/config_opti.dat";
+    positions(&filters, &nb_filters, config_opti);
+    printf("Filters in %s :\n", config_opti);
     for (int i = 0; i < nb_filters; i++)
         printf("position %d : %d\n", i, filters[i]);
     printf("\n");
@@ -72,33 +79,52 @@ void test_clean()
 void test_clean_n()
 {
     printf("Test clean n :\n");
-    int nb_tests = 20;
-    int init_size = 1 << 24, table_size;
-    printf("Cleaning %d points %d times\n", init_size, nb_tests);
+    int nb_tests = 100;
+    int table_size, nb_elem = 0;
+    int nb_filters, *filters = NULL;
+    char config_mini[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, config_mini);
+    printf("Cleaning points with %d filters %d times\n", nb_filters, nb_tests);
+
     Points *table;
-
     struct timeval start, end;
-    double difference = 0.0;
-    srand(time(NULL));
-    for (int i = 0; i < nb_tests; i++)
-    {
-        table_size = init_size;
-        if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-        {
-            fprintf(stderr, "Memory allocation problem\n");
-            exit(ERROR_ALLOC);
-        }
+    double speed, local_time, global_time = 0.0;
+    const char file_name[40] = "data/results/cSpeeds.dat";
 
-        for (Points *current = table, *last = table + table_size; current < last; current++)
-            current->end = rand() % N;
-        gettimeofday(&start, 0);
-        clean(&table, &table_size, table_size);
-        gettimeofday(&end, 0);
-        difference += elapsed(&start, &end);
-        free((void *)table);
+    srand(time(NULL));
+    for (int i = 0, col; i < nb_tests; i++)
+    {
+        col = 0;
+        speed = local_time = 0.0;
+        for (int j = 0; j < nb_filters; j++)
+        {
+            table_size = (int)ceil(mci(col));
+            col = filters[j];
+            nb_elem += table_size;
+            speed += (double)table_size;
+            if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
+            {
+                fprintf(stderr, "Memory allocation problem\n");
+                exit(ERROR_ALLOC);
+            }
+            for (Points *current = table, *last = table + table_size; current < last; current++)
+                current->end = rand() % N;
+
+            gettimeofday(&start, 0);
+            clean(&table, &table_size, hsize(col));
+            gettimeofday(&end, 0);
+            local_time += elapsed(&start, &end);
+            free((void *)table);
+        }
+        speed /= local_time;
+        write_results(&speed, 1, file_name);
+        global_time += local_time;
     }
-    printf("Time to clean\t: %lf\n", difference / nb_tests);
-    printf("Clean speed\t: %lf\n", init_size * nb_tests / difference);
+    nb_elem /= nb_tests;
+    global_time /= nb_tests;
+    printf("Time to clean %d\t: %lf\n", nb_elem, global_time);
+    speed = nb_elem / global_time;
+    printf("Clean speed\t\t: %lf\n", speed);
     printf("\n");
 }
 
@@ -163,7 +189,7 @@ void test_operations()
     operations(filters, nb_filters, &expec_hash);
     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
 
-    char file_name[30] = "configTestPositions.dat";
+    char file_name[30] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
     expec_hash = 0;
     operations(filters, nb_filters, &expec_hash);
@@ -180,7 +206,7 @@ void test_generate_f()
     int table_size = (int)ceil(m0);
     printf("Table size  : %d\n", table_size);
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
+    char file_name[30] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
     Points *table;
     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
@@ -317,7 +343,7 @@ void test_export()
 
     initialize(table, table_id, table_size);
 
-    printf("Exporting table %d intialized, generated, cleaned and sorted\n", table_id);
+    printf("Exporting table %d intialized\n", table_id);
     export(table, table_size, table_name);
 
     printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
@@ -449,7 +475,7 @@ void test_precompute_full_n()
     }
 
     int nb_filters, *filters = NULL;
-    char file_name[30] = "config.dat";
+    char file_name[30] = "data/configs/config_mini.dat";
     positions(&filters, &nb_filters, file_name);
 
     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);

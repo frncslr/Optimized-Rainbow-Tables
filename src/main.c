@@ -6,7 +6,7 @@ int main(void)
 {
   // test_elapsed();
   // test_hash();
-  // test_hash_n();
+  test_hash_n();
   // test_reduction();
   // test_hash_reduction();
   // test_hash_reduction_n();
@@ -21,7 +21,7 @@ int main(void)
   // test_clean_n();
   // test_generate();
   // test_operations();
-  test_generate_f();
+  // test_generate_f();
   // test_sort();
   // test_precompute();
   // test_rice();

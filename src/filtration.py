@@ -1,179 +1,142 @@
-from math import ceil
-from scipy.optimize import minimize, NonlinearConstraint
-from numpy import linspace
+from numpy import append
+from scipy.optimize import minimize
 
-N = 2**24
-t = 1000
-r = 20
-alpha = r/(r+1)
-m0 = 2*r*N/(t+2)
-mt = 2*alpha*N/(t+2)
-gamma = 2*N/m0
+################################################################################
 
-nh = 1 # number of hasing nodes
-vh = 1577142 # number of hash reductions per second
-nf = 1 # number of filtrating nodes
-vf = 16879286 # number of filtrations per second
-do = 0 # average overhead time per point
-dc = 0 # average nodes communication time
+def m(i):
+    return 2*r*N / (r*i+t+2)
 
-c0 = 0
-ca = t
+def c(i):
+    return round(gamma * ((t+gamma-1) / gamma) ** (i/a_opti) - gamma + 1)
 
+def T(f):
+    H = F = prev = 0
+    fs = sorted(append(f, [t]))
+    for curr in fs:
+        H += m(prev)*(curr-prev)
+        F += m(prev)
+        prev = curr
+    return H/(vh*nh) + F/(vf*nf)
 
-def mci(i):
-    return 2*N/(i+gamma)
+def P(a):
+    return 2*N*a * (((t+gamma-1) / gamma) ** (1/a) - 1)
 
-def precompH(filters):
-    result = 0;
-    for i in range(1, len(filters), 1):
-        result += mci(filters[i-1])*(filters[i]-filters[i-1])
-    return result / (vh*nh)
+################################################################################
 
-def precompF(filters):
-    result = 0
-    for i in range(1, len(filters), 1):
-        result += mci(filters[i-1])
-    return result / (vf*nf)
-
-def precompO(filters):
-    result = 0
-    for i in range(1, len(filters), 1):
-        result += mci(filters[i-1])
-    return do*result
-
-def precompC(filters):
-    result = 0
-    for i in range(1, len(filters), 1):
-        result += mci(filters[i-1])
-    return dc*result/nh 
-
-def precompT(filters):
-    return precompH(filters) + precompF(filters)
-
-def cstr_ineq(a):
-    list_cstr = []
-    for i in range(2,a+1):
-        def f(filters, i=i):
-            return filters[i]-filters[i-1]-1
-        list_cstr.append(NonlinearConstraint(f, 0, 1000))
-    return list_cstr
-
-def positions(amin, amax):
-    nb_filters = 0
-    time = N*t
-    filters = []
-    for a in range(amin, amax+1):
-        x0 = [0]*(a+1)
-        bnds = ((c0,c0),)+((1,ca),)*(a-1)+((ca,ca),)
-        cstr = cstr_ineq(a)
-        result = minimize(precompT, x0, method='trust-constr', bounds=bnds, constraints=cstr)
-        if result.fun < time:
-            nb_filters = a
-            time = result.fun
-            filters = result.x
-    print(f"T : {precompT(filters)}")
-    print(f"H : {precompH(filters)}")
-    print(f"F : {precompF(filters)}")
-    filters[0] = nb_filters
-    return list(map(lambda x: round(x), filters))
-
-def cstr_ineq2(a):
-    list_cstr = []
-    for i in range(2,a+1):
-        def f(filters, i=i):
-            return filters[i]-filters[i-1]-1
-        list_cstr.append({'type':'eq', 'fun':f})
-    return list_cstr
-
-def positions2():
-    a = 37
-    x0 = linspace(0,1000,a+1, dtype=int)
-    bnds = ((0,0),)+((1,1000),)*(a-1)+((1000,1000),)
-    cstr = [{'type': 'eq', 'fun': lambda x: min([int(x[i]-x[i]) for i in range(len(x))])}]
-    cstr = [{'type': 'eq', 'fun': lambda f: (min([f[i]-f[i-1]-1 for i in range(1,len(f))])-1)}]
-    result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr, options={"maxiter": 10000})
-    print(result)
-    print(precompH(result.x))
-    print(operations(result.x[1:]))
-    
-def positions3(amin, amax):
-    nb_filters = 0
-    time = N*t
-    filters = []
-    for a in range(amin, amax+1):
-        x0 = linspace(0,1000,a+1, dtype=int)
-        bnds = ((0,0),)+((1,1000),)*(a-1)+((1000,1000),)
-        cstr = [{'type': 'eq', 'fun': lambda f: (min([f[i]-f[i-1]-1 for i in range(1,len(f))])-1)}]
-        result = minimize(precompT, x0, method='SLSQP', bounds=bnds, constraints=cstr, options={"maxiter": 10000})
-        if result.fun < time:
-            nb_filters = a
-            time = result.fun
-            filters = result.x
-    print(f"T : {precompT(filters)}")
-    print(f"H : {precompH(filters)}")
-    print(f"F : {precompF(filters)}")
-    filters[0] = nb_filters
-    return list(map(lambda x: round(x), filters))
- 
-def export(filters, filename):
+def exportf(filters, nb_filters, filename):
     with open(filename, "wb") as file:
+        file.write(nb_filters.to_bytes(4, "little")) 
         for filter in filters:
-            file.write(filter.to_bytes(4, "little"))
+            file.write(filter.to_bytes(4, "little")) 
+        file.write(t.to_bytes(4, "little"))
 
-def operations(filters):
-    total = 0
-    previous = 0
-    for current in filters:
-        total += mci(previous)*(current - previous)
-        previous = current
-    return ceil(total)
-           
-def check_export(filename):
-    filters = []
+def importf(filename):
     with open(filename, "rb") as file:
         nb_filters = int.from_bytes(file.read(4), "little")
+        filters = [nb_filters]
         content = file.read(nb_filters*4)
     for i in range(nb_filters):
         filters.append(int.from_bytes(content[4*i:4*(i+1)], "little"))
-    print(f"Content of {filename} :")
-    print(f"Filters : {nb_filters} = {filters}")
-    print(f"Hash : {operations(filters)}")
-    filters = [0] + filters
-    print(f"T : {precompT(filters)}")
-    print(f"H : {precompH(filters)}")
-    print(f"F : {precompF(filters)}")
+    return filters
 
-def check_mci(filters):
-    for i in range(len(filters)):
-        print(f"Filter in position {i} : column = {filters[i]} & mci = {mci(filters[i])}")
+################################################################################
 
-def T (t , ell):
-    T = 0
-    Csum = 0
-    pf = 2.0/( t +1) # = m / N
-    for k in range (1 , t +1):
-        q = 1 - (t -k -1)*( t - k )/ float (( t )*( t +1))
-        C = k + (t - k +1)* q
-        for j in range ( ell ):
-            Csum += C
-            p = pf * (1 - pf )**( ell *( k -1)+ j )
-            T += p * Csum
-    return T
+# problem size
+N = 2**24
+# table width
+t = 1000
+# maximum number of unique endpoints
+mtmax = 2*N/(t+2)
+# maximum efficiency ratio
+r = 20
+# maximality factor
+alpha = r/(r+1)
+# initial number of startpoints
+m0 = r*mtmax
+# objective number of unique endpoints
+mt = alpha*mtmax
+# mi constant
+gamma = 2*N/m0
+# number of hasing nodes
+nh = 1
+# number of hash reductions per second
+vh = 1556599
+# number of filtrating nodes
+nf = 1
+# number of filtrations per second
+# vf = 16879286
+vf = 22000576
+# average overhead time per point
+do = 0
+# average nodes communication time
+dc = 0
 
-if __name__ == "__main__": 
+################################################################################
+
+if __name__ == "__main__":
     
-    # check_export("configTestPositions.dat")
-    
-    amin = 53
-    amax = 55
-    # filters = positions(amin, amax)
-    # print(f"filters : {filters}")
-    # export(filters, "config.dat")
-    
-    
-    
-    # positions2()
-    filters = positions3(25, 40)
-    print(f"filters : {filters}")
-    export(filters, "config.dat")
+    # Boundaries
+    # lower bound of number of intermediary filters
+    alb = 35
+    # upper bound of number of intermediray filters
+    aub = 40
+
+    # Minimization
+    # time when ultimate filtration only
+    time = T([])
+    # intermediary filters positions
+    f_mini = []
+    # number of intermediary filters
+    a_mini = 0
+    # searching between boundaries
+    for a in range(alb,aub+1):
+        # initial guess
+        f0 = [t*float(i)/a for i in range(a)]
+        # filters positions bounds
+        bnds = [(0, t-1)]*a
+        # minimizing the objective
+        res = minimize(T, f0, method='TNC', options={'disp':False, 'maxfun':10000, 'eps':0.1, 'ftol':0.0001}, bounds=bnds)
+        # checking for improvement and updating if so
+        if res.success and time - res.fun > 0.1:
+            time = res.fun
+            f = res.x
+            a_mini = a
+    f = list(map(round, sorted(f)))
+
+    # Optimization
+    # hash operations when no intermediary filtrations
+    hash = m0 * t
+    # intermediary filters positions
+    f_opti = []
+    # number of intermediary filters
+    a_opti = 0
+    # searching between boundaries
+    for a in range(alb,aub+1):
+        # hash operations with a filters
+        result = P(a)
+        # checking for improvement and updating if so
+        if result < hash:
+            hash = result
+            a_opti = a
+    # computing filters positions for the optimal number
+    for i in range(1,a_opti):
+        f_opti.append(c(i))
+
+    # Results
+    print("boundaries :")
+    print(f"lower : {alb}")
+    print(f"upper : {aub}")
+    print()
+    print("minimization :")
+    print(f"T : {T(f)}")
+    print(f"a : {a_mini}")
+    print(f"f : {f}")
+    print()
+    print("optimization :")
+    print(f"T : {P(a_opti)/(vh*nh)}")
+    print(f"a : {a_opti-1}")
+    print(f"f : {f_opti}")
+
+    # Export of configurations    
+    exportf(f, a_mini+1, "./data/configs/config_mini.dat")
+    exportf(f_opti, a_opti, "./data/configs/config_opti.dat")
