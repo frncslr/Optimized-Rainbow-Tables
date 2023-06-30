@@ -634,7 +634,7 @@ void test_precompute_cde_ell()
 
         precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
         nb_block[table_id] = Lblocks(table_size[table_id]);
-        printf("Table precomputed : %d\n", table_size);
+        printf("Table precomputed : %d\n", table_size[table_id]);
 
         spFile_name[spName_length] = table_id + '0';
         epFile_name[epName_length] = table_id + '0';
