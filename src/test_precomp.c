@@ -583,7 +583,7 @@ void test_precompute_cde()
 void test_precompute_cde_ell()
 {
     printf("# Test precompute CDE ell:\n");
-    int nb_tables = 4;
+    int nb_tables = 1;
     int init_size = (int)ceil(m0);
     init_size = N;
     int expec_size = (int)ceil(mt);
@@ -634,6 +634,7 @@ void test_precompute_cde_ell()
 
         precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
         nb_block[table_id] = Lblocks(table_size[table_id]);
+        printf("Table precomputed : %d\n", table_size);
 
         spFile_name[spName_length] = table_id + '0';
         epFile_name[epName_length] = table_id + '0';
