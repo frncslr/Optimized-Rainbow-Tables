@@ -66,7 +66,7 @@ vh = 11882475
 nf = 1
 # number of filtrations per second
 vf = 16879286
-vf = 20740277
+vf = 22000576
 # average overhead time per point
 do = 0
 # average nodes communication time

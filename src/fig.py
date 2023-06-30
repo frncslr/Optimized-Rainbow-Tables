@@ -84,6 +84,7 @@ draw_hSpeeds()
 
 def draw_cSpeeds():
     count = 300
+
     y = read_results("./data/results/cSpeeds.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
@@ -100,7 +101,7 @@ def draw_cSpeeds():
     plt.show()
     fig.savefig(f'./data/plots/cSpeeds', bbox_inches='tight',dpi=500)
     
-# draw_cSpeeds()
+draw_cSpeeds()
 
 def draw_fConfig():
     filters = importf("./data/configs/config_opti.dat")
@@ -124,5 +125,5 @@ def draw_fConfig():
     
     plt.show()
     fig.savefig(f'./data/plots/fConfig', bbox_inches='tight',dpi=500)
-    
+
 # draw_fConfig()

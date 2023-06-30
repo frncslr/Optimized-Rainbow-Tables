@@ -6,3 +6,4 @@ src/*.o
 venv
 __pycache__
 *.png
+*.pyc

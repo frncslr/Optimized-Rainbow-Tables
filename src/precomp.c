@@ -105,7 +105,7 @@ void operations(int *filters, int nb_filters, uint32_t *expec_hash)
 {
     double total = 0.0;
     for (int previous = 0, *current = filters, *last = filters + nb_filters; current < last; previous = *(current++))
-        total += mci(previous) * (*current - previous);
+        total += ceil(mci(previous)) * (*current - previous);
     *expec_hash = (uint32_t)ceil(total);
 }
 
@@ -181,7 +181,7 @@ void precompute(Points **table, int table_id, int *table_size, int *filters, int
 void export(Points *table, int table_size, const char *file_name)
 {
     FILE *file;
-    if ((file = fopen(file_name, "wb")) == (FILE *)NULL)
+    if ((file = fopen(file_name, "ab")) == (FILE *)NULL)
     {
         fprintf(stderr, "Opening file problem : %s\n", file_name);
         exit(ERROR_FOPEN);
