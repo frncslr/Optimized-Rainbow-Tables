@@ -32,7 +32,7 @@ int main(void)
   // test_hashtable();
 
   // test_initialize();
-  test_positions();
+  // test_positions();
   // test_clean();
   // test_clean_n();
   // test_generate();
@@ -46,7 +46,7 @@ int main(void)
   // test_precompute_full();
   // test_precompute_full_n();
   // test_precompute_cde();
-  // test_precompute_cde_ell();
+  test_precompute_cde_ell();
 
   // test_ceri();
   // test_import();

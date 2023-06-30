@@ -585,7 +585,9 @@ void test_precompute_cde_ell()
     printf("# Test precompute CDE ell:\n");
     int nb_tables = 4;
     int init_size = (int)ceil(m0);
+    init_size = N;
     int expec_size = (int)ceil(mt);
+    expec_size = 2 * N / (t + 2);
     int table_width = t;
     int space_size = N;
     int nb_block[nb_tables];
