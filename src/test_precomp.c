@@ -343,7 +343,7 @@ void test_export()
 
     initialize(table, table_id, table_size);
 
-    printf("Exporting table %d intialized, generated, cleaned and sorted\n", table_id);
+    printf("Exporting table %d intialized\n", table_id);
     export(table, table_size, table_name);
 
     printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
