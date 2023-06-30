@@ -24,11 +24,11 @@ def P(a):
 ################################################################################
 
 def exportf(filters, nb_filters, filename):
+    filters.append(t)
     with open(filename, "wb") as file:
         file.write(nb_filters.to_bytes(4, "little")) 
         for filter in filters:
             file.write(filter.to_bytes(4, "little")) 
-        file.write(t.to_bytes(4, "little"))
 
 def importf(filename):
     with open(filename, "rb") as file:
@@ -61,10 +61,11 @@ gamma = 2*N/m0
 nh = 1
 # number of hash reductions per second
 vh = 1556599
+vh = 11882475
 # number of filtrating nodes
 nf = 1
 # number of filtrations per second
-# vf = 16879286
+vf = 16879286
 vf = 22000576
 # average overhead time per point
 do = 0
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     
     # Boundaries
     # lower bound of number of intermediary filters
-    alb = 35
+    alb = 20
     # upper bound of number of intermediray filters
     aub = 40
 
@@ -109,15 +110,7 @@ if __name__ == "__main__":
     # intermediary filters positions
     f_opti = []
     # number of intermediary filters
-    a_opti = 0
-    # searching between boundaries
-    for a in range(alb,aub+1):
-        # hash operations with a filters
-        result = P(a)
-        # checking for improvement and updating if so
-        if result < hash:
-            hash = result
-            a_opti = a
+    a_opti = a_mini + 1
     # computing filters positions for the optimal number
     for i in range(1,a_opti):
         f_opti.append(c(i))
@@ -138,5 +131,5 @@ if __name__ == "__main__":
     print(f"f : {f_opti}")
 
     # Export of configurations    
-    exportf(f, a_mini+1, "./data/configs/config_mini.dat")
-    exportf(f_opti, a_opti, "./data/configs/config_opti.dat")
+    exportf(f, a_mini+1, "data/configs/config_mini.dat")
+    exportf(f_opti, a_opti, "data/configs/config_opti.dat")

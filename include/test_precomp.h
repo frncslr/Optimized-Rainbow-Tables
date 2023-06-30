@@ -12,10 +12,11 @@ void test_operations();
 void test_generate_f();
 void test_sort();
 void test_precompute();
-void test_rice();
 void test_export();
 void test_cover();
 void test_precompute_full();
 void test_precompute_full_n();
+void test_precompute_cde();
+void test_precompute_cde_ell();
 
 #endif

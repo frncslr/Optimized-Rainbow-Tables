@@ -12,7 +12,7 @@
 #define N (1 << 24)
 #define r 20.0
 #define t 1000
-#define l 1
+#define ell 1
 #define alpha (r / (r + 1))
 #define m0 (2 * r * N / (t + 2))
 #define mt (2 * alpha * N / (t + 2))
@@ -23,9 +23,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include </usr/include/sys/time.h>
+#include <sys/time.h>
 #include <math.h>
 #include <openssl/sha.h>
+#include <sys/stat.h>
 
 double elapsed(struct timeval *, struct timeval *);
 void print_hash(unsigned char *);

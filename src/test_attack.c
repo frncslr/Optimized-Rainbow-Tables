@@ -1,29 +1,5 @@
 #include "../include/test_attack.h"
 
-void test_ceri()
-{
-    printf("# Test ceri :\n");
-    int k = 3;
-    uint32_t end = 4115;
-    uint32_t previous = 4099;
-    printf("Current endpoint\t: %u\n", end);
-    printf("Previous endpoint\t: %u\n", previous);
-    uint32_t difference = end - previous - 1;
-    printf("Uncompressed difference\t: %u\n", difference);
-    char size = 0;
-    for (uint32_t bits = difference; bits; bits >>= 1, size++)
-        ;
-    printf("Uncompressed bits size\t: %d\n", size);
-    rice(&difference, difference, k);
-    printf("Compressed difference\t: %u\n", difference);
-    size = 0;
-    for (uint32_t bits = difference; bits; bits >>= 1, size++)
-        ;
-    printf("Compressed bits size\t: %d\n", size);
-    ceri(&difference, difference, k, size);
-    printf("Decompressed difference\t: %u\n\n", difference);
-}
-
 void test_import()
 {
     printf("# Test import :\n");
@@ -181,9 +157,11 @@ void test_chain()
     }
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -251,7 +229,7 @@ void test_rebuild()
     printf("Random column\t: %d\n", col_id);
     for (int col = 0; col < col_id; col++)
         hash_reduction(&copy, table_id, col);
-    printf("Copy hashred \t: %u\n", copy);
+    printf("Copy hashed \t: %u\n", copy);
     uint32_t nb_hash = 0;
     rebuild(&point, table_id, col_id, &nb_hash);
     printf("Point rebuilt\t: %u\n", point);
@@ -269,9 +247,11 @@ void test_chain_rebuild()
     initialize(table, table_id, table_size);
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     printf("Table : {%u : %u}\n", table->start, table->end);
     printf("id : %d\n size : %d\n width : %d\n", table_id, table_size, table_width);
 
@@ -335,9 +315,11 @@ void test_attack_existing()
     }
 
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
     int nb_filters = 1;
     int filters = table_width;
-    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash);
+    precompute(&table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     Hashtable htable;
@@ -419,7 +401,9 @@ void test_attack_existing_n()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -499,7 +483,9 @@ void test_attack_random()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
 
     int tables_sizes[] = {31921, 31882, 31965, 31927};
@@ -575,7 +561,9 @@ void test_attack_random_n()
     positions(&filters, &nb_filters, file_name);
 
     uint32_t nb_hash = 0;
-    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
     export(table, table_size, table_name);
     cover(table, table_id, table_size, table_width, covered, &coverage);
 
@@ -654,6 +642,8 @@ void test_attack_random_n_m()
     int table_size;
     int total_size = 0;
     uint32_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
 
     int coverage = 0;
     char *covered;
@@ -677,7 +667,7 @@ void test_attack_random_n_m()
             exit(ERROR_ALLOC);
         }
 
-        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash);
+        precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
 
         table_name[name_length] = table_id + '0';
         export(table, table_size, table_name);
@@ -756,4 +746,217 @@ void test_attack_random_n_m()
     free((void *)htables);
     free((void *)filters);
     free((void *)covered);
+}
+
+void test_attackCDE_existing_n()
+{
+    printf("# Test attackCDE existing n :\n");
+
+    int n = 4000;
+    int nb = 0;
+
+    int nb_tables = 1;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int table_size;
+    int table_width = t;
+    int space_size = N;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+    int nb_block = Lblocks(table_size);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result, sp, nb_hash;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        sp = spTable[rand() % table_size];
+        plain = sp;
+        col_id = rand() % table_width;
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, &nb_hash);
+        hash(&plain, cipher);
+        nb_hash = 0;
+        avgDec = 0.0;
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
+        total_avgDec += avgDec;
+        if (result == plain)
+        {
+            nb++;
+        }
+        else
+        {
+            printf("Not recovered %d : sp : %u & col : %d T_T\n", i, sp, col_id);
+        }
+    }
+    printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Avg decodings : %f\n", total_avgDec / n);
+    printf("\n");
+    free((void *)spTable);
+    free((void *)idxTable);
+    closeBitStream(&epStream);
+}
+
+void test_attackCDE_random_n()
+{
+    printf("# Test attackCDE random n :\n");
+
+    int n = 1000;
+    int nb = 0;
+
+    int nb_tables = 1;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int table_size;
+    int table_width = t;
+    int space_size = N;
+    char spFile_name[40] = "data/tables/cde/spPrecompCDE";
+    char epFile_name[40] = "data/tables/cde/epPrecompCDE";
+    char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t *spTable = NULL;
+    importSP(spFile_name, &spTable, &table_size);
+    int nb_block = Lblocks(table_size);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result, sp;
+    uint32_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        avgDec = 0.0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_avgDec += avgDec;
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings\t: %f\n", total_avgDec / n);
+    printf("\n");
+    free((void *)spTable);
+    free((void *)idxTable);
+    closeBitStream(&epStream);
+}
+
+void test_attackCDE_random_n_ell()
+{
+    printf("# Test attackCDE random n ell:\n");
+
+    int n = 1000;
+    int nb = 0;
+
+    int nb_tables = 4;
+    int table_size[nb_tables];
+    int table_width = t;
+    int space_size = N;
+    int nb_block;
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    uint32_t **spTable = NULL;
+    if ((spTable = (uint32_t **)calloc(nb_tables, sizeof(uint32_t *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    BitStream *epStream = NULL;
+    if ((epStream = (BitStream *)calloc(nb_tables, sizeof(BitStream))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    Index **idxTable = NULL;
+    if ((idxTable = (Index **)calloc(nb_tables, sizeof(Index *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+    {
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        importSP(spFile_name, &spTable[table_id], &table_size[table_id]);
+        nb_block = Lblocks(table_size[table_id]);
+        importIdx(idxFile_name, nb_block, table_size[table_id], space_size, &idxTable[table_id]);
+        initBitStream(&epStream[table_id], epFile_name, 0);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    uint32_t plain, result;
+    uint32_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        avgDec = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, spTable, epStream, idxTable, table_size, nb_tables, table_width, &result, &nb_hash, &avgDec);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+        total_avgDec +=avgDec;
+    }
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings \t %f\n", total_avgDec / n);
+    printf("\n");
+    for (int table_id = 0; table_id < nb_tables; table_id++)
+    {
+        free((void *)spTable[table_id]);
+        closeBitStream(&epStream[table_id]);
+        free((void *)idxTable[table_id]);
+    }
+    free((void *)spTable);
+    free((void *)epStream);
+    free((void *)idxTable);
 }
