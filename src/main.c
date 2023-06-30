@@ -1,10 +1,22 @@
 #include "../include/test_common.h"
-#include "../include/test_precomp.h"
-#include "../include/test_attack.h"
-#include "../include/test_rice.h"
+// #include "../include/test_precomp.h"
+// #include "../include/test_attack.h"
+// #include "../include/test_rice.h"
 
 int main(void)
 {
+  // test_variables_std();
+  // test_hash();
+  // test_hash_n();
+  // test_reduction();
+  // test_hash_reduction();
+  // test_hash_reduction_n();
+  // test_compute();
+  // test_htable();
+  // test_elapsed();
+  // test_write_results();
+  // test_read_results();
+
   // test_variables();
   // test_initBitStream();
   // test_writeBit();
@@ -19,17 +31,6 @@ int main(void)
   // test_setStream();
   // test_searchCDE();
   // test_searchPrecompCDE();
-
-  // test_elapsed();
-  // test_hash();
-  // test_hash_n();
-  // test_reduction();
-  // test_hash_reduction();
-  // test_hash_reduction_n();
-  // test_compute();
-  // test_write_results();
-  // test_read_results();
-  // test_hashtable();
 
   // test_initialize();
   // test_positions();
@@ -46,7 +47,7 @@ int main(void)
   // test_precompute_full();
   // test_precompute_full_n();
   // test_precompute_cde();
-  test_precompute_cde_ell();
+  // test_precompute_cde_ell();
 
   // test_ceri();
   // test_import();
