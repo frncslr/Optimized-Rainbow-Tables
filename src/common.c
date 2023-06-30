@@ -1,39 +1,96 @@
 #include "../include/common.h"
 
-double elapsed(struct timeval *start, struct timeval *end)
+double ALPHA(double r)
+{
+    return r / (r + 1.0);
+}
+double R(double alpha)
+{
+    return alpha / (1.0 - alpha);
+}
+int M0(uint64_t N, double r, int t)
+{
+    return (int)round(2 * r * N / (t + 2));
+}
+int Mt(uint64_t N, double alpha, int t)
+{
+    return (int)round(2 * alpha * N / (t + 2));
+}
+int Mi(uint64_t N, int m0, int i)
+{
+    return (int)round(2.0 * N / (i + (2.0 * N / m0)));
+}
+
+void hash(Point *point, unsigned char *digest)
+{
+    SHA256((const unsigned char *)point, sizeof(Point), digest);
+}
+void reduction(Point *point, unsigned char *digest, int table_id, int col_id, int t, uint64_t N)
+{
+    *point = (*(Point *)digest + table_id + col_id * t) % N;
+}
+void hash_reduction(Point *point, int table_id, int col_id, int t, uint64_t N)
+{
+    hash(point, buffer);
+    reduction(point, buffer, table_id, col_id, t, N);
+}
+void compute(Point *point, int table_id, int col_start, int col_end, int t, uint64_t N, uint64_t *nb_hash)
+{
+    for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
+        hash_reduction(point, table_id, col_id, t, N);
+}
+
+int hsize(uint64_t N, int m0, int col_id)
+{
+    return (int)ceil(LOAD_FACTOR * Mi(N, m0, col_id));
+}
+void init(Table htable, int size)
+{
+    for (Chain *current = htable, *last = htable + size; current < last; current++)
+    {
+        current->sp = MAX;
+        current->ep = MAX;
+    }
+}
+int insert(Table htable, int size, Chain * chain)
+{
+    Chain *place;
+    for (int i = 0; i < size; i++)
+    {
+        place = htable + (chain->ep + i) % size;
+        if (place->ep == MAX)
+        {
+            place->sp = chain->sp;
+            place->ep = chain->ep;
+            return 1;
+        }
+        if ((place->ep) == chain->ep)
+            return 0;
+    }
+    return 0;
+}
+Chain *search(Table htable, int size, uint64_t value)
+{
+    Chain *chain;
+    for (int i = 0; i < size; i++)
+    {
+        chain = htable + (chain->ep + i) % size;
+        if (chain->ep == value)
+            return chain;
+    }
+    return NULL;
+}
+
+double elapsed(timeval *start, timeval *end)
 {
     return end->tv_sec - start->tv_sec + (end->tv_usec - start->tv_usec) * 1e-6;
 }
-
-void print_hash(unsigned char *hashed_value)
+void print_hash(unsigned char *digest)
 {
-    for (unsigned int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        printf("%02x", hashed_value[i]);
+    for (unsigned int i = 0; i < HASH_LENGTH; i++)
+        printf("%02x", digest[i]);
     printf("\n");
 }
-
-void hash(uint32_t *point, unsigned char *digest)
-{
-    SHA256((const unsigned char *)point, sizeof(uint32_t), digest);
-}
-
-void reduction(uint32_t *point, unsigned char *digest, int table_id, int col_id)
-{
-    *point = (*(uint32_t *)digest + table_id + col_id * t) % N;
-}
-
-void hash_reduction(uint32_t *point, int table_id, int col_id)
-{
-    hash(point, buffer);
-    reduction(point, buffer, table_id, col_id);
-}
-
-void compute(uint32_t *point, int table_id, int col_start, int col_end, uint32_t *nb_hash)
-{
-    for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
-        hash_reduction(point, table_id, col_id);
-}
-
 void write_results(double *results, int count, const char *file_name)
 {
     FILE *file;
@@ -55,7 +112,6 @@ void write_results(double *results, int count, const char *file_name)
         exit(ERROR_FCLOSE);
     }
 }
-
 void read_results(double *results, int count, const char *file_name)
 {
     FILE *file;
@@ -76,45 +132,4 @@ void read_results(double *results, int count, const char *file_name)
         fprintf(stderr, "Closing file problem : %s", file_name);
         exit(ERROR_FCLOSE);
     }
-}
-
-int hsize(int col_id)
-{
-    return (int)ceil(LOAD_FACTOR * ceil(mci(col_id)));
-}
-
-void init(Hashtable hashtable, int size)
-{
-    for (Points *current = hashtable, *last = hashtable + size; current < last; current++)
-        current->end = MAX;
-}
-
-int insert(Hashtable hashtable, int size, uint32_t start, uint32_t end)
-{
-    Points *point;
-    for (int i = 0; i < size; i++)
-    {
-        point = hashtable + (end + i) % size;
-        if (point->end == MAX)
-        {
-            point->end = end;
-            point->start = start;
-            return 1;
-        }
-        if ((point->end) == end)
-            return 0;
-    }
-    return 0;
-}
-
-Points *search(Hashtable hashtable, int size, uint32_t end)
-{
-    Points *point;
-    for (int i = 0; i < size; i++)
-    {
-        point = hashtable + (end + i) % size;
-        if (point->end == end)
-            return point;
-    }
-    return NULL;
 }

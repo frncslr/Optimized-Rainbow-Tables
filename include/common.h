@@ -1,6 +1,15 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <math.h>
+#include <time.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <openssl/sha.h>
+
 #define ERROR_ALLOC 1289
 #define ERROR_FOPEN 1229
 #define ERROR_FCLOSE 1223
@@ -9,49 +18,41 @@
 #define ERROR_INSERT 1031
 #define ERROR_COVER 1019
 
-#define N (1 << 24)
-#define r 20.0
-#define t 1000
-#define ell 1
-#define alpha (r / (r + 1))
-#define m0 (2 * r * N / (t + 2))
-#define mt (2 * alpha * N / (t + 2))
-#define GAMMA (2 * N / m0)
-#define mci(i) (2 * N / (i + GAMMA))
+static unsigned char buffer[SHA256_DIGEST_LENGTH];
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <math.h>
-#include <openssl/sha.h>
-#include <sys/stat.h>
+double ALPHA(double);
+double R(double);
+int M0(uint64_t, double, int);
+int Mt(uint64_t, double, int);
+int Mi(uint64_t, int, int);
 
-double elapsed(struct timeval *, struct timeval *);
+typedef uint64_t Point;
+typedef struct chain
+{
+    Point sp;
+    Point ep;
+} Chain;
+typedef Chain *Table;
+
+void hash(Point *, unsigned char *);
+void reduction(Point *, unsigned char *, int, int, int, uint64_t);
+void hash_reduction(Point *, int, int, int, uint64_t);
+void compute(Point *, int, int, int, int, uint64_t, uint64_t *);
+
+#define MAX ((1 << sizeof(Point)) - 1)
+#define LOAD_FACTOR 1.5
+
+int hsize(uint64_t, int, int);
+void init(Table, int);
+int insert(Table, int, Chain *);
+Chain *search(Table, int, uint64_t);
+
+typedef struct timeval timeval;
+#define HASH_LENGTH SHA256_DIGEST_LENGTH
+
+double elapsed(timeval *, timeval *);
 void print_hash(unsigned char *);
-void hash(uint32_t *, unsigned char *);
-void reduction(uint32_t *, unsigned char *, int, int);
-void hash_reduction(uint32_t *, int, int);
-void compute(uint32_t *, int, int, int, uint32_t *);
 void write_results(double *, int, const char *);
 void read_results(double *, int, const char *);
 
-static unsigned char buffer[SHA256_DIGEST_LENGTH];
-
-typedef struct
-{
-    uint32_t start;
-    uint32_t end;
-} Points;
-
-#define MAX ((uint32_t)1 << 31)
-#define LOAD_FACTOR 1.5
-
-typedef Points *Hashtable;
-
-int hsize(int);
-void init(Hashtable, int);
-int insert(Hashtable, int, uint32_t, uint32_t);
-Points *search(Hashtable, int, uint32_t);
 #endif
