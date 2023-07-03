@@ -15,6 +15,7 @@ void test_variables_std()
     int t = 1000;
     r = 20.0;
     printf("For N = %lu, r = %2.3f, t = %d :\n", N, r, t);
+    alpha = ALPHA(r);
     int m0 = M0(N, r, t);
     printf("\tm0 = %d\n", m0);
     printf("\tmi%d = %d\n", 0, Mi(N, m0, 0));
@@ -64,9 +65,9 @@ void test_hash_n()
     printf("Hash speed\t: %f\n", speed);
     printf("\n");
 }
-void test_reduction()
+void test_reduce()
 {
-    printf("# Test reduction :\n");
+    printf("# Test reduce :\n");
     uint64_t N = 1 << 24;
     int t = 1000;
     srand(time(NULL));
@@ -75,27 +76,27 @@ void test_reduction()
     hash(&point, buffer);
     printf("Digest is : ");
     print_hash(buffer);
-    reduction(&point, buffer, 1, 0, t, N);
+    reduce(&point, buffer, 1, 0, t, N);
     printf("Reduce is : %lu\n\n", point);
 }
-void test_hash_reduction()
+void test_hash_reduce()
 {
-    printf("# Test hash reduction :\n");
+    printf("# Test hash reduce :\n");
     uint64_t N = 1 << 24;
     int t = 1000;
     srand(time(NULL));
     Point point = rand() % N;
     printf("Value  is : %lu\n", point);
-    hash_reduction(&point, 1, 0, t, N);
+    hash_reduce(&point, 1, 0, t, N);
     printf("Reduce is : %lu\n", point);
     printf("\n");
 }
-void test_hash_reduction_n()
+void test_hash_reduce_n()
 {
-    printf("# Test hash reduction n:\n");
-    int nb_tests = 20;
+    printf("# Test hash reduce n:\n");
+    int nb_tests = 100;
     uint64_t nb_hash = 1 << 24;
-    printf("Hashing %lu numbers %d times\n", nb_hash, nb_tests);
+    printf("Hash-reducing %lu numbers %d times\n", nb_hash, nb_tests);
 
     uint64_t N = 1 << 24;
     int t = 1000;
@@ -109,7 +110,7 @@ void test_hash_reduction_n()
         for (Point point = 0, value; point < nb_hash; point++)
         {
             value = point;
-            hash_reduction(&value, 1, 0, t, N);
+            hash_reduce(&value, 1, 0, t, N);
         }
         gettimeofday(&end, 0);
         time += elapsed(&start, &end);
@@ -143,6 +144,41 @@ void test_compute()
     printf("Number of hashes\t: %lu\n", nb_hash);
     printf("Point computed\t\t: %lu\n", point);
 }
+void test_compute_n()
+{
+    printf("# Test compute n :\n");
+    int nb_comp = 1 << 19;
+    printf("Computing points %d times\n", nb_comp);
+
+    uint64_t N = 1 << 24;
+    int t = 1000;
+    printf("N : %lu\nt : %d\n", N, t);
+    srand(time(NULL));
+
+    Point point;
+    uint64_t nb_hash;
+    int table_id, nb_col, col_start, col_end;
+    timeval start, end;
+    double time = 0.0;
+    uint64_t nb_col_total = 0;
+
+    for (int i = 0; i < nb_comp; i++)
+    {
+        table_id = rand() % 4;
+        nb_col = 1 + rand() % t;
+        nb_col_total += nb_col;
+        col_start = rand() % (t - nb_col + 1);
+        col_end = col_start + nb_col;
+        nb_hash = 0;
+        point = rand() % N;
+        gettimeofday(&start, 0);
+        compute(&point, table_id, col_start, col_end, t, N, &nb_hash);
+        gettimeofday(&end, 0);
+        time += elapsed(&start, &end);
+    }
+    printf("Computation speed\t: %f\n", nb_col_total / time);
+    printf("\n");
+}
 
 void test_htable()
 {
@@ -151,20 +187,15 @@ void test_htable()
     int t = 1000;
     double r = 20.0;
     int m0 = M0(N, r, t);
-    printf("Htable size for column %d : %d\n", t, hsize(N, m0, t));
+    printf("Htable htsize for column %d : %d\n", t, sizeHTable(N, m0, t));
 
-    Table htable;
-    int size = 10;
-    if ((htable = (Chain *)calloc(size, sizeof(Chain))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    init(htable, size);
+    HTable htable;
+    int htsize = 10;
+    initHTable(&htable, htsize);
     printf("Hashtable empty\n");
 
     printf("Fetching endpoint 31\n");
-    Chain *chain31 = search(htable, size, 31);
+    Chain *chain31 = search(htable, htsize, 31);
     if (chain31 == NULL)
     {
         printf("Endpoint 31 not found in hashtable\n");
@@ -176,9 +207,9 @@ void test_htable()
 
     Chain chain = {32, 31};
     printf("Adding chain {%lu : %lu} to hashtable\n", chain.sp, chain.ep);
-    printf("Inserted : %d\n", insert(htable, size, &chain));
+    printf("Inserted : %d\n", insert(htable, htsize, &chain));
     printf("Fetching endpoint 31\n");
-    chain31 = search(htable, size, 31);
+    chain31 = search(htable, htsize, 31);
     if (chain31 == NULL)
     {
         printf("Endpoint 31 not found in hashtable\n");
@@ -190,9 +221,9 @@ void test_htable()
 
     chain.sp = 33;
     printf("Trying add chain {%lu : %lu} to hashtable\n", chain.sp, chain.ep);
-    printf("Inserted : %d\n", insert(htable, size, &chain));
+    printf("Inserted : %d\n", insert(htable, htsize, &chain));
     printf("Fetching endpoint 31\n");
-    chain31 = search(htable, size, 31);
+    chain31 = search(htable, htsize, 31);
     if (chain31 == NULL)
     {
         printf("Endpoint 31 not found in hashtable\n");
@@ -203,7 +234,7 @@ void test_htable()
     }
 
     printf("Fetching endpoint 1031\n");
-    Chain *chain1031 = search(htable, size, 1031);
+    Chain *chain1031 = search(htable, htsize, 1031);
     if (chain1031 == NULL)
     {
         printf("Endpoint 1031 not found in hashtable\n");
@@ -215,9 +246,9 @@ void test_htable()
     chain.sp = 1032;
     chain.ep = 1031;
     printf("Adding points chain {%lu : %lu} to hashtable\n", chain.sp, chain.ep);
-    printf("Inserted : %d\n", insert(htable, size, &chain));
+    printf("Inserted : %d\n", insert(htable, htsize, &chain));
     printf("Fetching endpoint 1031\n");
-    chain1031 = search(htable, size, 1031);
+    chain1031 = search(htable, htsize, 1031);
     if (chain1031 == NULL)
     {
         printf("Endpoint 1031 not found in hashtable\n");

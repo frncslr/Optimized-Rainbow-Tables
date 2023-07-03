@@ -7,9 +7,9 @@ void test_variables_std();
 
 void test_hash();
 void test_hash_n();
-void test_reduction();
-void test_hash_reduction();
-void test_hash_reduction_n();
+void test_reduce();
+void test_hash_reduce();
+void test_hash_reduce_n();
 void test_compute();
 void test_compute_n();
 

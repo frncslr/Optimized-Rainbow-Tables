@@ -32,20 +32,21 @@ typedef struct chain
     Point sp;
     Point ep;
 } Chain;
-typedef Chain *Table;
+typedef Chain *RTable;
+typedef Chain *HTable;
 
 void hash(Point *, unsigned char *);
-void reduction(Point *, unsigned char *, int, int, int, uint64_t);
-void hash_reduction(Point *, int, int, int, uint64_t);
+void reduce(Point *, unsigned char *, int, int, int, uint64_t);
+void hash_reduce(Point *, int, int, int, uint64_t);
 void compute(Point *, int, int, int, int, uint64_t, uint64_t *);
 
 #define MAX ((1 << sizeof(Point)) - 1)
 #define LOAD_FACTOR 1.5
 
-int hsize(uint64_t, int, int);
-void init(Table, int);
-int insert(Table, int, Chain *);
-Chain *search(Table, int, uint64_t);
+int sizeHTable(uint64_t, int, int);
+void initHTable(HTable *, int);
+int insert(HTable, int, Chain *);
+Chain *search(HTable, int, uint64_t);
 
 typedef struct timeval timeval;
 #define HASH_LENGTH SHA256_DIGEST_LENGTH

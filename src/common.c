@@ -25,39 +25,44 @@ void hash(Point *point, unsigned char *digest)
 {
     SHA256((const unsigned char *)point, sizeof(Point), digest);
 }
-void reduction(Point *point, unsigned char *digest, int table_id, int col_id, int t, uint64_t N)
+void reduce(Point *point, unsigned char *digest, int table_id, int col_id, int t, uint64_t N)
 {
     *point = (*(Point *)digest + table_id + col_id * t) % N;
 }
-void hash_reduction(Point *point, int table_id, int col_id, int t, uint64_t N)
+void hash_reduce(Point *point, int table_id, int col_id, int t, uint64_t N)
 {
     hash(point, buffer);
-    reduction(point, buffer, table_id, col_id, t, N);
+    reduce(point, buffer, table_id, col_id, t, N);
 }
 void compute(Point *point, int table_id, int col_start, int col_end, int t, uint64_t N, uint64_t *nb_hash)
 {
     for (int col_id = col_start; col_id < col_end; col_id++, (*nb_hash)++)
-        hash_reduction(point, table_id, col_id, t, N);
+        hash_reduce(point, table_id, col_id, t, N);
 }
 
-int hsize(uint64_t N, int m0, int col_id)
+int sizeHTable(uint64_t N, int m0, int col_id)
 {
     return (int)ceil(LOAD_FACTOR * Mi(N, m0, col_id));
 }
-void init(Table htable, int size)
+void initHTable(HTable *htable, int htsize)
 {
-    for (Chain *current = htable, *last = htable + size; current < last; current++)
+    if ((*htable = (Chain *)calloc(htsize, sizeof(Chain))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (Chain *current = *htable, *last = *htable + htsize; current < last; current++)
     {
         current->sp = MAX;
         current->ep = MAX;
     }
 }
-int insert(Table htable, int size, Chain * chain)
+int insert(HTable htable, int htsize, Chain *chain)
 {
     Chain *place;
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < htsize; i++)
     {
-        place = htable + (chain->ep + i) % size;
+        place = htable + (chain->ep + i) % htsize;
         if (place->ep == MAX)
         {
             place->sp = chain->sp;
@@ -69,12 +74,12 @@ int insert(Table htable, int size, Chain * chain)
     }
     return 0;
 }
-Chain *search(Table htable, int size, uint64_t value)
+Chain *search(HTable htable, int htsize, uint64_t value)
 {
     Chain *chain;
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < htsize; i++)
     {
-        chain = htable + (chain->ep + i) % size;
+        chain = htable + (chain->ep + i) % htsize;
         if (chain->ep == value)
             return chain;
     }
