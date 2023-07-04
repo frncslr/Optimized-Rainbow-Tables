@@ -18,7 +18,8 @@
 #define ERROR_INSERT 1031
 #define ERROR_COVER 1019
 
-static unsigned char buffer[SHA256_DIGEST_LENGTH];
+#define HASH_LENGTH SHA256_DIGEST_LENGTH
+static unsigned char buffer[HASH_LENGTH];
 
 double ALPHA(double);
 double R(double);
@@ -40,7 +41,7 @@ void reduce(Point *, unsigned char *, int, int, int, uint64_t);
 void hash_reduce(Point *, int, int, int, uint64_t);
 void compute(Point *, int, int, int, int, uint64_t, uint64_t *);
 
-#define MAX ((1 << sizeof(Point)) - 1)
+#define MAX (Point)(-1)
 #define LOAD_FACTOR 1.5
 
 int sizeHTable(uint64_t, int, int);
@@ -49,7 +50,6 @@ int insert(HTable, int, Chain *);
 Chain *search(HTable, int, uint64_t);
 
 typedef struct timeval timeval;
-#define HASH_LENGTH SHA256_DIGEST_LENGTH
 
 double elapsed(timeval *, timeval *);
 void print_hash(unsigned char *);

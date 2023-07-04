@@ -1,671 +1,653 @@
-// #include "../include/test_precomp.h"
-
-// void test_initialize()
-// {
-//     printf("# Test initialize :\n");
-//     int size = 6;
-//     Points table0[size], table1[size];
-//     printf("Initializing two tables of %d elements each\n", size);
-
-//     initialize(table0, 0, size);
-//     printf("Table 0 :");
-//     for (int i = 0; i < size; i++)
-//         printf("\n%u\t:\t%u", table0[i].start, table0[i].end);
-//     printf("\n");
-
-//     initialize(table1, 1, size);
-//     printf("Table 1 :");
-//     for (int i = 0; i < size; i++)
-//         printf("\n%u\t:\t%u", table1[i].start, table1[i].end);
-//     printf("\n\n");
-// }
-
-// void test_positions()
-// {
-//     printf("# Test positions :\n");
-//     int nb_filters, *filters = NULL;
-//     char config_mini[40] = "data/configs/config_mini.dat";
-//     positions(&filters, &nb_filters, config_mini);
-//     printf("Filters in %s :\n", config_mini);
-//     for (int i = 0; i < nb_filters; i++)
-//         printf("position %d : %d\n", i, filters[i]);
-//     printf("\n");
-//     char config_opti[30] = "data/configs/config_opti.dat";
-//     positions(&filters, &nb_filters, config_opti);
-//     printf("Filters in %s :\n", config_opti);
-//     for (int i = 0; i < nb_filters; i++)
-//         printf("position %d : %d\n", i, filters[i]);
-//     printf("\n");
-//     free((void *)filters);
-// }
-
-// void test_clean()
-// {
-//     printf("# Test clean :\n");
-//     int table_size = 1 << 4;
-
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     srand(time(NULL));
-//     for (int i = 0; i < 4; i++)
-//     {
-//         uint32_t end = rand() % N;
-//         for (int j = 4 * i; j < 4 * (i + 1); j++)
-//         {
-//             table[j].start = j;
-//             table[j].end = end;
-//         }
-//     }
-
-//     printf("Table before clean :\n");
-//     for (Points *current = table, *last = table + table_size; current < last; current++)
-//         printf("%u\t:\t%u\n", current->start, current->end);
-
-//     clean(&table, &table_size, table_size);
-
-//     printf("Table after clean :\n");
-//     for (Points *current = table, *last = table + table_size; current < last; current++)
-//         printf("%u\t:\t%u\n", current->start, current->end);
-
-//     printf("\n");
-//     free((void *)table);
-// }
-
-// void test_clean_n()
-// {
-//     printf("Test clean n :\n");
-//     int nb_tests = 100;
-//     int table_size, nb_elem = 0;
-//     int nb_filters, *filters = NULL;
-//     char config_mini[40] = "data/configs/config_mini.dat";
-//     positions(&filters, &nb_filters, config_mini);
-//     printf("Cleaning points with %d filters %d times\n", nb_filters, nb_tests);
-
-//     Points *table;
-//     struct timeval start, end;
-//     double speed, local_time, global_time = 0.0;
-//     const char file_name[40] = "data/results/cSpeeds.dat";
-
-//     srand(time(NULL));
-//     for (int i = 0, col; i < nb_tests; i++)
-//     {
-//         col = 0;
-//         speed = local_time = 0.0;
-//         for (int j = 0; j < nb_filters; j++)
-//         {
-//             table_size = (int)ceil(mci(col));
-//             col = filters[j];
-//             nb_elem += table_size;
-//             speed += (double)table_size;
-//             if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//             {
-//                 fprintf(stderr, "Memory allocation problem\n");
-//                 exit(ERROR_ALLOC);
-//             }
-//             for (Points *current = table, *last = table + table_size; current < last; current++)
-//                 current->end = rand() % N;
-
-//             gettimeofday(&start, 0);
-//             clean(&table, &table_size, hsize(col));
-//             gettimeofday(&end, 0);
-//             local_time += elapsed(&start, &end);
-//             free((void *)table);
-//         }
-//         speed /= local_time;
-//         write_results(&speed, 1, file_name);
-//         global_time += local_time;
-//     }
-//     nb_elem /= nb_tests;
-//     global_time /= nb_tests;
-//     printf("Time to clean %d\t: %lf\n", nb_elem, global_time);
-//     speed = nb_elem / global_time;
-//     printf("Clean speed\t\t: %lf\n", speed);
-//     printf("\n");
-// }
-
-// void test_generate()
-// {
-//     printf("# Test generate :\n");
-//     int table_id = 0;
-//     printf("Table index : %d\n", table_id);
-//     int table_size_init = (int)ceil(m0);
-//     int table_size = table_size_init;
-//     printf("Table size  : %d\n", table_size);
-//     int table_width = t;
-
-//     int nb_filters = 1;
-//     int filters = table_width;
-
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     struct timeval start, end;
-
-//     gettimeofday(&start, 0);
-//     initialize(table, table_id, table_size);
-//     gettimeofday(&end, 0);
-//     printf("Time init %d : %lf\n", table_size, elapsed(&start, &end));
-
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     gettimeofday(&start, 0);
-//     generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-//     gettimeofday(&end, 0);
-//     printf("Time gen %d : %lf\n", table_size, elapsed(&start, &end));
-//     printf("Time to compute\t: %f seconds\n", computeTime);
-//     printf("Time to clean\t: %f seconds\n", cleanTime);
-//     printf("Time to generate\t: %f seconds\n", computeTime + cleanTime);
-
-//     uint32_t expec_hash = 0;
-//     operations(&filters, nb_filters, &expec_hash);
-//     int diff_hash = nb_hash - expec_hash;
-//     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-//     printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-//     int expec_size = (int)ceil(mt);
-//     int diff_size = table_size - expec_size;
-//     double diff_size_perc = (double)diff_size * 100 / expec_size;
-//     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
-//     printf("\n");
-
-//     free((void *)table);
-// }
-
-// void test_operations()
-// {
-//     printf("# Test operations :\n");
-//     int nb_filters, *filters = NULL;
-//     uint32_t expec_hash;
-
-//     nb_filters = 1;
-//     int filtres = t;
-//     filters = &filtres;
-//     expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
-
-//     char file_name[30] = "data/configs/config_mini.dat";
-//     positions(&filters, &nb_filters, file_name);
-//     expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     printf("Expected number of hash operations for %d filters : %u\n", nb_filters, expec_hash);
-//     printf("\n");
-//     free(filters);
-// }
-
-// void test_generate_f()
-// {
-//     printf("# Test generate f :\n");
-//     int table_id = 0;
-//     printf("Table index : %d\n", table_id);
-//     int table_size = (int)ceil(m0);
-//     printf("Table size  : %d\n", table_size);
-//     int nb_filters, *filters = NULL;
-//     char file_name[40] = "data/configs/config_mini.dat";
-//     positions(&filters, &nb_filters, file_name);
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     struct timeval start, end;
-//     gettimeofday(&start, 0);
-//     initialize(table, table_id, table_size);
-//     gettimeofday(&end, 0);
-//     printf("Time to initialize\t: %lf\n", elapsed(&start, &end));
-
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     generate(table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-//     printf("Time to compute\t\t: %f seconds\n", computeTime);
-//     printf("Time to clean\t\t: %f seconds\n", cleanTime);
-//     printf("Time to generate\t: %f seconds\n", computeTime + cleanTime);
-
-//     uint32_t expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     int diff_hash = nb_hash - expec_hash;
-//     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-//     printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-//     int expec_size = (int)ceil(mt);
-//     int diff_size = table_size - expec_size;
-//     double diff_size_perc = (double)diff_size * 100 / expec_size;
-//     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
-
-//     free((void *)filters);
-//     free((void *)table);
-//     printf("\n");
-// }
-
-// void test_sort()
-// {
-//     printf("# Test sort :\n");
-//     int table_id = 1;
-//     int table_size = 1 << 14;
-//     int nb_filters = 1;
-//     int filters = t;
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-//     printf("Initializing and generating table %d of %d elements\n", table_id, table_size);
-
-//     initialize(table, table_id, table_size);
-
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-//     printf("Table before sort (first 16):");
-//     for (Points *current = table, *last = table + 16; current < last; current++)
-//         printf("\n%u\t:\t%u", current->start, current->end);
-//     printf("\n");
-
-//     sort(table, table_size);
-
-//     printf("Table after sort (first 16) :");
-//     for (Points *current = table, *last = table + 16; current < last; current++)
-//         printf("\n%u\t:\t%u", current->start, current->end);
-
-//     printf("\n\n");
-//     free((void *)table);
-// }
-
-// void test_precompute()
-// {
-//     printf("# Test precompute :\n");
-//     int table_id = 0;
-//     int table_size = (int)ceil(m0);
-//     char table_name[30] = "tableTestPrecomp";
-//     char extension[6] = "i.dat";
-//     *extension = table_id + '0';
-//     strcat(table_name, extension);
-
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     int nb_filters, *filters = NULL;
-//     char file_name[30] = "configTestPositions.dat";
-//     positions(&filters, &nb_filters, file_name);
-
-//     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-
-//     uint32_t expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     int diff_hash = nb_hash - expec_hash;
-//     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-//     printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-//     int expec_size = (int)ceil(mt);
-//     int diff_size = table_size - expec_size;
-//     double diff_size_perc = (double)diff_size * 100 / expec_size;
-//     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
-
-//     free((void *)filters);
-//     free((void *)table);
-// }
-
-// void test_export()
-// {
-//     printf("# Test export :\n");
-//     int table_id = 3;
-//     int table_size = 1 << 4;
-//     char table_name[30] = "tableTestExport.dat";
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     initialize(table, table_id, table_size);
-
-//     printf("Exporting table %d intialized\n", table_id);
-//     export(table, table_size, table_name);
-
-//     printf("Table cleaned and sorted (first 16/%u rows) :\n", table_size);
-//     for (Points *current = table, *last = table + 16; current < last; current++)
-//         printf("%u\t:\t%u\n", current->start, current->end);
-
-//     printf("\n");
-//     free((void *)table);
-// }
-
-// void test_cover()
-// {
-//     printf("# Test cover :\n");
-//     int table_id = 1;
-//     int table_size = 1 << 3;
-//     int table_width = t;
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         printf("Memory allocation problem");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     initialize(table, table_id, table_size);
-
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     int nb_filters = 1;
-//     int filters = t;
-//     generate(table, table_id, &table_size, &filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-
-//     printf("Table %d of %d rows initialized :\n", table_id, table_size);
-//     for (Points *current = table, *last = table + table_size; current < last; current++)
-//         printf("%u\t:\t%u\n", current->start, current->end);
-
-//     int coverage = 0;
-//     char *covered;
-//     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-//     cover(table, table_id, table_size, table_width, covered, &coverage);
-//     printf("Coverage of the table : %d\n\n", coverage);
-
-//     free((void *)table);
-//     free((void *)covered);
-// }
-
-// void test_precompute_full()
-// {
-//     printf("# Test precompute full:\n");
-//     int table_id = 0;
-//     int table_size = (int)ceil(m0);
-//     int table_width = t;
-//     char table_name[30] = "tableTestPrecompFull";
-//     char extension[6] = "i.dat";
-//     *extension = table_id + '0';
-//     strcat(table_name, extension);
-
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     int nb_filters, *filters = NULL;
-//     char file_name[30] = "configTestPositions.dat";
-//     positions(&filters, &nb_filters, file_name);
-
-//     printf("Precomputing table %d of initially %d rows\n", table_id, table_size);
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-
-//     int coverage = 0;
-//     char *covered;
-//     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-//     cover(table, table_id, table_size, table_width, covered, &coverage);
-
-//     export(table, table_size, table_name);
-
-//     uint32_t expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     int diff_hash = nb_hash - expec_hash;
-//     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-//     printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-//     int expec_size = (int)ceil(mt);
-//     int diff_size = table_size - expec_size;
-//     double diff_size_perc = (double)diff_size * 100 / expec_size;
-//     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, table_size, diff_size, diff_size_perc);
-
-//     double expec_coverage_perc = (1 - pow((double)1 - mt / N, (double)t)) * 100;
-//     double coverage_perc = (double)coverage * 100 / N;
-//     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-//     printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
-
-//     free((void *)table);
-//     free((void *)filters);
-//     free((void *)covered);
-// }
-
-// void test_precompute_full_n()
-// {
-//     printf("# Test precompute full n:\n");
-//     int nb_tables = 4;
-//     int init_size = (int)ceil(m0);
-//     int table_width = t;
-//     char table_name[30] = "tableTestPrecompFullN";
-//     int name_length = strlen((const char *)table_name);
-//     char extension[6] = "i.dat";
-//     strcat(table_name, extension);
-
-//     Points *table;
-//     int table_size;
-//     int total_size = 0;
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-
-//     int coverage = 0;
-//     char *covered;
-//     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     int nb_filters, *filters = NULL;
-//     char file_name[40] = "data/configs/config_mini.dat";
-//     positions(&filters, &nb_filters, file_name);
-
-//     printf("Precomputing, exporting and checking the coverage of %d tables\n", nb_tables);
-//     for (int table_id = 0; table_id < nb_tables; table_id++)
-//     {
-//         table_size = init_size;
-//         if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//         {
-//             fprintf(stderr, "Memory allocation problem\n");
-//             exit(ERROR_ALLOC);
-//         }
-
-//         precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-
-//         table_name[name_length] = table_id + '0';
-//         export(table, table_size, table_name);
-
-//         cover(table, table_id, table_size, table_width, covered, &coverage);
-
-//         total_size += table_size;
-
-//         free((void *)table);
-//     }
-
-//     printf("Time to compute\t\t: %f seconds\n", computeTime / 4);
-//     printf("Time to clean\t\t: %f seconds\n", cleanTime / 4);
-//     printf("Time to generate\t: %f seconds\n", (computeTime + cleanTime) / 4);
-
-//     uint32_t expec_hash = 0;
-//     operations(filters, nb_filters, &expec_hash);
-//     expec_hash *= 4;
-//     int diff_hash = nb_hash - expec_hash;
-//     double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
-//     printf("Hash operations :\n\texpected\t: %u\n\texperimental\t: %u\n\tdifference\t: %d (%3.2lf%%)\n", expec_hash, nb_hash, diff_hash, diff_hash_perc);
-
-//     int expec_size = nb_tables * (int)ceil(mt);
-//     int diff_size = total_size - expec_size;
-//     double diff_size_perc = (double)diff_size * 100 / expec_size;
-//     printf("Unique endpoints :\n\texpected\t: %d\n\texperimental\t: %d\n\tdifference\t: %d (%3.2lf%%)\n", expec_size, total_size, diff_size, diff_size_perc);
-
-//     double expec_coverage_perc = (1 - pow(1 - (1 - pow((double)1 - mt / N, (double)t)), (double)nb_tables)) * 100;
-//     double coverage_perc = (double)coverage * 100 / N;
-//     double diff_coverage_perc = coverage_perc - expec_coverage_perc;
-//     printf("Coverage of the table :\n\texpected\t: %3.2lf%%\n\texperimental\t: %3.2lf%%\n\tdifference\t: %3.2lf%%\n\n", expec_coverage_perc, coverage_perc, diff_coverage_perc);
-
-//     free((void *)filters);
-//     free((void *)covered);
-// }
-
-// void test_precompute_cde()
-// {
-//     printf("# Test precompute_cde :\n");
-//     int nb_tables = 1;
-//     int table_id = 0;
-//     int table_size = (int)ceil(m0);
-//     int expec_size = (int)ceil(mt);
-//     int table_width = t;
-//     int space_size = N;
-//     int nb_block;
-//     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
-//     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
-//     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
-//     char extension[6] = "i.dat";
-//     *extension = table_id + '0';
-//     strcat(spFile_name, extension);
-//     strcat(epFile_name, extension);
-//     strcat(idxFile_name, extension);
-
-//     Points *table;
-//     if ((table = (Points *)calloc(table_size, sizeof(Points))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     int nb_filters, *filters = NULL;
-//     char config_name[30] = "data/configs/config_mini.dat";
-//     printf("Importing filters from %s\n", config_name);
-//     positions(&filters, &nb_filters, config_name);
-
-//     printf("Precomputing table %d of initially %d rows, filtering with %d filters\n", table_id, table_size, nb_filters);
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-//     precompute(&table, table_id, &table_size, filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-
-//     nb_block = Lblocks(table_size);
-//     printf("Exporting table in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
-//     exportCDE(table, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-
-//     int coverage = 0;
-//     char *covered;
-//     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-//     printf("Computing the coverage of the table\n");
-//     cover(table, table_id, table_size, table_width, covered, &coverage);
-//     printf("\n");
-
-//     hashStats(nb_hash, filters, nb_filters, nb_tables);
-//     epStats(table_size, expec_size, nb_tables);
-//     coverStats(coverage, space_size, nb_tables, table_width, expec_size);
-//     cdeStats(nb_tables, &table_size, space_size, &nb_block, spFile_name, epFile_name, idxFile_name);
-
-//     free((void *)table);
-//     free((void *)filters);
-//     free((void *)covered);
-// }
-
-// void test_precompute_cde_ell()
-// {
-//     printf("# Test precompute CDE ell:\n");
-//     int nb_tables = 1;
-//     int init_size = (int)ceil(m0);
-//     init_size = N;
-//     int expec_size = (int)ceil(mt);
-//     expec_size = 2 * N / (t + 2);
-//     int table_width = t;
-//     int space_size = N;
-//     int nb_block[nb_tables];
-//     char spFile_name[40] = "data/tables/cde/spCDE";
-//     char epFile_name[40] = "data/tables/cde/epCDE";
-//     char idxFile_name[40] = "data/tables/cde/idxCDE";
-//     int spName_length = strlen((const char *)spFile_name);
-//     int epName_length = strlen((const char *)epFile_name);
-//     int idxName_length = strlen((const char *)idxFile_name);
-//     char extension[6] = "i.dat";
-//     strcat(spFile_name, extension);
-//     strcat(epFile_name, extension);
-//     strcat(idxFile_name, extension);
-
-//     Points *table;
-//     int table_size[nb_tables], total_size = 0;
-//     uint32_t nb_hash = 0;
-//     double computeTime = 0.0;
-//     double cleanTime = 0.0;
-
-//     int coverage = 0;
-//     char *covered;
-//     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-//     {
-//         fprintf(stderr, "Memory allocation problem\n");
-//         exit(ERROR_ALLOC);
-//     }
-
-//     int nb_filters, *filters = NULL;
-//     char config_name[30] = "data/configs/config_mini.dat";
-//     printf("Importing filters from %s\n", config_name);
-//     positions(&filters, &nb_filters, config_name);
-
-//     printf("Precomputing %d tables of initially %d rows and filtering with %d filters\n", nb_tables, init_size, nb_filters);
-//     printf("Checking the coverage of the tables after their export with CDE in files :\n\t%s\n\t%s\n\t%s\n", spFile_name, epFile_name, idxFile_name);
-//     for (int table_id = 0; table_id < nb_tables; table_id++)
-//     {
-//         table_size[table_id] = init_size;
-//         if ((table = (Points *)calloc(table_size[table_id], sizeof(Points))) == NULL)
-//         {
-//             fprintf(stderr, "Memory allocation problem\n");
-//             exit(ERROR_ALLOC);
-//         }
-
-//         precompute(&table, table_id, &table_size[table_id], filters, nb_filters, &nb_hash, &computeTime, &cleanTime);
-//         nb_block[table_id] = Lblocks(table_size[table_id]);
-//         printf("Table precomputed : %d\n", table_size[table_id]);
-
-//         spFile_name[spName_length] = table_id + '0';
-//         epFile_name[epName_length] = table_id + '0';
-//         idxFile_name[idxName_length] = table_id + '0';
-//         exportCDE(table, table_size[table_id], space_size, nb_block[table_id], spFile_name, epFile_name, idxFile_name);
-
-//         cover(table, table_id, table_size[table_id], table_width, covered, &coverage);
-
-//         total_size += table_size[table_id];
-
-//         free((void *)table);
-//     }
-
-//     hashStats(nb_hash, filters, nb_filters, nb_tables);
-//     epStats(total_size, expec_size, nb_tables);
-//     coverStats(coverage, space_size, nb_tables, table_width, expec_size);
-//     cdeStats(nb_tables, table_size, space_size, nb_block, spFile_name, epFile_name, idxFile_name);
-//     printf("\n");
-//     free((void *)filters);
-//     free((void *)covered);
-// }
+#include "../include/test_precomp.h"
+
+void test_initialize()
+{
+    printf("# Test initialize :\n");
+    int m = 6;
+    RTable table0, table1;
+    printf("Initializing two tables of %d elements each\n", m);
+
+    initialize(&table0, 0, m);
+    printf("Table 0 :");
+    for (int i = 0; i < m; i++)
+        printf("\n%lu\t:\t%lu", table0[i].sp, table0[i].ep);
+    printf("\n");
+
+    initialize(&table1, 1, m);
+    printf("Table 1 :");
+    for (int i = 0; i < m; i++)
+        printf("\n%lu\t:\t%lu", table1[i].sp, table1[i].ep);
+    printf("\n\n");
+    free((void *)table0);
+    free((void *)table1);
+}
+void test_clean()
+{
+    printf("# Test clean :\n");
+    int m = 1 << 4;
+    int N = 1 << 24;
+
+    RTable table;
+    initialize(&table, 0, m);
+
+    srand(time(NULL));
+    for (int i = 0; i < 4; i++)
+    {
+        uint32_t end = rand() % N;
+        for (int j = 4 * i; j < 4 * (i + 1); j++)
+        {
+            table[j].sp = j;
+            table[j].ep = end;
+        }
+    }
+
+    printf("Table before clean :\n");
+    for (Chain *current = table, *last = table + m; current < last; current++)
+        printf("%lu\t:\t%lu\n", current->sp, current->ep);
+
+    clean(&table, &m, m);
+
+    printf("Table after clean :\n");
+    for (Chain *current = table, *last = table + m; current < last; current++)
+        printf("%lu\t:\t%lu\n", current->sp, current->ep);
+
+    printf("\n");
+    free((void *)table);
+}
+void test_clean_n()
+{
+    printf("Test clean n :\n");
+    int nb_tests = 1;
+    int N = 1 << 24;
+    double r = 20.0;
+    int t = 1000;
+    int m, m0 = M0(N, r, t), m_total = 0;
+    int nb_filters, *filters = NULL;
+    char config_mini[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, config_mini);
+    printf("Cleaning points with %d filters %d times\n", nb_filters, nb_tests);
+
+    RTable table;
+    timeval start, end;
+    double speed, local_time, global_time = 0.0;
+    const char file_name[40] = "data/results/cSpeeds.dat";
+
+    srand(time(NULL));
+    for (int i = 0, col; i < nb_tests; i++)
+    {
+        col = 0;
+        speed = local_time = 0.0;
+        for (int j = 0; j < nb_filters; j++)
+        {
+            m = (int)ceil(Mi(N, m0, col));
+            col = filters[j];
+            m_total += m;
+            speed += (double)m;
+            if ((table = (Chain *)calloc(m, sizeof(Chain))) == NULL)
+            {
+                fprintf(stderr, "Memory allocation problem\n");
+                exit(ERROR_ALLOC);
+            }
+            for (Chain *current = table, *last = table + m; current < last; current++)
+                current->ep = rand() % N;
+
+            gettimeofday(&start, 0);
+            clean(&table, &m, sizeHTable(N, m0, col));
+            gettimeofday(&end, 0);
+            local_time += elapsed(&start, &end);
+            free((void *)table);
+        }
+        speed /= local_time;
+        write_results(&speed, 1, file_name);
+        global_time += local_time;
+    }
+    m_total /= nb_tests;
+    global_time /= nb_tests;
+    printf("Time to clean %d\t: %lf\n", m_total, global_time);
+    speed = m_total / global_time;
+    printf("Clean speed\t\t: %lf\n", speed);
+    printf("\n");
+}
+void test_generate()
+{
+    printf("# Test generate :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
+
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    int m = m0;
+    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
+    int mt = Mt(N, alpha, t);
+
+    int nb_filters = 1;
+    int *filters = &t;
+    printf("Filtration parameters :\n\tnb\t: %d\n\tf\t: ", nb_filters);
+    for (int i = 0; i < nb_filters; i++)
+        printf("%d ", filters[i]);
+    printf("\n\n");
+
+    RTable table;
+    initialize(&table, table_id, m);
+
+    uint64_t nb_hash = 0;
+    double cleanTime = 0.0;
+    double computeTime = 0.0;
+    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f\n", computeTime);
+    printf("Time to clean\t\t: %f\n", cleanTime);
+    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
+    epStats(m, mt, 1);
+
+    free((void *)table);
+}
+void test_generate_f()
+{
+    printf("# Test generate f :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
+
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    int m = m0;
+    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
+    int mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
+
+    RTable table;
+    initialize(&table, table_id, m);
+
+    uint64_t nb_hash = 0;
+    double cleanTime = 0.0;
+    double computeTime = 0.0;
+    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f\n", computeTime);
+    printf("Time to clean\t\t: %f\n", cleanTime);
+    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
+    epStats(m, mt, 1);
+
+    free((void *)table);
+    free((void *)filters);
+    printf("\n");
+}
+void test_sort()
+{
+    printf("# Test sort :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
+
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    int m = m0;
+    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
+    int mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
+
+    RTable table;
+    initialize(&table, table_id, m);
+
+    uint64_t nb_hash = 0;
+    double cleanTime = 0.0;
+    double computeTime = 0.0;
+    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+
+    printf("Table before sort (first 16):");
+    for (Chain *current = table, *last = table + 16; current < last; current++)
+        printf("\n%lu\t:\t%lu", current->sp, current->ep);
+    printf("\n");
+
+    sort(table, m);
+
+    printf("Table after sort (first 16) :");
+    for (Chain *current = table, *last = table + 16; current < last; current++)
+        printf("\n%lu\t:\t%lu", current->sp, current->ep);
+
+    printf("\n\n");
+    free((void *)table);
+}
+void test_precompute()
+{
+    printf("# Test precompute :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
+
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    int m = m0;
+    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
+    int mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
+
+    RTable table;
+
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f\n", computeTime);
+    printf("Time to clean\t\t: %f\n", cleanTime);
+    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
+    epStats(m, mt, 1);
+
+    free((void *)table);
+    free((void *)filters);
+}
+void test_export()
+{
+    printf("# Test export :\n");
+    RTable table;
+    int m = 16;
+    int table_id = 0;
+    char table_name[40] = "data/tables/std/tableTestExport.dat";
+
+    initialize(&table, table_id, m);
+
+    printf("Exporting table %d intialized in file %s\n\n", table_id, table_name);
+    export(table, m, table_name);
+
+    free((void *)table);
+}
+void test_cover()
+{
+    printf("# Test cover :\n");
+    uint64_t N = 1 << 24;
+    int table_id = 1;
+    int m = 1 << 3;
+    int t = 1000;
+
+    RTable table;
+
+    initialize(&table, table_id, m);
+
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    int nb_filters = 1;
+    int filters = t;
+    generate(table, table_id, &m, &filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+
+    printf("Table %d of %d rows and %d columns :\n", table_id, m, t);
+    for (Chain *current = table, *last = table + m; current < last; current++)
+        printf("%lu\t:\t%lu\n", current->sp, current->ep);
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, m, t, N, covered, &coverage);
+    printf("Coverage of the table : %d\n\n", coverage);
+
+    free((void *)table);
+    free((void *)covered);
+}
+
+void test_positions()
+{
+    printf("# Test positions :\n");
+    int nb_filters, *filters = NULL;
+    char config_mini[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, config_mini);
+    printf("Filters in %s :\n", config_mini);
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    char config_opti[30] = "data/configs/config_opti.dat";
+    positions(&filters, &nb_filters, config_opti);
+    printf("Filters in %s :\n", config_opti);
+    for (int i = 0; i < nb_filters; i++)
+        printf("position %d : %d\n", i, filters[i]);
+    printf("\n");
+    free((void *)filters);
+}
+void test_operations()
+{
+    printf("# Test operations :\n");
+    uint64_t N = 1 << 24;
+    int r = 20.0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+
+    int nb_filters, *filters = NULL;
+    uint64_t expec_hash;
+
+    nb_filters = 1;
+    int filtres = t;
+    filters = &filtres;
+    expec_hash = 0;
+    operations(N, m0, filters, nb_filters, &expec_hash);
+    printf("Expected number of hash operations for %d filters : %lu\n", nb_filters, expec_hash);
+
+    char file_name[30] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, file_name);
+    expec_hash = 0;
+    operations(N, m0, filters, nb_filters, &expec_hash);
+    printf("Expected number of hash operations for %d filters : %lu\n", nb_filters, expec_hash);
+    printf("\n");
+    free(filters);
+}
+
+void test_offline()
+{
+    printf("# Test offline :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
+
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    int m = m0;
+    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
+    int mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
+
+    RTable table;
+
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f\n", computeTime);
+    printf("Time to clean\t\t: %f\n", cleanTime);
+    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, m, t, N, covered, &coverage);
+
+    char table_name[30] = "tableTestPrecompFull";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(table_name, extension);
+    export(table, m, table_name);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
+    epStats(m, mt, 1);
+    coverStats(coverage, N, 1, t, mt);
+
+    free((void *)table);
+    free((void *)filters);
+    free((void *)covered);
+}
+void test_offline_ell()
+{
+    printf("# Test offline ell :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n");
+    printf("\tN\t: %lu\n", N);
+    printf("\tr\t: %3.3f\n", r);
+    printf("\talpha\t: %3.3f\n\n", alpha);
+
+    int ell = 4;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    char table_name[40] = "data/tables/std/tableSTD";
+    printf("Table parameters :\n");
+    printf("\tell\t: %d\n", ell);
+    printf("\tt\t: %d\n", t);
+    printf("\tm0\t: %d\n", m0);
+    printf("\tfile\t: %s\n\n", table_name);
+    int m, mt = Mt(N, alpha, t);
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n");
+    printf("\tnb\t: %d\n", nb_filters);
+    printf("\tfile\t: %s\n\n", filters_file);
+
+    RTable table;
+
+    int m_total = 0;
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        m = m0;
+
+        precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+
+        table_name[name_length] = table_id + '0';
+        export(table, m, table_name);
+
+        cover(table, table_id, m, t, N, covered, &coverage);
+
+        m_total += m;
+
+        free((void *)table);
+    }
+
+    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
+    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
+    epStats(m_total, mt, ell);
+    coverStats(coverage, N, ell, t, mt);
+
+    free((void *)filters);
+    free((void *)covered);
+}
+void test_offline_cde()
+{
+    printf("# Test offline cde :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n");
+    printf("\tN\t: %lu\n", N);
+    printf("\tr\t: %3.3f\n", r);
+    printf("\talpha\t: %3.3f\n\n", alpha);
+
+    int ell = 1;
+    int table_id = 0;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    printf("Table parameters :\n");
+    printf("\tell\t: %d\n", ell);
+    printf("\tid\t: %d\n", table_id);
+    printf("\tt\t: %d\n", t);
+    printf("\tm0\t: %d\n", m0);
+    int m = m0, mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n");
+    printf("\tnb\t: %d\n", nb_filters);
+    printf("\tfile\t: %s\n\n", filters_file);
+
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    printf("Delta Encoding parameters :\n");
+    printf("\tsp file\t: %s\n", spFile_name);
+    printf("\tep file\t: %s\n", epFile_name);
+    printf("\tid file\t: %s\n\n", idxFile_name);
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    RTable table;
+
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    printf("Time to compute\t\t: %f\n", computeTime);
+    printf("Time to clean\t\t: %f\n", cleanTime);
+    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    cover(table, table_id, m, t, N, covered, &coverage);
+
+    int L = Lblocks(m);
+    exportCDE(table, m, N, L, spFile_name, epFile_name, idxFile_name);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
+    epStats(m, mt, 1);
+    coverStats(coverage, N, 1, t, mt);
+    cdeStats(ell, &m, N, &L, spFile_name, epFile_name, idxFile_name);
+
+    free((void *)table);
+    free((void *)filters);
+    free((void *)covered);
+}
+void test_offline_cde_ell()
+{
+    printf("# Test effline cde ell:\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n");
+    printf("\tN\t: %lu\n", N);
+    printf("\tr\t: %3.3f\n", r);
+    printf("\talpha\t: %3.3f\n\n", alpha);
+
+    int ell = 4;
+    int t = 1000;
+    int m0 = M0(N, r, t);
+    printf("Table parameters :\n");
+    printf("\tell\t: %d\n", ell);
+    printf("\tt\t: %d\n", t);
+    printf("\tm0\t: %d\n", m0);
+    int m[ell], mt = Mt(N, alpha, t);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini.dat";
+    positions(&filters, &nb_filters, filters_file);
+    printf("Filtration parameters :\n");
+    printf("\tnb\t: %d\n", nb_filters);
+    printf("\tfile\t: %s\n\n", filters_file);
+
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    printf("Delta Encoding parameters :\n");
+    printf("\tsp file\t: %s\n", spFile_name);
+    printf("\tep file\t: %s\n", epFile_name);
+    printf("\tid file\t: %s\n\n", idxFile_name);
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+    int L[ell];
+
+    RTable table;
+
+    int m_total = 0;
+    uint64_t nb_hash = 0;
+    double computeTime = 0.0;
+    double cleanTime = 0.0;
+
+    int coverage = 0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        m[table_id] = m0;
+
+        precompute(&table, table_id, &m[table_id], filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+        L[table_id] = Lblocks(m[table_id]);
+
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        exportCDE(table, m[table_id], N, L[table_id], spFile_name, epFile_name, idxFile_name);
+
+        cover(table, table_id, m[table_id], t, N, covered, &coverage);
+
+        m_total += m[table_id];
+
+        free((void *)table);
+    }
+
+    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
+    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
+
+    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
+    epStats(m_total, mt, ell);
+    coverStats(coverage, N, ell, t, mt);
+    cdeStats(ell, m, N, L, spFile_name, epFile_name, idxFile_name);
+
+    free((void *)filters);
+    free((void *)covered);
+}

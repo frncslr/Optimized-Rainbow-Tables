@@ -1,5 +1,5 @@
 #include "../include/test_common.h"
-// #include "../include/test_precomp.h"
+#include "../include/test_precomp.h"
 // #include "../include/test_attack.h"
 #include "../include/test_rice.h"
 
@@ -31,24 +31,23 @@ int main(void)
   // test_decode();
   // test_setStream();
   // test_searchCDE();
-  test_searchPrecompCDE();
+  // test_searchPrecompCDE();
 
   // test_initialize();
-  // test_positions();
   // test_clean();
   // test_clean_n();
   // test_generate();
-  // test_operations();
   // test_generate_f();
   // test_sort();
   // test_precompute();
-  // test_rice();
   // test_export();
   // test_cover();
-  // test_precompute_full();
-  // test_precompute_full_n();
-  // test_precompute_cde();
-  // test_precompute_cde_ell();
+  // test_positions();
+  // test_operations();
+  // test_offline();
+  // test_offline_ell();
+  // test_offline_cde();
+  test_offline_cde_ell();
 
   // test_ceri();
   // test_import();

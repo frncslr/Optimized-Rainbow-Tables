@@ -1,24 +1,24 @@
-// #ifndef PRECOMP_H
-// #define PRECOMP_H
+#ifndef PRECOMP_H
+#define PRECOMP_H
 
-// #include "common.h"
-// #include "rice.h"
+#include "rice.h"
+#include "common.h"
 
-// void initialize(Points *, int, int);
-// void positions(int **, int *, const char *);
-// void clean(Points **, int *, int);
-// void generate(Points *, int, int *, int *, int, uint32_t *, double *, double *);
-// void operations(int *, int, uint32_t *);
-// void swap(Points *, Points *);
-// int partition(Points *, int, int);
-// void quicksort(Points *, int, int);
-// void sort(Points *, int);
-// void precompute(Points **, int, int *, int *, int, uint32_t *, double *, double *);
-// void export(Points *, int, const char *);
-// void cover(Points *, int, int, int, char *, int *);
+void initialize(RTable *, int, int);
+void clean(RTable *, int *, int);
+void generate(RTable, int, int *, int *, int, int, uint64_t, uint64_t *, double *, double *);
+void swap(Chain *, Chain *);
+int partition(RTable, int, int);
+void quicksort(RTable, int, int);
+void sort(RTable, int);
+void precompute(RTable *, int, int *, int *, int, int, uint64_t, uint64_t *, double *, double *);
+void export(RTable, int, const char *);
+void cover(RTable, int, int, int, uint64_t, char *, int *);
 
-// void hashStats(uint32_t, int *, int, int);
-// void epStats(int, int, int);
-// void coverStats(int, int, int, int, int);
+void positions(int **, int *, const char *);
+void operations(uint64_t, int, int *, int, uint64_t *);
+void hashStats(uint64_t N, int m0, uint64_t, int *, int, int);
+void epStats(int, int, int);
+void coverStats(int, uint64_t, int, int, int);
 
-// #endif
+#endif
