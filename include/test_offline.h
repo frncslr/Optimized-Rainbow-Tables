@@ -1,7 +1,7 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef TEST_OFFLINE_H
+#define TEST_OFFLINE_H
 
-#include "precomp.h"
+#include "offline.h"
 
 void test_initialize();
 void test_clean();

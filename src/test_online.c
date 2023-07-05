@@ -1,4 +1,4 @@
-#include "../include/test_precomp.h"
+#include "../include/test_online.h"
 
 void test_initialize()
 {

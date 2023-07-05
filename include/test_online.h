@@ -1,8 +1,8 @@
-#ifndef TEST_ATTACK_H
-#define TEST_ATTACK_H
+#ifndef TEST_ONLINE_H
+#define TEST_ONLINE_H
 
-#include "attack.h"
-#include "precomp.h"
+#include "online.h"
+#include "offline.h"
 
 void test_import();
 void test_import_m();

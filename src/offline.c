@@ -1,4 +1,4 @@
-#include "../include/precomp.h"
+#include "../include/offline.h"
 
 void initialize(RTable *table, int table_id, int m)
 {

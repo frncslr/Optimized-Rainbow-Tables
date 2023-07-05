@@ -284,52 +284,50 @@ void test_searchCDE()
     free((void *)spTable);
     free((void *)idxTable);
 }
-// void test_searchPrecompCDE()
-// {
-//     printf("# Test searchPrecompCDE :\n");
-//     uint64_t N = 1 << 24;
-//     int t = 1000;
+void test_searchPrecompCDE()
+{
+    printf("# Test searchPrecompCDE :\n");
+    uint64_t N = 1 << 24;
+    int t = 1000;
 
-//     uint32_t nb_test = (uint32_t)N;
+    uint32_t nb_test = (uint32_t)N;
 
-//     int table_id = 0;
-//     int table_size;
-//     int table_width = t;
-//     int space_size = N;
-//     char spFile_name[40] = "data/tables/cde/spPrecompCDE";
-//     char epFile_name[40] = "data/tables/cde/epPrecompCDE";
-//     char idxFile_name[40] = "data/tables/cde/idxPrecompCDE";
-//     char extension[6] = "i.dat";
-//     *extension = table_id + '0';
-//     strcat(spFile_name, extension);
-//     strcat(epFile_name, extension);
-//     strcat(idxFile_name, extension);
+    int table_id = 0;
+    int m, L;
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
 
-//     Point *spTable = NULL;
-//     importSP(spFile_name, &spTable, &table_size);
-//     int nb_block = Lblocks(table_size);
+    Point *spTable = NULL;
+    importSP(spFile_name, &spTable, &m);
+    L = Lblocks(m);
 
-//     Index *idxTable = NULL;
-//     importIdx(idxFile_name, nb_block, table_size, space_size, &idxTable);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, L, m, N, &idxTable);
 
-//     BitStream epStream;
-//     initBitStream(&epStream, epFile_name, 0);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
 
-//     int nb_found = 0;
-//     uint32_t nbDec = 0;
-//     for (Point ep = 0, *sp = NULL; ep < nb_test; ep++)
-//     {
-//         if ((sp = searchCDE(ep, spTable, &epStream, idxTable, table_size, space_size, nb_block, &nbDec)) != NULL)
-//         {
-//             nb_found++;
-//             if (!(nb_found % 1000))
-//                 printf("nb found : %d/%lu\n", nb_found, ep);
-//         }
-//     }
-//     printf("Final amount found\t: %d/%d\n", nb_found, nb_test);
-//     printf("Average decodings\t: %f\n", (double)nbDec / nb_test);
-//     printf("\n");
-//     closeBitStream(&epStream);
-//     free((void *)spTable);
-//     free((void *)idxTable);
-// }
+    int nb_found = 0;
+    uint32_t nbDec = 0;
+    for (Point ep = 0, *sp = NULL; ep < nb_test; ep++)
+    {
+        if ((sp = searchCDE(ep, spTable, &epStream, idxTable, m, N, L, &nbDec)) != NULL)
+        {
+            nb_found++;
+            if (!(nb_found % 1000))
+                printf("nb found : %d/%lu\n", nb_found, ep);
+        }
+    }
+    printf("Final amount found\t: %d/%d\n", nb_found, nb_test);
+    printf("Average decodings\t: %f\n", (double)nbDec / nb_test);
+    printf("\n");
+    closeBitStream(&epStream);
+    free((void *)spTable);
+    free((void *)idxTable);
+}

@@ -1,5 +1,5 @@
-#ifndef PRECOMP_H
-#define PRECOMP_H
+#ifndef OFFLINE_H
+#define OFFLINE_H
 
 #include "rice.h"
 #include "common.h"
