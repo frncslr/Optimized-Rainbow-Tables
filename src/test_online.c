@@ -231,8 +231,8 @@ void test_attackSTD_random()
 }
 void test_attackSTD_random_ell()
 {
-    printf("# Test attack random ell :\n");
-    int n = 1000;
+    printf("# Test attackSTD random ell :\n");
+    int n = 10000;
     int nb = 0;
 
     uint64_t N = 1 << 24;
@@ -259,8 +259,10 @@ void test_attackSTD_random_ell()
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
     Point plain, result;
     uint64_t nb_hash, total_hash = 0;
+    timeval start, end;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
+    gettimeofday(&start, 0);
     for (int i = 0; i < n; i++)
     {
         nb_hash = 0;
@@ -273,9 +275,11 @@ void test_attackSTD_random_ell()
         }
         total_hash += nb_hash;
     }
+    gettimeofday(&end, 0);
     printf("Plains recovered\t: %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n\n", avg_hash);
+    printf("Average time to attack\t: %f\n", elapsed(&start, &end) / n);
 
     // write_results(&avg_hash, 1, "avgOpe.dat");
 
@@ -462,9 +466,11 @@ void test_attackCDE_random_ell()
     Point plain, result;
     uint64_t nb_hash, total_hash = 0;
     double avgDec, total_avgDec = 0.0;
-    int col_id;
+    timeval start, end;
     srand(time(NULL));
     printf("Launching %d attacks\n", n);
+    gettimeofday(&start, 0);
+
     for (int i = 0; i < n; i++)
     {
         nb_hash = 0;
@@ -479,10 +485,12 @@ void test_attackCDE_random_ell()
         total_hash += nb_hash;
         total_avgDec += avgDec;
     }
+    gettimeofday(&end, 0);
     printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
     double avg_hash = (double)total_hash / n;
     printf("Average operations\t: %f\n", avg_hash);
     printf("Average decodings \t: %f\n", total_avgDec / n);
+    printf("Average time to attack\t: %f\n", elapsed(&start, &end) / n);
     printf("\n");
     for (int table_id = 0; table_id < ell; table_id++)
     {
