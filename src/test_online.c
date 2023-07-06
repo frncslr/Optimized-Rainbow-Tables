@@ -1,600 +1,426 @@
 #include "../include/test_online.h"
 
-void test_initialize()
+void test_import()
 {
-    printf("# Test initialize :\n");
-    int m = 6;
-    RTable table0, table1;
-    printf("Initializing two tables of %d elements each\n", m);
-
-    initialize(&table0, 0, m);
-    printf("Table 0 :");
-    for (int i = 0; i < m; i++)
-        printf("\n%lu\t:\t%lu", table0[i].sp, table0[i].ep);
-    printf("\n");
-
-    initialize(&table1, 1, m);
-    printf("Table 1 :");
-    for (int i = 0; i < m; i++)
-        printf("\n%lu\t:\t%lu", table1[i].sp, table1[i].ep);
-    printf("\n\n");
-    free((void *)table0);
-    free((void *)table1);
-}
-void test_clean()
-{
-    printf("# Test clean :\n");
-    int m = 1 << 4;
-    int N = 1 << 24;
-
-    RTable table;
-    initialize(&table, 0, m);
-
-    srand(time(NULL));
-    for (int i = 0; i < 4; i++)
-    {
-        uint32_t end = rand() % N;
-        for (int j = 4 * i; j < 4 * (i + 1); j++)
-        {
-            table[j].sp = j;
-            table[j].ep = end;
-        }
-    }
-
-    printf("Table before clean :\n");
-    for (Chain *current = table, *last = table + m; current < last; current++)
-        printf("%lu\t:\t%lu\n", current->sp, current->ep);
-
-    clean(&table, &m, m);
-
-    printf("Table after clean :\n");
-    for (Chain *current = table, *last = table + m; current < last; current++)
-        printf("%lu\t:\t%lu\n", current->sp, current->ep);
-
-    printf("\n");
-    free((void *)table);
-}
-void test_clean_n()
-{
-    printf("Test clean n :\n");
-    int nb_tests = 1;
-    int N = 1 << 24;
-    double r = 20.0;
-    int t = 1000;
-    int m, m0 = M0(N, r, t), m_total = 0;
-    int nb_filters, *filters = NULL;
-    char config_mini[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, config_mini);
-    printf("Cleaning points with %d filters %d times\n", nb_filters, nb_tests);
-
-    RTable table;
-    timeval start, end;
-    double speed, local_time, global_time = 0.0;
-    const char file_name[40] = "data/results/cSpeeds.dat";
-
-    srand(time(NULL));
-    for (int i = 0, col; i < nb_tests; i++)
-    {
-        col = 0;
-        speed = local_time = 0.0;
-        for (int j = 0; j < nb_filters; j++)
-        {
-            m = (int)ceil(Mi(N, m0, col));
-            col = filters[j];
-            m_total += m;
-            speed += (double)m;
-            if ((table = (Chain *)calloc(m, sizeof(Chain))) == NULL)
-            {
-                fprintf(stderr, "Memory allocation problem\n");
-                exit(ERROR_ALLOC);
-            }
-            for (Chain *current = table, *last = table + m; current < last; current++)
-                current->ep = rand() % N;
-
-            gettimeofday(&start, 0);
-            clean(&table, &m, sizeHTable(N, m0, col));
-            gettimeofday(&end, 0);
-            local_time += elapsed(&start, &end);
-            free((void *)table);
-        }
-        speed /= local_time;
-        write_results(&speed, 1, file_name);
-        global_time += local_time;
-    }
-    m_total /= nb_tests;
-    global_time /= nb_tests;
-    printf("Time to clean %d\t: %lf\n", m_total, global_time);
-    speed = m_total / global_time;
-    printf("Clean speed\t\t: %lf\n", speed);
-    printf("\n");
-}
-void test_generate()
-{
-    printf("# Test generate :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
-
-    int table_id = 0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    int m = m0;
-    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
-    int mt = Mt(N, alpha, t);
-
-    int nb_filters = 1;
-    int *filters = &t;
-    printf("Filtration parameters :\n\tnb\t: %d\n\tf\t: ", nb_filters);
-    for (int i = 0; i < nb_filters; i++)
-        printf("%d ", filters[i]);
-    printf("\n\n");
-
-    RTable table;
-    initialize(&table, table_id, m);
-
-    uint64_t nb_hash = 0;
-    double cleanTime = 0.0;
-    double computeTime = 0.0;
-    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-    printf("Time to compute\t\t: %f\n", computeTime);
-    printf("Time to clean\t\t: %f\n", cleanTime);
-    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
-
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-
-    free((void *)table);
-}
-void test_generate_f()
-{
-    printf("# Test generate f :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
-
-    int table_id = 0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    int m = m0;
-    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
-    int mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
-
-    RTable table;
-    initialize(&table, table_id, m);
-
-    uint64_t nb_hash = 0;
-    double cleanTime = 0.0;
-    double computeTime = 0.0;
-    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-    printf("Time to compute\t\t: %f\n", computeTime);
-    printf("Time to clean\t\t: %f\n", cleanTime);
-    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
-
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-
-    free((void *)table);
-    free((void *)filters);
-    printf("\n");
-}
-void test_sort()
-{
-    printf("# Test sort :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
-
-    int table_id = 0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    int m = m0;
-    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
-    int mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
-
-    RTable table;
-    initialize(&table, table_id, m);
-
-    uint64_t nb_hash = 0;
-    double cleanTime = 0.0;
-    double computeTime = 0.0;
-    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-
-    printf("Table before sort (first 16):");
-    for (Chain *current = table, *last = table + 16; current < last; current++)
-        printf("\n%lu\t:\t%lu", current->sp, current->ep);
-    printf("\n");
-
-    sort(table, m);
-
-    printf("Table after sort (first 16) :");
-    for (Chain *current = table, *last = table + 16; current < last; current++)
-        printf("\n%lu\t:\t%lu", current->sp, current->ep);
-
-    printf("\n\n");
-    free((void *)table);
-}
-void test_precompute()
-{
-    printf("# Test precompute :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
-
-    int table_id = 0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    int m = m0;
-    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
-    int mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
-
-    RTable table;
-
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-    printf("Time to compute\t\t: %f\n", computeTime);
-    printf("Time to clean\t\t: %f\n", cleanTime);
-    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
-
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-
-    free((void *)table);
-    free((void *)filters);
-}
-void test_export()
-{
-    printf("# Test export :\n");
-    RTable table;
-    int m = 16;
-    int table_id = 0;
-    char table_name[40] = "data/tables/std/tableTestExport.dat";
-
-    initialize(&table, table_id, m);
-
-    printf("Exporting table %d intialized in file %s\n\n", table_id, table_name);
-    export(table, m, table_name);
-
-    free((void *)table);
-}
-void test_cover()
-{
-    printf("# Test cover :\n");
-    uint64_t N = 1 << 24;
-    int table_id = 1;
-    int m = 1 << 3;
-    int t = 1000;
-
-    RTable table;
-
-    initialize(&table, table_id, m);
-
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-    int nb_filters = 1;
-    int filters = t;
-    generate(table, table_id, &m, &filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-
-    printf("Table %d of %d rows and %d columns :\n", table_id, m, t);
-    for (Chain *current = table, *last = table + m; current < last; current++)
-        printf("%lu\t:\t%lu\n", current->sp, current->ep);
-
-    int coverage = 0;
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    cover(table, table_id, m, t, N, covered, &coverage);
-    printf("Coverage of the table : %d\n\n", coverage);
-
-    free((void *)table);
-    free((void *)covered);
-}
-
-void test_positions()
-{
-    printf("# Test positions :\n");
-    int nb_filters, *filters = NULL;
-    char config_mini[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, config_mini);
-    printf("Filters in %s :\n", config_mini);
-    for (int i = 0; i < nb_filters; i++)
-        printf("position %d : %d\n", i, filters[i]);
-    printf("\n");
-    char config_opti[30] = "data/configs/config_opti.dat";
-    positions(&filters, &nb_filters, config_opti);
-    printf("Filters in %s :\n", config_opti);
-    for (int i = 0; i < nb_filters; i++)
-        printf("position %d : %d\n", i, filters[i]);
-    printf("\n");
-    free((void *)filters);
-}
-void test_operations()
-{
-    printf("# Test operations :\n");
-    uint64_t N = 1 << 24;
-    int r = 20.0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-
-    int nb_filters, *filters = NULL;
-    uint64_t expec_hash;
-
-    nb_filters = 1;
-    int filtres = t;
-    filters = &filtres;
-    expec_hash = 0;
-    operations(N, m0, filters, nb_filters, &expec_hash);
-    printf("Expected number of hash operations for %d filters : %lu\n", nb_filters, expec_hash);
-
-    char file_name[30] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, file_name);
-    expec_hash = 0;
-    operations(N, m0, filters, nb_filters, &expec_hash);
-    printf("Expected number of hash operations for %d filters : %lu\n", nb_filters, expec_hash);
-    printf("\n");
-    free(filters);
-}
-
-void test_offline()
-{
-    printf("# Test offline :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
-
-    int table_id = 0;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    int m = m0;
-    printf("Table parameters :\n\tid\t: %d\n\tt\t: %d\n\tm0\t: %d\n\n", table_id, t, m0);
-    int mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n\tnb\t: %d\n\tfile\t: %s\n\n", nb_filters, filters_file);
-
-    RTable table;
-
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-    printf("Time to compute\t\t: %f\n", computeTime);
-    printf("Time to clean\t\t: %f\n", cleanTime);
-    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
-
-    int coverage = 0;
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    cover(table, table_id, m, t, N, covered, &coverage);
-
-    char table_name[30] = "tableTestPrecompFull";
+    printf("# Test import :\n");
+    HTable htable;
+    int hsize;
+    int table_id = 2;
+    char table_name[40] = "data/tables/std/tableTestExport";
+    int name_length = strlen((const char *)table_name);
     char extension[6] = "i.dat";
-    *extension = table_id + '0';
     strcat(table_name, extension);
-    export(table, m, table_name);
+    table_name[name_length] = table_id + '0';
+    printf("Importing table in dictionary\n");
+    import(&htable, &hsize, table_name);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-    coverStats(coverage, N, 1, t, mt);
-
-    free((void *)table);
-    free((void *)filters);
-    free((void *)covered);
+    printf("Fetching endpoints in hashtable\n");
+    Chain *chain;
+    for (uint64_t end = 0, m = 4; end < m * 4; end++)
+    {
+        if ((chain = search(htable, hsize, end)) != NULL)
+        {
+            printf("Chain {%lu : %lu} found in hashtable\n", chain->sp, chain->ep);
+        }
+        else
+        {
+            printf("Endpoint %lu not found in hashtable\n", end);
+        }
+    }
+    printf("\n");
+    free(htable);
 }
-void test_offline_ell()
+void test_import_ell()
 {
-    printf("# Test offline ell :\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n");
-    printf("\tN\t: %lu\n", N);
-    printf("\tr\t: %3.3f\n", r);
-    printf("\talpha\t: %3.3f\n\n", alpha);
-
+    printf("# Test import ell :\n");
     int ell = 4;
-    int t = 1000;
-    int m0 = M0(N, r, t);
-    char table_name[40] = "data/tables/std/tableSTD";
-    printf("Table parameters :\n");
-    printf("\tell\t: %d\n", ell);
-    printf("\tt\t: %d\n", t);
-    printf("\tm0\t: %d\n", m0);
-    printf("\tfile\t: %s\n\n", table_name);
-    int m, mt = Mt(N, alpha, t);
+    char table_name[40] = "data/tables/std/tableTestExport";
     int name_length = strlen((const char *)table_name);
     char extension[6] = "i.dat";
     strcat(table_name, extension);
 
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n");
-    printf("\tnb\t: %d\n", nb_filters);
-    printf("\tfile\t: %s\n\n", filters_file);
-
-    RTable table;
-
-    int m_total = 0;
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-
-    int coverage = 0;
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    HTable *htables;
+    int hsizes[ell];
+    if ((htables = (HTable *)calloc(ell, sizeof(HTable))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
 
-    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
     for (int table_id = 0; table_id < ell; table_id++)
     {
-        m = m0;
-
-        precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-
         table_name[name_length] = table_id + '0';
-        export(table, m, table_name);
-
-        cover(table, table_id, m, t, N, covered, &coverage);
-
-        m_total += m;
-
-        free((void *)table);
+        import(&htables[table_id], &hsizes[table_id], table_name);
     }
 
-    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
-    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
-    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
+    printf("Fetching endpoints in hashtables\n");
+    Chain *chain;
+    for (uint64_t end = 0, m = 4; end < m * ell; end++)
+    {
+        for (int table_id = 0; table_id < ell; table_id++)
+        {
+            if ((chain = search(htables[table_id], hsizes[table_id], end)) != NULL)
+            {
+                printf("Points {%lu : %lu} found in hashtable %d\n", chain->sp, chain->ep, table_id);
+                continue;
+            }
+        }
+    }
+    printf("\n");
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
-    epStats(m_total, mt, ell);
-    coverStats(coverage, N, ell, t, mt);
-
-    free((void *)filters);
-    free((void *)covered);
+    for (int table_id = 0; table_id < ell; table_id++)
+        free((void *)htables[table_id]);
+    free((void *)htables);
 }
-void test_offline_cde()
+void test_chain()
 {
-    printf("# Test offline cde :\n");
+    printf("# Test chain :\n");
     uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n");
-    printf("\tN\t: %lu\n", N);
-    printf("\tr\t: %3.3f\n", r);
-    printf("\talpha\t: %3.3f\n\n", alpha);
+    int t = 1000;
+    int table_id = 0;
+    unsigned char cipher[SHA256_DIGEST_LENGTH];
+    srand(time(NULL));
+    Point point = rand() % N;
+    printf("Random existing point \t: %lu\n", point);
+    Point copy = point;
+    int col = rand() % t;
+    printf("Random existing column \t\t: %d\n", col);
+
+    uint64_t nb_hash = 0;
+    compute(&point, table_id, 0, col, t, N, &nb_hash);
+    printf("Intermediary point computed \t: %lu\n", point);
+    printf("Number of hashes done \t\t: %lu\n", nb_hash);
+
+    hash(&point, cipher);
+    printf("Cipher of point \t\t: ");
+    print_hash(cipher);
+
+    chain(&point, cipher, table_id, col, t, N, &nb_hash);
+    printf("Point chained \t\t: %lu\n", point);
+    printf("Number of hashes done \t\t: %lu\n", nb_hash);
+    printf("Cipher after chain \t\t: ");
+    print_hash(cipher);
+
+    nb_hash = 0;
+    compute(&copy, 0, 0, t, t, N, &nb_hash);
+    printf("Copy computed \t\t: %lu\n", point);
+    printf("Number of hashes done \t\t: %lu\n", nb_hash);
+}
+void test_rebuild()
+{
+    printf("# Test rebuild :\n");
+    uint64_t N = 1 << 24;
+    int t = 1000;
+    int table_id = 0;
+
+    srand(time(NULL));
+    Point point = rand() % N;
+    printf("Ramdom point\t: %lu\n", point);
+    Point copy = point;
+    printf("Copy of point\t: %lu\n", copy);
+    int col_id = rand() % t;
+    printf("Random column\t: %d\n", col_id);
+    for (int col = 0; col < col_id; col++)
+        hash_reduce(&copy, table_id, col, t, N);
+    printf("Copy hashed \t: %lu\n", copy);
+    uint64_t nb_hash = 0;
+    rebuild(&point, table_id, col_id, t, N, &nb_hash);
+    printf("Point rebuilt\t: %lu\n", point);
+    printf("Hashes done\t: %lu\n\n", nb_hash);
+}
+void test_attackSTD_existing()
+{
+    printf("# Test attackSTD existing :\n");
+    uint64_t N = 1 << 24;
+    int t = 1000;
+    int ell = 1;
+
+    int n = 1000;
+    int nb = 0;
+
+    HTable htable;
+    int hsize;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    char table_name[40] = "data/tables/std/tableSTD";
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+    table_name[name_length] = table_id + '0';
+    printf("Importing table in dictionary\n");
+    import(&htable, &hsize, table_name);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Chain *chain;
+    Point plain, result, sp;
+    int col_id;
+    uint64_t nb_hash;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        result = MAX;
+        chain = htable + (rand() % hsize);
+        if (chain->ep == MAX)
+        {
+            i--;
+            continue;
+        }
+        plain = chain->sp;
+        sp = plain;
+        col_id = rand() % t;
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, t, N, &nb_hash);
+        hash(&plain, cipher);
+        nb_hash = 0;
+        attackSTD(cipher, &htable, &hsize, ell, t, N, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        else
+        {
+            printf("Not recovered : sp : %lu & col : %d T_T\n", sp, col_id);
+        }
+    }
+    printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("\n");
+    free((void *)htable);
+}
+void test_attackSTD_random()
+{
+    printf("# Test attackSTD random :\n");
+    uint64_t N = 1 << 24;
+    int t = 1000;
+    int ell = 1;
+
+    int n = 1000;
+    int nb = 0;
+
+    HTable htable;
+    int hsize;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    char table_name[40] = "data/tables/std/tableSTD";
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+    table_name[name_length] = table_id + '0';
+    printf("Importing table in dictionary\n");
+    import(&htable, &hsize, table_name);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result;
+    uint64_t nb_hash, total_hash = 0;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackSTD(cipher, &htable, &hsize, ell, t, N, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\t: %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n\n", avg_hash);
+    free((void *)htable);
+}
+void test_attackSTD_random_ell()
+{
+    printf("# Test attack random ell :\n");
+    int n = 1000;
+    int nb = 0;
+
+    uint64_t N = 1 << 24;
+    int t = 1000;
+    int ell = 4;
+    char table_name[40] = "data/tables/std/tableSTD";
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+
+    HTable *htables;
+    int hsizes[ell];
+    if ((htables = (HTable *)calloc(ell, sizeof(HTable))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        table_name[name_length] = table_id + '0';
+        import(&htables[table_id], &hsizes[table_id], table_name);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result;
+    uint64_t nb_hash, total_hash = 0;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackSTD(cipher, htables, hsizes, ell, t, N, &result, &nb_hash);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\t: %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n\n", avg_hash);
+
+    // write_results(&avg_hash, 1, "avgOpe.dat");
+
+    for (int table_id = 0; table_id < ell; table_id++)
+        free((void *)htables[table_id]);
+    free((void *)htables);
+}
+void test_attackCDE_existing()
+{
+    printf("# Test attackCDE existing :\n");
+
+    int n = 1000;
+    int nb = 0;
 
     int ell = 1;
-    int table_id = 0;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int m;
     int t = 1000;
-    int m0 = M0(N, r, t);
-    printf("Table parameters :\n");
-    printf("\tell\t: %d\n", ell);
-    printf("\tid\t: %d\n", table_id);
-    printf("\tt\t: %d\n", t);
-    printf("\tm0\t: %d\n", m0);
-    int m = m0, mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n");
-    printf("\tnb\t: %d\n", nb_filters);
-    printf("\tfile\t: %s\n\n", filters_file);
-
+    int N = 1 << 24;
     char spFile_name[40] = "data/tables/cde/spCDE";
     char epFile_name[40] = "data/tables/cde/epCDE";
     char idxFile_name[40] = "data/tables/cde/idxCDE";
-    printf("Delta Encoding parameters :\n");
-    printf("\tsp file\t: %s\n", spFile_name);
-    printf("\tep file\t: %s\n", epFile_name);
-    printf("\tid file\t: %s\n\n", idxFile_name);
     char extension[6] = "i.dat";
     *extension = table_id + '0';
     strcat(spFile_name, extension);
     strcat(epFile_name, extension);
     strcat(idxFile_name, extension);
 
-    RTable table;
-
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-    printf("Time to compute\t\t: %f\n", computeTime);
-    printf("Time to clean\t\t: %f\n", cleanTime);
-    printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
-
-    int coverage = 0;
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
-    {
-        fprintf(stderr, "Memory allocation problem\n");
-        exit(ERROR_ALLOC);
-    }
-    cover(table, table_id, m, t, N, covered, &coverage);
-
+    Point *spTable = NULL;
+    importSP(spFile_name, &spTable, &m);
     int L = Lblocks(m);
-    exportCDE(table, m, N, L, spFile_name, epFile_name, idxFile_name);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, L, m, N, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-    coverStats(coverage, N, 1, t, mt);
-    cdeStats(ell, &m, N, &L, spFile_name, epFile_name, idxFile_name);
-
-    free((void *)table);
-    free((void *)filters);
-    free((void *)covered);
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result, sp;
+    uint64_t nb_hash;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        sp = spTable[rand() % m];
+        plain = sp;
+        col_id = rand() % t;
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, t, N, &nb_hash);
+        hash(&plain, cipher);
+        nb_hash = 0;
+        avgDec = 0.0;
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &m, ell, t, N, &result, &nb_hash, &avgDec);
+        total_avgDec += avgDec;
+        if (result == plain)
+        {
+            nb++;
+        }
+        else
+        {
+            printf("Not recovered %d : sp : %lu & col : %d T_T\n", i, sp, col_id);
+        }
+    }
+    printf("Plains recovered : %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    printf("Avg decodings : %f\n", total_avgDec / n);
+    printf("\n");
+    free((void *)spTable);
+    free((void *)idxTable);
+    closeBitStream(&epStream);
 }
-void test_offline_cde_ell()
+void test_attackCDE_random()
 {
-    printf("# Test effline cde ell:\n");
-    uint64_t N = 1 << 24;
-    double r = 20.0;
-    double alpha = ALPHA(r);
-    printf("General parameters :\n");
-    printf("\tN\t: %lu\n", N);
-    printf("\tr\t: %3.3f\n", r);
-    printf("\talpha\t: %3.3f\n\n", alpha);
+    printf("# Test attackCDE random :\n");
 
-    int ell = 4;
+    int n = 1000;
+    int nb = 0;
+
+    int ell = 1;
+    int table_id = 0; // MUST BE 0 IF ONLY ONE TABLE
+    int m;
     int t = 1000;
-    int m0 = M0(N, r, t);
-    printf("Table parameters :\n");
-    printf("\tell\t: %d\n", ell);
-    printf("\tt\t: %d\n", t);
-    printf("\tm0\t: %d\n", m0);
-    int m[ell], mt = Mt(N, alpha, t);
-
-    int nb_filters, *filters = NULL;
-    char filters_file[40] = "data/configs/config_mini.dat";
-    positions(&filters, &nb_filters, filters_file);
-    printf("Filtration parameters :\n");
-    printf("\tnb\t: %d\n", nb_filters);
-    printf("\tfile\t: %s\n\n", filters_file);
-
+    int N = 1 << 24;
     char spFile_name[40] = "data/tables/cde/spCDE";
     char epFile_name[40] = "data/tables/cde/epCDE";
     char idxFile_name[40] = "data/tables/cde/idxCDE";
-    printf("Delta Encoding parameters :\n");
-    printf("\tsp file\t: %s\n", spFile_name);
-    printf("\tep file\t: %s\n", epFile_name);
-    printf("\tid file\t: %s\n\n", idxFile_name);
+    char extension[6] = "i.dat";
+    *extension = table_id + '0';
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    Point *spTable = NULL;
+    importSP(spFile_name, &spTable, &m);
+    int L = Lblocks(m);
+    Index *idxTable = NULL;
+    importIdx(idxFile_name, L, m, N, &idxTable);
+    BitStream epStream;
+    initBitStream(&epStream, epFile_name, 0);
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result, sp;
+    uint64_t nb_hash, total_hash;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        avgDec = 0.0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, &spTable, &epStream, &idxTable, &m, ell, t, N, &result, &nb_hash, &avgDec);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_avgDec += avgDec;
+        total_hash += nb_hash;
+    }
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings\t: %f\n", total_avgDec / n);
+    printf("\n");
+    free((void *)spTable);
+    free((void *)idxTable);
+    closeBitStream(&epStream);
+}
+void test_attackCDE_random_ell()
+{
+    printf("# Test attackCDE random ell:\n");
+
+    int n = 10000;
+    int nb = 0;
+
+    int ell = 4;
+    int m[ell];
+    int t = 1000;
+    int N = 1 << 24;
+    int L;
+    char spFile_name[40] = "data/tables/cde/spCDE";
+    char epFile_name[40] = "data/tables/cde/epCDE";
+    char idxFile_name[40] = "data/tables/cde/idxCDE";
     int spName_length = strlen((const char *)spFile_name);
     int epName_length = strlen((const char *)epFile_name);
     int idxName_length = strlen((const char *)idxFile_name);
@@ -602,52 +428,69 @@ void test_offline_cde_ell()
     strcat(spFile_name, extension);
     strcat(epFile_name, extension);
     strcat(idxFile_name, extension);
-    int L[ell];
 
-    RTable table;
-
-    int m_total = 0;
-    uint64_t nb_hash = 0;
-    double computeTime = 0.0;
-    double cleanTime = 0.0;
-
-    int coverage = 0;
-    char *covered;
-    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    Point **spTable = NULL;
+    if ((spTable = (Point **)calloc(ell, sizeof(Point *))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-
-    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    BitStream *epStream = NULL;
+    if ((epStream = (BitStream *)calloc(ell, sizeof(BitStream))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    Index **idxTable = NULL;
+    if ((idxTable = (Index **)calloc(ell, sizeof(Index *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
     for (int table_id = 0; table_id < ell; table_id++)
     {
-        m[table_id] = m0;
-
-        precompute(&table, table_id, &m[table_id], filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
-        L[table_id] = Lblocks(m[table_id]);
-
         spFile_name[spName_length] = table_id + '0';
         epFile_name[epName_length] = table_id + '0';
         idxFile_name[idxName_length] = table_id + '0';
-        exportCDE(table, m[table_id], N, L[table_id], spFile_name, epFile_name, idxFile_name);
-
-        cover(table, table_id, m[table_id], t, N, covered, &coverage);
-
-        m_total += m[table_id];
-
-        free((void *)table);
+        importSP(spFile_name, &spTable[table_id], &m[table_id]);
+        L = Lblocks(m[table_id]);
+        importIdx(idxFile_name, L, m[table_id], N, &idxTable[table_id]);
+        initBitStream(&epStream[table_id], epFile_name, 0);
     }
 
-    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
-    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
-    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
-
-    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
-    epStats(m_total, mt, ell);
-    coverStats(coverage, N, ell, t, mt);
-    cdeStats(ell, m, N, L, spFile_name, epFile_name, idxFile_name);
-
-    free((void *)filters);
-    free((void *)covered);
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result;
+    uint64_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
+    int col_id;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        avgDec = 0;
+        plain = rand() % N;
+        hash(&plain, cipher);
+        attackCDE(cipher, spTable, epStream, idxTable, m, ell, t, N, &result, &nb_hash, &avgDec);
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+        total_avgDec += avgDec;
+    }
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings \t: %f\n", total_avgDec / n);
+    printf("\n");
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        free((void *)spTable[table_id]);
+        closeBitStream(&epStream[table_id]);
+        free((void *)idxTable[table_id]);
+    }
+    free((void *)spTable);
+    free((void *)epStream);
+    free((void *)idxTable);
 }

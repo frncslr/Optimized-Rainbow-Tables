@@ -4,10 +4,10 @@
 #include "rice.h"
 #include "common.h"
 
-// void import(Hashtable, int, int, const char *);
-// void chain(uint32_t *, unsigned char *, int, int, int, uint32_t *);
-// void rebuild(uint32_t *, int, int, uint32_t *);
-// void attack(unsigned char *, Hashtable *, int *, int, int, uint32_t *, uint32_t *);
-// void attackCDE(unsigned char *, uint32_t **, BitStream *, Index **, int *, int, int, uint32_t *, uint32_t *,double *);
+void import(HTable *, int *, const char *);
+void chain(Point *, unsigned char *, int, int, int, uint64_t, uint64_t *);
+void rebuild(Point *, int, int, int, uint64_t, uint64_t *);
+void attackSTD(unsigned char *, HTable *, int *, int, int, uint64_t, Point *, uint64_t *);
+void attackCDE(unsigned char *, Point **, BitStream *, Index **, int *, int, int, uint64_t, Point *, uint64_t *, double *);
 
 #endif

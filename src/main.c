@@ -1,7 +1,7 @@
 #include "../include/test_common.h"
-#include "../include/test_precomp.h"
-// #include "../include/test_attack.h"
 #include "../include/test_rice.h"
+#include "../include/test_offline.h"
+#include "../include/test_online.h"
 
 int main(void)
 {
@@ -47,22 +47,18 @@ int main(void)
   // test_offline();
   // test_offline_ell();
   // test_offline_cde();
-  test_offline_cde_ell();
+  // test_offline_cde_ell();
 
-  // test_ceri();
   // test_import();
-  // test_import_m();
+  // test_import_ell();
   // test_chain();
   // test_rebuild();
-  // test_chain_rebuild();
-  // test_attack_existing();
-  // test_attack_existing_n();
-  // test_attack_random();
-  // test_attack_random_n();
-  // test_attack_random_n_m();
-  // test_attackCDE_existing_n();
-  // test_attackCDE_random_n();
-  // test_attackCDE_random_n_ell();
+  // test_attackSTD_existing();
+  // test_attackSTD_random();
+  // test_attackSTD_random_ell();
+  // test_attackCDE_existing();
+  // test_attackCDE_random();
+  test_attackCDE_random_ell();
 
   return 0;
 }

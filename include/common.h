@@ -47,7 +47,7 @@ void compute(Point *, int, int, int, int, uint64_t, uint64_t *);
 int sizeHTable(uint64_t, int, int);
 void initHTable(HTable *, int);
 int insert(HTable, int, Chain *);
-Chain *search(HTable, int, uint64_t);
+Chain *search(HTable, int, Point);
 
 typedef struct timeval timeval;
 

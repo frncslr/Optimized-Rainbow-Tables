@@ -74,12 +74,12 @@ int insert(HTable htable, int htsize, Chain *chain)
     }
     return 0;
 }
-Chain *search(HTable htable, int htsize, uint64_t value)
+Chain *search(HTable htable, int htsize, Point value)
 {
     Chain *chain;
     for (int i = 0; i < htsize; i++)
     {
-        chain = htable + (chain->ep + i) % htsize;
+        chain = htable + (value + i) % htsize;
         if (chain->ep == value)
             return chain;
     }
