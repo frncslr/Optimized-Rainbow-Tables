@@ -303,7 +303,7 @@ Point *searchCDE(Point endpoint, Point *spTable, BitStream *epStream, Index *idx
     return NULL;
 }
 
-void cdeStats(int ell, int *m, int N, int *L, char *spFile_name, char *epFile_name, char *idxFile_name)
+void cdeStats(int ell, int *table_id, int *m, uint64_t N, int *L, char *spFile_name, char *epFile_name, char *idxFile_name)
 {
     int k[ell];
     double R[ell];
@@ -333,21 +333,20 @@ void cdeStats(int ell, int *m, int N, int *L, char *spFile_name, char *epFile_na
     int spName_length = strlen((const char *)spFile_name) - 5;
     int epName_length = strlen((const char *)epFile_name) - 5;
     int idxName_length = strlen((const char *)idxFile_name) - 5;
-    for (int table_id = 0; table_id < ell; table_id++)
+    for (int i = 0; i < ell; i++)
     {
-        k[table_id] = Kopt(N, m[table_id]);
-        R[table_id] = Ropt(N, m[table_id], k[table_id]);
-        addrSize[table_id] = addressBitSize(m[table_id], R[table_id]);
-        chainSize[table_id] = chainIdBitSize(m[table_id]);
+        k[i] = Kopt(N, m[i]);
+        R[i] = Ropt(N, m[i], k[i]);
+        addrSize[i] = addressBitSize(m[i], R[i]);
+        chainSize[i] = chainIdBitSize(m[i]);
 
-        expec_sp_memory += m[table_id] * sizeof(Point);
-        expec_std_ep_memory += m[table_id] * sizeof(Point);
-        expec_cde_ep_memory += memory(m[table_id], R[table_id], L[table_id]);
-        std_total_memory += m[table_id] * sizeof(Point) * 2;
+        expec_sp_memory += m[i] * sizeof(Point);
+        expec_std_ep_memory += m[i] * log2((double)N) / 8;
+        expec_cde_ep_memory += memory(m[i], R[i], L[i]);
 
-        spFile_name[spName_length] = table_id + '0';
-        epFile_name[epName_length] = table_id + '0';
-        idxFile_name[idxName_length] = table_id + '0';
+        spFile_name[spName_length] = table_id[i] + '0';
+        epFile_name[epName_length] = table_id[i] + '0';
+        idxFile_name[idxName_length] = table_id[i] + '0';
         if ((file = fopen(spFile_name, "rb")) == (FILE *)NULL)
         {
             fprintf(stderr, "Opening file problem : %s\n", spFile_name);
@@ -376,6 +375,8 @@ void cdeStats(int ell, int *m, int N, int *L, char *spFile_name, char *epFile_na
         fclose(file);
     }
 
+    std_total_memory = expec_sp_memory + expec_std_ep_memory;
+
     diff_sp_memory = sp_memory - expec_sp_memory;
     diff_sp_memory_perc += diff_sp_memory * 100.0 / expec_sp_memory;
 
@@ -390,20 +391,20 @@ void cdeStats(int ell, int *m, int N, int *L, char *spFile_name, char *epFile_na
 
     printf("Delta encoding variables :");
     printf("\n\tk optimal\t:");
-    for (int table_id = 0; table_id < ell; table_id++)
-        printf(" %d", k[table_id]);
+    for (int i = 0; i < ell; i++)
+        printf(" %d", k[i]);
     printf("\n\tR optimal\t:");
-    for (int table_id = 0; table_id < ell; table_id++)
-        printf(" %3.3f", R[table_id]);
+    for (int i = 0; i < ell; i++)
+        printf(" %3.3f", R[i]);
     printf("\n\taddress size\t:");
-    for (int table_id = 0; table_id < ell; table_id++)
-        printf(" %d", addrSize[table_id]);
+    for (int i = 0; i < ell; i++)
+        printf(" %d", addrSize[i]);
     printf("\n\tchain id size\t:");
-    for (int table_id = 0; table_id < ell; table_id++)
-        printf(" %d", chainSize[table_id]);
+    for (int i = 0; i < ell; i++)
+        printf(" %d", chainSize[i]);
     printf("\n\tL blocks\t:");
-    for (int table_id = 0; table_id < ell; table_id++)
-        printf(" %d", L[table_id]);
+    for (int i = 0; i < ell; i++)
+        printf(" %d", L[i]);
 
     printf("\n\nDelta encoding memory :\n");
     printf("\tstartpoints memory :\n");

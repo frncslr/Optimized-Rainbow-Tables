@@ -559,7 +559,7 @@ void test_offline_cde()
     hashStats(N, m0, nb_hash, filters, nb_filters, 1);
     epStats(m, mt, 1);
     coverStats(coverage, N, 1, t, mt);
-    cdeStats(ell, &m, N, &L, spFile_name, epFile_name, idxFile_name);
+    cdeStats(ell, &table_id, &m, N, &L, spFile_name, epFile_name, idxFile_name);
 
     free((void *)table);
     free((void *)filters);
@@ -607,6 +607,7 @@ void test_offline_cde_ell()
     strcat(epFile_name, extension);
     strcat(idxFile_name, extension);
     int L[ell];
+    int tables_id[ell];
 
     RTable table;
 
@@ -627,6 +628,7 @@ void test_offline_cde_ell()
     for (int table_id = 0; table_id < ell; table_id++)
     {
         m[table_id] = m0;
+        tables_id[table_id] = table_id;
 
         precompute(&table, table_id, &m[table_id], filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
         L[table_id] = Lblocks(m[table_id]);
@@ -650,7 +652,7 @@ void test_offline_cde_ell()
     hashStats(N, m0, nb_hash, filters, nb_filters, ell);
     epStats(m_total, mt, ell);
     coverStats(coverage, N, ell, t, mt);
-    cdeStats(ell, m, N, L, spFile_name, epFile_name, idxFile_name);
+    cdeStats(ell, tables_id, m, N, L, spFile_name, epFile_name, idxFile_name);
 
     free((void *)filters);
     free((void *)covered);

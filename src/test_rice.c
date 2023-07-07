@@ -91,6 +91,7 @@ void test_exportCDE1()
     int N = 60;
     int mt = 7;
     int L = 6;
+    int id = 0;
     Chain table[7] = {{0, 1},
                       {1, 7},
                       {2, 17},
@@ -107,7 +108,7 @@ void test_exportCDE1()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, mt - 1);
     printf("Hexdump on %s should display the following values : 6433 0022\n", epFile_name);
     printf("Hexdump on %s should display the following values : 3a00 8d5b\n\n", idxFile_name);
-    cdeStats(ell, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
+    cdeStats(ell, &id, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
 }
 void test_exportCDE2()
 {
@@ -116,6 +117,7 @@ void test_exportCDE2()
     int N = 60;
     int L = 6;
     int mt = 8;
+    int id = 0;
     Chain table[8] = {{0, 1},
                       {1, 7},
                       {2, 17},
@@ -133,7 +135,7 @@ void test_exportCDE2()
     printf("Hexdump on %s should display the values between 0 and %d\n", spFile_name, mt - 1);
     printf("Hexdump on %s should display the following values : 6433 0023\n", epFile_name);
     printf("Hexdump on %s should display the following values : 0e00 688b 00d0\n\n", idxFile_name);
-    cdeStats(ell, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
+    cdeStats(ell,&id, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
 }
 void test_exportCDE3()
 {
@@ -142,6 +144,7 @@ void test_exportCDE3()
     uint64_t N = 60;
     int mt = 12;
     int L = 6;
+    int id = 0;
     Chain table[12] = {{0, 1},
                        {1, 7},
                        {2, 17},
@@ -159,7 +162,7 @@ void test_exportCDE3()
     char epFile_name[40] = "data/tables/cde/epTestExportCDE30.dat";
     char idxFile_name[40] = "data/tables/cde/idxTestExportCDE30.dat";
     exportCDE(table, mt, N, L, spFile_name, epFile_name, idxFile_name);
-    cdeStats(ell, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
+    cdeStats(ell,&id, &mt, N, &L, spFile_name, epFile_name, idxFile_name);
 }
 
 void test_readBit()

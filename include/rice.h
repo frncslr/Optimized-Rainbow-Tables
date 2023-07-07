@@ -44,6 +44,6 @@ Point decode(BitStream *, int, int *, uint32_t *);
 void setStream(BitStream *, uint32_t);
 Point *searchCDE(Point, Point *, BitStream *, Index *, int, int, int, uint32_t *);
 
-void cdeStats(int, int *, int, int*,char *, char *, char *);
+void cdeStats(int, int *, int *, uint64_t, int *, char *, char *, char *);
 
 #endif

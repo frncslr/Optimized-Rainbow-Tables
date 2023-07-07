@@ -74,14 +74,16 @@ int insert(HTable htable, int htsize, Chain *chain)
     }
     return 0;
 }
-Chain *search(HTable htable, int htsize, Point value)
+Chain *search(HTable htable, int htsize, Point ep)
 {
     Chain *chain;
     for (int i = 0; i < 50; i++)
     {
-        chain = htable + (value + i) % htsize;
-        if (chain->ep == value)
+        chain = htable + (ep + i) % htsize;
+        if (chain->ep == ep)
             return chain;
+        if (chain->ep == MAX)
+            return NULL;
     }
     return NULL;
 }
