@@ -147,7 +147,7 @@ void export(RTable table, int m, const char *file_name)
         exit(ERROR_FCLOSE);
     }
 }
-void cover(RTable table, int table_id, int m, int t, uint64_t N, char *covered, int *coverage)
+void cover(RTable table, int table_id, int m, int t, uint64_t N, char *covered, double *coverage)
 {
     Point point;
     for (Chain *current = table, *last = table + m; current < last; current++)
@@ -209,38 +209,30 @@ void operations(uint64_t N, int m0, int *filters, int nb_filters, uint64_t *expe
         *expec_hash += (uint64_t)(Mi(N, m0, previous) * (*current - previous));
 }
 
-void hashStats(uint64_t N, int m0, uint64_t nb_hash, int *filters, int nb_filters, int nb_tables)
+void hashStats(uint64_t hash_expe, uint64_t hash_theo)
 {
-    uint64_t expec_hash = 0;
-    operations(N, m0, filters, nb_filters, &expec_hash);
-    expec_hash *= nb_tables;
-    int diff_hash = nb_hash - expec_hash;
-    double diff_hash_perc = (double)diff_hash * 100 / expec_hash;
+    int diff_hash = hash_expe - hash_theo;
+    double diff_hash_perc = (double)diff_hash * 100 / hash_theo;
     printf("Hash operations :\n");
-    printf("\texpected\t: %lu\n", expec_hash);
-    printf("\texperimental\t: %lu\n", nb_hash);
+    printf("\ttheoretical\t: %lu\n", hash_theo);
+    printf("\texperimental\t: %lu\n", hash_expe);
     printf("\tdifference\t: %d (%3.2lf%%)\n\n", diff_hash, diff_hash_perc);
 }
-void epStats(int table_size, int expec_size, int nb_tables)
+void epStats(int mt_expe, int mt_theo)
 {
-    expec_size *= nb_tables;
-    int diff_size = table_size - expec_size;
-    double diff_size_perc = (double)diff_size * 100 / expec_size;
+    int diff_mt = mt_expe - mt_theo;
+    double diff_mt_perc = (double)diff_mt * 100 / mt_theo;
     printf("Unique endpoints :\n");
-    printf("\texpected\t: %d\n", expec_size);
-    printf("\texperimental\t: %d\n", table_size);
-    printf("\tdifference\t: %d (%3.2lf%%)\n\n", diff_size, diff_size_perc);
+    printf("\ttheoretical\t: %d\n", mt_theo);
+    printf("\texperimental\t: %d\n", mt_expe);
+    printf("\tdifference\t: %d (%3.2lf%%)\n\n", diff_mt, diff_mt_perc);
 }
-void coverStats(int coverage, uint64_t N, int ell, int t, int mt)
+void coverStats(double p_expe, double p_theo)
 {
-    double p_theo = 1.0 - pow(1.0 - (double)mt / N, t);
-    p_theo = 1 - pow(1.0 - p_theo, ell);
-    p_theo *= 100.0;
-    double p_exp = (double)coverage / N;
-    p_exp *= 100.0;
-    double diff_p = p_exp - p_theo;
+    
+    double diff_p = p_expe - p_theo;
     printf("Coverage of the table :\n");
-    printf("\texpected\t: %3.3lf%%\n", p_theo);
-    printf("\texperimental\t: %3.3lf%%\n", p_exp);
+    printf("\ttheoretical\t: %3.3lf%%\n", p_theo);
+    printf("\texperimental\t: %3.3lf%%\n", p_expe);
     printf("\tdifference\t: %3.3lf%%\n\n", diff_p);
 }

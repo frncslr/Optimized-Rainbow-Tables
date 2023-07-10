@@ -57,7 +57,7 @@ void test_clean()
 void test_clean_n()
 {
     printf("Test clean n :\n");
-    int nb_tests = 1;
+    int nb_tests = 100;
     int N = 1 << 24;
     double r = 20.0;
     int t = 1000;
@@ -70,7 +70,7 @@ void test_clean_n()
     RTable table;
     timeval start, end;
     double speed, local_time, global_time = 0.0;
-    const char file_name[40] = "data/results/cSpeeds.dat";
+    const char file_name[40] = "data/results/cSpeedsHTG.dat";
 
     srand(time(NULL));
     for (int i = 0, col; i < nb_tests; i++)
@@ -133,16 +133,17 @@ void test_generate()
     RTable table;
     initialize(&table, table_id, m);
 
-    uint64_t nb_hash = 0;
-    double cleanTime = 0.0;
-    double computeTime = 0.0;
-    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    uint64_t hash_expe = 0, hash_theo = 0;
+    double cleanTime = 0.0, computeTime = 0.0;
+    generate(table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+    operations(N, m0, filters, nb_filters, &hash_theo);
+
     printf("Time to compute\t\t: %f\n", computeTime);
     printf("Time to clean\t\t: %f\n", cleanTime);
     printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
+    hashStats(hash_expe, hash_theo);
+    epStats(m, mt);
 
     free((void *)table);
 }
@@ -169,16 +170,18 @@ void test_generate_f()
     RTable table;
     initialize(&table, table_id, m);
 
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
     double cleanTime = 0.0;
     double computeTime = 0.0;
-    generate(table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    generate(table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+    operations(N, m0, filters, nb_filters, &hash_theo);
+
     printf("Time to compute\t\t: %f\n", computeTime);
     printf("Time to clean\t\t: %f\n", cleanTime);
     printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
+    hashStats(hash_expe, hash_theo);
+    epStats(m, mt);
 
     free((void *)table);
     free((void *)filters);
@@ -248,16 +251,18 @@ void test_precompute()
 
     RTable table;
 
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
     double computeTime = 0.0;
     double cleanTime = 0.0;
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+    operations(N, m0, filters, nb_filters, &hash_theo);
+
     printf("Time to compute\t\t: %f\n", computeTime);
     printf("Time to clean\t\t: %f\n", cleanTime);
     printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
+    hashStats(hash_expe, hash_theo);
+    epStats(m, mt);
 
     free((void *)table);
     free((void *)filters);
@@ -304,7 +309,7 @@ void test_cover()
     for (Chain *current = table, *last = table + m; current < last; current++)
         printf("%lu\t:\t%lu\n", current->sp, current->ep);
 
-    int coverage = 0;
+    double coverage = 0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
@@ -312,7 +317,7 @@ void test_cover()
         exit(ERROR_ALLOC);
     }
     cover(table, table_id, m, t, N, covered, &coverage);
-    printf("Coverage of the table : %d\n\n", coverage);
+    printf("Coverage of the table : %3.3f\n\n", coverage);
 
     free((void *)table);
     free((void *)covered);
@@ -371,6 +376,7 @@ void test_offline()
     double alpha = ALPHA(r);
     printf("General parameters :\n\tN\t: %lu\n\tr\t: %3.3f\n\talpha\t: %3.3f\n\n", N, r, alpha);
 
+    int ell = 1;
     int table_id = 0;
     int t = 1000;
     int m0 = M0(N, r, t);
@@ -385,22 +391,27 @@ void test_offline()
 
     RTable table;
 
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
     double computeTime = 0.0;
     double cleanTime = 0.0;
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+    operations(N, m0, filters, nb_filters, &hash_theo);
+
     printf("Time to compute\t\t: %f\n", computeTime);
     printf("Time to clean\t\t: %f\n", cleanTime);
     printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
 
-    int coverage = 0;
+    double p_expe = 0.0, p_theo = 1.0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    cover(table, table_id, m, t, N, covered, &coverage);
+    cover(table, table_id, m, t, N, covered, &p_expe);
+    p_theo *= pow(1.0 - (double)Mt(N, alpha, t) / N, t);
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
 
     char table_name[30] = "tableTestPrecompFull";
     char extension[6] = "i.dat";
@@ -408,9 +419,9 @@ void test_offline()
     strcat(table_name, extension);
     export(table, m, table_name);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-    coverStats(coverage, N, 1, t, mt);
+    hashStats(hash_expe, hash_theo);
+    epStats(m, mt);
+    coverStats(p_expe, p_theo);
 
     free((void *)table);
     free((void *)filters);
@@ -451,11 +462,11 @@ void test_offline_ell()
     RTable table;
 
     int m_total = 0;
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
     double computeTime = 0.0;
     double cleanTime = 0.0;
 
-    int coverage = 0;
+    double p_expe = 1.0, p_theo = 0.0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
@@ -468,25 +479,29 @@ void test_offline_ell()
     {
         m = m0;
 
-        precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+        precompute(&table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+        operations(N, m0, filters, nb_filters, &hash_theo);
 
         table_name[name_length] = table_id + '0';
         export(table, m, table_name);
 
-        cover(table, table_id, m, t, N, covered, &coverage);
+        cover(table, table_id, m, t, N, covered, &p_expe);
+        p_theo *= pow(1.0 - (double)Mt(N, alpha, t) / N, t);
 
         m_total += m;
 
         free((void *)table);
     }
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
 
     printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
     printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
     printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
-    epStats(m_total, mt, ell);
-    coverStats(coverage, N, ell, t, mt);
+    hashStats(hash_expe, hash_theo);
+    epStats(m_total, mt * ell);
+    coverStats(p_expe, p_theo);
 
     free((void *)filters);
     free((void *)covered);
@@ -535,30 +550,35 @@ void test_offline_cde()
 
     RTable table;
 
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
     double computeTime = 0.0;
     double cleanTime = 0.0;
     printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
-    precompute(&table, table_id, &m, filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+    precompute(&table, table_id, &m, filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+    operations(N, m0, filters, nb_filters, &hash_theo);
+
     printf("Time to compute\t\t: %f\n", computeTime);
     printf("Time to clean\t\t: %f\n", cleanTime);
     printf("Time to generate\t: %f\n\n", computeTime + cleanTime);
 
-    int coverage = 0;
+    double p_expe = 1.0, p_theo = 0.0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
         fprintf(stderr, "Memory allocation problem\n");
         exit(ERROR_ALLOC);
     }
-    cover(table, table_id, m, t, N, covered, &coverage);
+    cover(table, table_id, m, t, N, covered, &p_expe);
+    p_theo *= pow(1.0 - (double)Mt(N, alpha, t) / N, t);
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
 
     int L = Lblocks(m);
     exportCDE(table, m, N, L, spFile_name, epFile_name, idxFile_name);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, 1);
-    epStats(m, mt, 1);
-    coverStats(coverage, N, 1, t, mt);
+    hashStats(hash_expe, hash_theo);
+    epStats(m, mt);
+    coverStats(p_expe, p_theo);
     cdeStats(ell, &table_id, &m, N, &L, spFile_name, epFile_name, idxFile_name);
 
     free((void *)table);
@@ -583,7 +603,7 @@ void test_offline_cde_ell()
     printf("\tell\t: %d\n", ell);
     printf("\tt\t: %d\n", t);
     printf("\tm0\t: %d\n", m0);
-    int m[ell], mt = Mt(N, alpha, t);
+    int m[ell], mt[ell];
 
     int nb_filters, *filters = NULL;
     char filters_file[40] = "data/configs/config_mini.dat";
@@ -611,12 +631,12 @@ void test_offline_cde_ell()
 
     RTable table;
 
-    int m_total = 0;
-    uint64_t nb_hash = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
+    int mt_expe = 0, mt_theo = 0;
     double computeTime = 0.0;
     double cleanTime = 0.0;
 
-    int coverage = 0;
+    double p_expe = 1.0, p_theo = 0.0;
     char *covered;
     if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
     {
@@ -628,9 +648,11 @@ void test_offline_cde_ell()
     for (int table_id = 0; table_id < ell; table_id++)
     {
         m[table_id] = m0;
+        mt[table_id] = Mt(N, alpha, t);
         tables_id[table_id] = table_id;
 
-        precompute(&table, table_id, &m[table_id], filters, nb_filters, t, N, &nb_hash, &computeTime, &cleanTime);
+        precompute(&table, table_id, &m[table_id], filters, nb_filters, t, N, &hash_expe, &computeTime, &cleanTime);
+        operations(N, m0, filters, nb_filters, &hash_theo);
         L[table_id] = Lblocks(m[table_id]);
 
         spFile_name[spName_length] = table_id + '0';
@@ -638,22 +660,105 @@ void test_offline_cde_ell()
         idxFile_name[idxName_length] = table_id + '0';
         exportCDE(table, m[table_id], N, L[table_id], spFile_name, epFile_name, idxFile_name);
 
-        cover(table, table_id, m[table_id], t, N, covered, &coverage);
+        cover(table, table_id, m[table_id], t, N, covered, &p_expe);
+        p_theo *= pow(1.0 - (double)Mt(N, alpha, t) / N, t);
 
-        m_total += m[table_id];
+        mt_expe += m[table_id];
+        mt_theo += mt[table_id];
 
         free((void *)table);
     }
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
+    free((void *)covered);
+    free((void *)filters);
 
     printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
     printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
     printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
 
-    hashStats(N, m0, nb_hash, filters, nb_filters, ell);
-    epStats(m_total, mt, ell);
-    coverStats(coverage, N, ell, t, mt);
+    hashStats(hash_expe, hash_theo);
+    epStats(mt_expe, mt_theo);
+    coverStats(p_expe, p_theo);
     cdeStats(ell, tables_id, m, N, L, spFile_name, epFile_name, idxFile_name);
+}
 
-    free((void *)filters);
+void test_offline_htg()
+{
+    printf("# Test offline htg :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n");
+    printf("\tN\t: %lu\n", N);
+    printf("\tr\t: %3.3f\n", r);
+    printf("\talpha\t: %3.3f\n\n", alpha);
+
+    int ell = 4;
+    int t[] = {573, 1063, 1561, 2048};
+    int m0[ell], mt[ell], m[ell];
+    char table_name[40] = "data/tables/htg/tableHTG";
+    printf("Table parameters :\n");
+    printf("\tell\t: %d\n", ell);
+    printf("\tfile\t: %s\n\n", table_name);
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini_HTG";
+    printf("Filtration parameters :\n");
+    printf("\tfile\t: %s\n\n", filters_file);
+    int filters_length = strlen((const char *)filters_file);
+    strcat(filters_file, extension);
+
+    RTable table;
+
+    int mt_expe = 0, mt_theo = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
+    double computeTime = 0.0, cleanTime = 0.0;
+
+    double p_theo = 1.0, p_expe = 0.0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        m[table_id] = m0[table_id] = M0(N, r, t[table_id]);
+        mt[table_id] = Mt(N, alpha, t[table_id]);
+
+        filters_file[filters_length] = table_id + '0';
+        positions(&filters, &nb_filters, filters_file);
+
+        precompute(&table, table_id, &m[table_id], filters, nb_filters, t[table_id], N, &hash_expe, &computeTime, &cleanTime);
+        operations(N, m0[table_id], filters, nb_filters, &hash_theo);
+
+        table_name[name_length] = table_id + '0';
+        export(table, m[table_id], table_name);
+
+        cover(table, table_id, m[table_id], t[table_id], N, covered, &p_expe);
+        p_theo *= pow(1.0 - (double)Mt(N, alpha, t[table_id]) / N, t[table_id]);
+
+        mt_expe += m[table_id];
+        mt_theo += mt[table_id];
+
+        free((void *)filters);
+        free((void *)table);
+    }
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
     free((void *)covered);
+
+    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
+    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
+
+    hashStats(hash_expe, hash_theo);
+    epStats(mt_expe, mt_theo);
+    coverStats(p_expe, p_theo);
 }

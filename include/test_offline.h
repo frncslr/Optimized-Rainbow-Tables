@@ -21,4 +21,6 @@ void test_offline_ell();
 void test_offline_cde();
 void test_offline_cde_ell();
 
+void test_offline_htg();
+
 #endif

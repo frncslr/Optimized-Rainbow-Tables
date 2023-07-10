@@ -35,7 +35,7 @@ int main(void)
 
   // test_initialize();
   // test_clean();
-  // test_clean_n();
+  test_clean_n();
   // test_generate();
   // test_generate_f();
   // test_sort();
@@ -48,6 +48,7 @@ int main(void)
   // test_offline_ell();
   // test_offline_cde();
   // test_offline_cde_ell();
+  // test_offline_htg();
 
   // test_import();
   // test_import_ell();
@@ -58,7 +59,7 @@ int main(void)
   // test_attackSTD_random_ell();
   // test_attackCDE_existing();
   // test_attackCDE_random();
-  test_attackCDE_random_ell();
+  // test_attackCDE_random_ell();
 
   return 0;
 }
