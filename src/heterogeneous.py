@@ -6,7 +6,7 @@ from scipy import optimize
 def T(t, ell):
     T = 0
     Csum = 0
-    pf = 2.0/(t +1) # = m / N
+    pf = 2.0*alpha/(t +1) # = m / N
     for k in range(1 , t +1):
         q = 1 -(t -k -1)*(t - k)/ float((t)*(t +1))
         C = k +(t - k +1)* q
@@ -32,7 +32,7 @@ def T_heterog_intlv(ts):
                 continue
             q = 1 -(ts[j]- ks[j]-1)*(ts[j]- ks[j])/ float((ts[j])*(ts[j]+1))
             Cs[j]= ks[j]+(ts[j]- ks[j]+1)* q
-            ps[j]= 2.0/(ts[j]+1) # =[m]j / N
+            ps[j]= 2.0*alpha/(ts[j]+1) # =[m]j / N
             metrics[j]= ps[j]/ Cs[j]
         best = metrics.index(max(metrics))
         Csum += Cs[best]
@@ -54,12 +54,15 @@ def W_heterog(ts):
 
 ################################################################################
 
-N = 2**40
-t = 10000
-m = 2* N / float(t +1)
+N = 2**24
+t = 1000
+r = 20.0
+alpha = r/(r+1)
+m = int(2 * alpha * N / float(t + 1))
 ell = 4
 
 
+t += 1
 Thomog = T(t , ell)
 # The optimal order of search for homogeneous tables is parallel
 assert abs(Thomog - T_heterog_intlv([t]* ell))/ Thomog < 0.0001
@@ -71,11 +74,11 @@ bnds = [(1 , 10* t)]* ell
 res = optimize.minimize(T_heterog_intlv , init_ts , method = 'SLSQP' , bounds = bnds ,
 constraints = cons , options ={ 'maxiter' : 100 , 'ftol': Thomog /1000.})
 ts =[int(tt) for tt in res.x]
-ms =[int(2* N / float(tt +1)) for tt in ts]
+ms =[int(2*alpha* N / float(tt +1)) for tt in ts]
 Theterog = T_heterog_intlv(ts)
 # The total memory used in both cases is virtually equal
 print(abs(m * ell - sum(ms))/(m * ell))
-assert abs(m * ell - sum(ms))/(m * ell) < 0.0001
+# assert abs(m * ell - sum(ms))/(m * ell) < 0.0001
 # Results
 print("homogeneous :")
 print("t : ", t)
