@@ -14,5 +14,7 @@ void test_attackCDE_existing();
 void test_attackCDE_random();
 void test_attackCDE_random_ell();
 
-
+void test_Nu();
+void test_sortMetric();
+void test_attackSTDxHTG();
 #endif

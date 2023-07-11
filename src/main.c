@@ -35,7 +35,7 @@ int main(void)
 
   // test_initialize();
   // test_clean();
-  test_clean_n();
+  // test_clean_n();
   // test_generate();
   // test_generate_f();
   // test_sort();
@@ -60,6 +60,9 @@ int main(void)
   // test_attackCDE_existing();
   // test_attackCDE_random();
   // test_attackCDE_random_ell();
+  // test_metric();
+  // test_sortMetric();
+  test_attackSTDxHTG();
 
   return 0;
 }
