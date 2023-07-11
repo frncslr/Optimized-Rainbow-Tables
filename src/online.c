@@ -134,7 +134,7 @@ void attackSTDxHTG(unsigned char *cipher, HTable *htables, int *hsizes, uint64_t
     Chain *chain_found;
     Point candidate, endpoint;
     Metric metric[ell];
-    int col[ell];
+    int col[ell], table_id;
     for (int i = 0; i < ell; i++)
     {
         col[i] = t[i] - 1;
@@ -144,23 +144,21 @@ void attackSTDxHTG(unsigned char *cipher, HTable *htables, int *hsizes, uint64_t
     sortMetric(metric, ell);
     while (ell)
     {
-        for (int i = 0; i < ell; i++)
+        table_id = metric->table_id;
+        chain(&endpoint, cipher, table_id, col[table_id], t[table_id], N, nb_hash);
+        if ((chain_found = search(htables[table_id], hsizes[table_id], endpoint)) != NULL)
         {
-            chain(&endpoint, cipher, metric[i].table_id, col[i], t[metric[i].table_id], N, nb_hash);
-            if ((chain_found = search(htables[metric[i].table_id], hsizes[metric[i].table_id], endpoint)) != NULL)
+            candidate = chain_found->sp;
+            rebuild(&candidate, table_id, col[table_id], t[table_id], N, nb_hash);
+            hash(&candidate, buffer);
+            (*nb_hash)++;
+            if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
             {
-                candidate = chain_found->sp;
-                rebuild(&candidate, metric[i].table_id, col[i], t[metric[i].table_id], N, nb_hash);
-                hash(&candidate, buffer);
-                (*nb_hash)++;
-                if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
-                {
-                    *result = candidate;
-                    return;
-                }
+                *result = candidate;
+                return;
             }
-            metric[i].nu = Nu(N, mt[i], t[i], --col[i]);
         }
+        metric->nu = Nu(N, mt[table_id], t[table_id], --col[table_id]);
         sortMetric(metric, ell);
         if (metric[ell - 1].nu == -1.0)
             ell--;

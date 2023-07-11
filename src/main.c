@@ -62,7 +62,8 @@ int main(void)
   // test_attackCDE_random_ell();
   // test_metric();
   // test_sortMetric();
-  test_attackSTDxHTG();
+  // test_attackSTDxHTG_existing();
+  test_attackSTDxHTG_random();
 
   return 0;
 }

@@ -562,11 +562,11 @@ void test_sortMetric()
         printf("%d : %Lf\n", metric[i].table_id, metric[i].nu);
     }
 }
-void test_attackSTDxHTG()
+void test_attackSTDxHTG_existing()
 {
-    printf("# Test attack std htg :\n");
+    printf("# Test attack STDxHTG existing :\n");
 
-    int n = 1;
+    int n = 1000;
     int nb = 0;
 
     uint64_t N = 1 << 24;
@@ -575,7 +575,7 @@ void test_attackSTDxHTG()
     int t[] = {573, 1063, 1561, 2048};
     int mt[ell];
 
-    char table_name[40] = "data/tables/std/tableSTD";
+    char table_name[40] = "data/tables/htg/tableHTG";
     int name_length = strlen((const char *)table_name);
     char extension[6] = "i.dat";
     strcat(table_name, extension);
@@ -591,7 +591,82 @@ void test_attackSTDxHTG()
     {
         table_name[name_length] = table_id + '0';
         import(&htables[table_id], &hsizes[table_id], &mt[table_id], table_name);
-        printf("** mt : %d\n",mt[table_id]);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Chain chainn, *chain_found;
+    Point plain, result;
+    int col_id, table_id;
+    uint64_t nb_hash, total_hash = 0;
+    timeval start, end;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    gettimeofday(&start, 0);
+    for (int i = 0; i < n; i++)
+    {
+        nb_hash = 0;
+        result = MAX;
+        table_id = rand() % ell;
+        table_id = 1;
+        chainn = htables[table_id][rand() % hsizes[table_id]];
+        if (chainn.ep == MAX)
+        {
+            i--;
+            continue;
+        }
+        plain = chainn.sp;
+        col_id = rand() % t[table_id];
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, t[table_id], N, &nb_hash);
+        hash(&plain, cipher);
+        attackSTDxHTG(cipher, htables, hsizes, N, ell, t, mt, &result, &nb_hash);      
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+    }
+    gettimeofday(&end, 0);
+    printf("Plains recovered\t: %u / %u (%0.2f%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n\n", avg_hash);
+    printf("Average time to attack\t: %f\n", elapsed(&start, &end) / n);
+
+    // write_results(&avg_hash, 1, "avgOpe.dat");
+
+    for (int table_id = 0; table_id < ell; table_id++)
+        free((void *)htables[table_id]);
+    free((void *)htables);
+}
+void test_attackSTDxHTG_random()
+{
+    printf("# Test attack STDxHTG random :\n");
+
+    int n = 10000;
+    int nb = 0;
+
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    int ell = 4;
+    int t[] = {573, 1063, 1561, 2048};
+    int mt[ell];
+
+    char table_name[40] = "data/tables/htg/tableHTG";
+    int name_length = strlen((const char *)table_name);
+    char extension[6] = "i.dat";
+    strcat(table_name, extension);
+
+    HTable *htables;
+    int hsizes[ell];
+    if ((htables = (HTable *)calloc(ell, sizeof(HTable))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        table_name[name_length] = table_id + '0';
+        import(&htables[table_id], &hsizes[table_id], &mt[table_id], table_name);
     }
 
     static unsigned char cipher[SHA256_DIGEST_LENGTH];
