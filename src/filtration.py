@@ -44,7 +44,9 @@ def importf(filename):
 # problem size
 N = 2**24
 # table width
-t = 1000
+t = 2048
+# table id
+id = 3
 # maximum number of unique endpoints
 mtmax = 2*N/(t+2)
 # maximum efficiency ratio
@@ -61,12 +63,13 @@ gamma = 2*N/m0
 nh = 1
 # number of hash reductions per second
 vh = 1556599
-vh = 11882475
+# vh = 11882475
 # number of filtrating nodes
 nf = 1
 # number of filtrations per second
 vf = 16879286
-vf = 22000576
+vf = 14701883
+# vf = 22000576
 # average overhead time per point
 do = 0
 # average nodes communication time
@@ -131,5 +134,5 @@ if __name__ == "__main__":
     print(f"f : {f_opti}")
 
     # Export of configurations    
-    exportf(f, a_mini+1, "data/configs/config_mini.dat")
-    exportf(f_opti, a_opti, "data/configs/config_opti.dat")
+    exportf(f, a_mini+1, "data/configs/config_mini_HTG"+str(id)+".dat")
+    exportf(f_opti, a_opti, "data/configs/config_opti_HTG"+str(id)+".dat")

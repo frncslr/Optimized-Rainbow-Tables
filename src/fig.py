@@ -80,18 +80,17 @@ def draw_hSpeeds():
     plt.show()
     fig.savefig(f'./data/plots/hSpeeds', bbox_inches='tight',dpi=500)
 
-draw_hSpeeds()
+# draw_hSpeeds()
 
 def draw_cSpeeds():
-    count = 300
-
-    y = read_results("./data/results/cSpeeds.dat", count)
+    count = 400
+    y = read_results("./data/results/cSpeedsHTG.dat", count)
     average = sum(y) / count
     fig, ax = plt.subplots()
     ax.plot(y,'o',color='red',label='Clean speeds')
     ax.axhline(y=average, color='b', linestyle='--',label=f'Average speed ({average})')
     # plt.xticks(np.arange(1, count+1, 1), fontsize=16)
-    plt.yticks(np.arange(15000000, 18000000, 500000), fontsize=16)
+    plt.yticks(np.arange(13000000, 16000000, 500000), fontsize=16)
 
     ax.set_title(f'Clean speed variation on {count} mesures')
     plt.xlabel("Mesure number ",fontsize=16)
