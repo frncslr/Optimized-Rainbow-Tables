@@ -164,3 +164,42 @@ void attackSTDxHTG(unsigned char *cipher, HTable *htables, int *hsizes, uint64_t
             ell--;
     }
 }
+void attackCDExHTG(unsigned char *cipher, Point **spTables, BitStream *epStreams, Index **idxTables, uint64_t N, int ell, int *t, int *mt, Point *result, uint64_t *nb_hash, double *avgDec)
+{
+    Point *found,candidate, endpoint;
+    uint32_t nbDec = 0;
+    double nbSearch = 0.0;
+    Metric metric[ell];
+    int col[ell], table_id;
+    for (int i = 0; i < ell; i++)
+    {
+        col[i] = t[i] - 1;
+        metric[i].nu = Nu(N, mt[i], t[i], col[i]);
+        metric[i].table_id = i;
+    }
+    sortMetric(metric, ell);
+    while (ell)
+    {
+        table_id = metric->table_id;
+        chain(&endpoint, cipher, table_id, col[table_id], t[table_id], N, nb_hash);
+        nbSearch++;
+        if ((found = searchCDE(endpoint, spTables[table_id], &(epStreams[table_id]), idxTables[table_id], mt[table_id], N, Lblocks(mt[table_id]), &nbDec)) != NULL)
+        {
+            candidate = *found;
+            rebuild(&candidate, table_id, col[table_id], t[table_id], N, nb_hash);
+            hash(&candidate, buffer);
+            (*nb_hash)++;
+            if (!memcmp((const char *)cipher, (const char *)buffer, SHA256_DIGEST_LENGTH))
+            {
+                *result = candidate;
+                *avgDec = nbDec / nbSearch;
+                return;
+            }
+        }
+        metric->nu = Nu(N, mt[table_id], t[table_id], --col[table_id]);
+        sortMetric(metric, ell);
+        if (metric[ell - 1].nu == -1.0)
+            ell--;
+    }
+    *avgDec = nbDec / nbSearch;
+}

@@ -607,7 +607,6 @@ void test_attackSTDxHTG_existing()
         nb_hash = 0;
         result = MAX;
         table_id = rand() % ell;
-        table_id = 1;
         chainn = htables[table_id][rand() % hsizes[table_id]];
         if (chainn.ep == MAX)
         {
@@ -619,7 +618,7 @@ void test_attackSTDxHTG_existing()
         nb_hash = 0;
         compute(&plain, table_id, 0, col_id, t[table_id], N, &nb_hash);
         hash(&plain, cipher);
-        attackSTDxHTG(cipher, htables, hsizes, N, ell, t, mt, &result, &nb_hash);      
+        attackSTDxHTG(cipher, htables, hsizes, N, ell, t, mt, &result, &nb_hash);
         if (result == plain)
         {
             nb++;
@@ -699,4 +698,200 @@ void test_attackSTDxHTG_random()
     for (int table_id = 0; table_id < ell; table_id++)
         free((void *)htables[table_id]);
     free((void *)htables);
+}
+void test_attackCDExHTG_existing()
+{
+    printf("# Test attack CDExHTG existing :\n");
+
+    int n = 1000;
+    int nb = 0;
+
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    int ell = 4;
+    int t[] = {573, 1063, 1561, 2048};
+    int mt[ell];
+    int L;
+    char spFile_name[40] = "data/tables/mix/spCDExHTG";
+    char epFile_name[40] = "data/tables/mix/epCDExHTG";
+    char idxFile_name[40] = "data/tables/mix/idxCDExHTG";
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    Point **spTable = NULL;
+    if ((spTable = (Point **)calloc(ell, sizeof(Point *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    BitStream *epStream = NULL;
+    if ((epStream = (BitStream *)calloc(ell, sizeof(BitStream))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    Index **idxTable = NULL;
+    if ((idxTable = (Index **)calloc(ell, sizeof(Index *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        importSP(spFile_name, &spTable[table_id], &mt[table_id]);
+        L = Lblocks(mt[table_id]);
+        importIdx(idxFile_name, L, mt[table_id], N, &idxTable[table_id]);
+        initBitStream(&epStream[table_id], epFile_name, 0);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result;
+    uint64_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
+    int table_id, col_id;
+    timeval start, end;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    gettimeofday(&start, 0);
+
+    for (int i = 0; i < n; i++)
+    {
+        table_id = rand() % ell;
+        plain = spTable[table_id][rand() % mt[table_id]];
+        col_id = rand() % t[table_id];
+        nb_hash = 0;
+        compute(&plain, table_id, 0, col_id, t[table_id], N, &nb_hash);
+        hash(&plain, cipher);
+        nb_hash = 0;
+        avgDec = 0.0;
+        result = MAX;
+        attackCDExHTG(cipher, spTable, epStream, idxTable, N, ell, t, mt, &result, &nb_hash, &avgDec);
+        total_avgDec += avgDec;
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+        total_avgDec += avgDec;
+    }
+    gettimeofday(&end, 0);
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings \t: %f\n", total_avgDec / n);
+    printf("Average time to attack\t: %f\n", elapsed(&start, &end) / n);
+    printf("\n");
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        free((void *)spTable[table_id]);
+        closeBitStream(&epStream[table_id]);
+        free((void *)idxTable[table_id]);
+    }
+    free((void *)spTable);
+    free((void *)epStream);
+    free((void *)idxTable);
+}
+void test_attackCDExHTG_random()
+{
+    printf("# Test attack CDExHTG random :\n");
+
+    int n = 1000;
+    int nb = 0;
+
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    int ell = 4;
+    int t[] = {573, 1063, 1561, 2048};
+    int mt[ell];
+    int L;
+    char spFile_name[40] = "data/tables/mix/spCDExHTG";
+    char epFile_name[40] = "data/tables/mix/epCDExHTG";
+    char idxFile_name[40] = "data/tables/mix/idxCDExHTG";
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    char extension[6] = "i.dat";
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+
+    Point **spTable = NULL;
+    if ((spTable = (Point **)calloc(ell, sizeof(Point *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    BitStream *epStream = NULL;
+    if ((epStream = (BitStream *)calloc(ell, sizeof(BitStream))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    Index **idxTable = NULL;
+    if ((idxTable = (Index **)calloc(ell, sizeof(Index *))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        importSP(spFile_name, &spTable[table_id], &mt[table_id]);
+        L = Lblocks(mt[table_id]);
+        importIdx(idxFile_name, L, mt[table_id], N, &idxTable[table_id]);
+        initBitStream(&epStream[table_id], epFile_name, 0);
+    }
+
+    static unsigned char cipher[SHA256_DIGEST_LENGTH];
+    Point plain, result;
+    uint64_t nb_hash, total_hash = 0;
+    double avgDec, total_avgDec = 0.0;
+    int table_id, col_id;
+    timeval start, end;
+    srand(time(NULL));
+    printf("Launching %d attacks\n", n);
+    gettimeofday(&start, 0);
+
+    for (int i = 0; i < n; i++)
+    {
+        plain = rand() % N;
+        hash(&plain, cipher);
+        nb_hash = 0;
+        avgDec = 0.0;
+        result = MAX;
+        attackCDExHTG(cipher, spTable, epStream, idxTable, N, ell, t, mt, &result, &nb_hash, &avgDec);
+        total_avgDec += avgDec;
+        if (result == plain)
+        {
+            nb++;
+        }
+        total_hash += nb_hash;
+        total_avgDec += avgDec;
+    }
+    gettimeofday(&end, 0);
+    printf("Plains recovered\t: %u / %u (%3.2lf%%)\n", nb, n, (100 * (float)nb / n));
+    double avg_hash = (double)total_hash / n;
+    printf("Average operations\t: %f\n", avg_hash);
+    printf("Average decodings \t: %f\n", total_avgDec / n);
+    printf("Average time to attack\t: %f\n", elapsed(&start, &end) / n);
+    printf("\n");
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        free((void *)spTable[table_id]);
+        closeBitStream(&epStream[table_id]);
+        free((void *)idxTable[table_id]);
+    }
+    free((void *)spTable);
+    free((void *)epStream);
+    free((void *)idxTable);
 }

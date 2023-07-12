@@ -18,4 +18,6 @@ void test_Nu();
 void test_sortMetric();
 void test_attackSTDxHTG_existing();
 void test_attackSTDxHTG_random();
+void test_attackCDExHTG_existing();
+void test_attackCDExHTG_random();
 #endif

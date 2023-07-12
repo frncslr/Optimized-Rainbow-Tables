@@ -19,5 +19,6 @@ long double Nu(uint64_t N, int mt, int t, int col);
 int compareMetric(const void *a, const void *b);
 void sortMetric(Metric *metric, int ell);
 void attackSTDxHTG(unsigned char *cipher, HTable *htables, int *hsizes, uint64_t N, int ell, int *t, int *mt, Point *result, uint64_t *nb_hash);
+void attackCDExHTG(unsigned char *cipher, Point **spTables, BitStream *epStreams, Index **idxTables, uint64_t N, int ell, int *t, int *mt, Point *result, uint64_t *nb_hash, double *avgDec);
 
 #endif
