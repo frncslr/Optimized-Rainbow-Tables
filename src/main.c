@@ -49,6 +49,7 @@ int main(void)
   // test_offline_cde();
   // test_offline_cde_ell();
   // test_offline_htg();
+  test_offline_htg_cde();
 
   // test_import();
   // test_import_ell();
@@ -63,7 +64,7 @@ int main(void)
   // test_metric();
   // test_sortMetric();
   // test_attackSTDxHTG_existing();
-  test_attackSTDxHTG_random();
+  // test_attackSTDxHTG_random();
 
   return 0;
 }

@@ -587,7 +587,7 @@ void test_offline_cde()
 }
 void test_offline_cde_ell()
 {
-    printf("# Test effline cde ell:\n");
+    printf("# Test offline cde ell:\n");
     uint64_t N = 1 << 24;
     double r = 20.0;
     double alpha = ALPHA(r);
@@ -761,4 +761,103 @@ void test_offline_htg()
     hashStats(hash_expe, hash_theo);
     epStats(mt_expe, mt_theo);
     coverStats(p_expe, p_theo);
+}
+void test_offline_htg_cde()
+{
+    printf("# Test offline htg cde :\n");
+    uint64_t N = 1 << 24;
+    double r = 20.0;
+    double alpha = ALPHA(r);
+    printf("General parameters :\n");
+    printf("\tN\t: %lu\n", N);
+    printf("\tr\t: %3.3f\n", r);
+    printf("\talpha\t: %3.3f\n\n", alpha);
+
+    int ell = 4;
+    int t[] = {573, 1063, 1561, 2048};
+    int m0[ell], mt[ell], m[ell];
+    printf("Table parameters :\n");
+    printf("\tell\t: %d\n", ell);
+    printf("\tt\t: ");
+    for (int i = 0; i < ell; i++)
+        printf("%d ", t[i]);
+    printf("\n");
+
+    int nb_filters, *filters = NULL;
+    char filters_file[40] = "data/configs/config_mini_HTG";
+    printf("Filtration parameters :\n");
+    printf("\tfile\t: %s\n\n", filters_file);
+    int filters_length = strlen((const char *)filters_file);
+    char extension[6] = "i.dat";
+    strcat(filters_file, extension);
+
+    char spFile_name[40] = "data/tables/mix/spCDExHTG";
+    char epFile_name[40] = "data/tables/mix/epCDExHTG";
+    char idxFile_name[40] = "data/tables/mix/idxCDExHTG";
+    printf("Delta Encoding parameters :\n");
+    printf("\tsp file\t: %s\n", spFile_name);
+    printf("\tep file\t: %s\n", epFile_name);
+    printf("\tid file\t: %s\n\n", idxFile_name);
+    int spName_length = strlen((const char *)spFile_name);
+    int epName_length = strlen((const char *)epFile_name);
+    int idxName_length = strlen((const char *)idxFile_name);
+    strcat(spFile_name, extension);
+    strcat(epFile_name, extension);
+    strcat(idxFile_name, extension);
+    int tables_id[ell], L[ell];
+
+    RTable table;
+
+    int mt_expe = 0, mt_theo = 0;
+    uint64_t hash_expe = 0, hash_theo = 0;
+    double computeTime = 0.0, cleanTime = 0.0;
+
+    double p_theo = 1.0, p_expe = 0.0;
+    char *covered;
+    if ((covered = (char *)calloc(N, sizeof(char))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation problem\n");
+        exit(ERROR_ALLOC);
+    }
+
+    printf("Precomputing, exporting and checking the coverage of %d tables\n", ell);
+    for (int table_id = 0; table_id < ell; table_id++)
+    {
+        m[table_id] = m0[table_id] = M0(N, r, t[table_id]);
+        mt[table_id] = Mt(N, alpha, t[table_id]);
+        tables_id[table_id] = table_id;
+
+        filters_file[filters_length] = table_id + '0';
+        positions(&filters, &nb_filters, filters_file);
+
+        precompute(&table, table_id, &m[table_id], filters, nb_filters, t[table_id], N, &hash_expe, &computeTime, &cleanTime);
+        operations(N, m0[table_id], filters, nb_filters, &hash_theo);
+        L[table_id] = Lblocks(m[table_id]);
+
+        spFile_name[spName_length] = table_id + '0';
+        epFile_name[epName_length] = table_id + '0';
+        idxFile_name[idxName_length] = table_id + '0';
+        exportCDE(table, m[table_id], N, L[table_id], spFile_name, epFile_name, idxFile_name);
+
+        cover(table, table_id, m[table_id], t[table_id], N, covered, &p_expe);
+        p_theo *= pow(1.0 - (double)Mt(N, alpha, t[table_id]) / N, t[table_id]);
+
+        mt_expe += m[table_id];
+        mt_theo += mt[table_id];
+
+        free((void *)filters);
+        free((void *)table);
+    }
+    p_expe = 100.0 * p_expe / N;
+    p_theo = (1 - p_theo) * 100.0;
+    free((void *)covered);
+
+    printf("Time to compute\t\t: %f seconds\n", computeTime / ell);
+    printf("Time to clean\t\t: %f seconds\n", cleanTime / ell);
+    printf("Time to generate\t: %f seconds\n\n", (computeTime + cleanTime) / ell);
+
+    hashStats(hash_expe, hash_theo);
+    epStats(mt_expe, mt_theo);
+    coverStats(p_expe, p_theo);
+    cdeStats(ell, tables_id, m, N, L, spFile_name, epFile_name, idxFile_name);
 }
